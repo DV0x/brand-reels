@@ -1,0 +1,10 @@
+out/
+*.mp4
+smoke-test.mp4
+smoke-contact-sheet.png
+smoke-report.json
+smoke-frames/
+.smoke-audio.wav
+node_modules/
+.DS_Store
+*.part.*

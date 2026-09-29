@@ -1,0 +1,135 @@
+name: check-setup
+
+# Runs the plugin's one-time setup from scratch (portable Node.js, ffmpeg, canvas engine) and renders the
+# check-setup test clip on every platform followers use. A red job means a follower on that OS would fail.
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  manifests:
+    name: manifests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check marketplace and plugin manifests
+        run: |
+          node -e '
+            const fs = require("fs");
+            const m = JSON.parse(fs.readFileSync(".claude-plugin/marketplace.json", "utf8"));
+            const bad = s => { console.error("::error::" + s); process.exitCode = 1; };
+            if (!m.name || !m.owner || !Array.isArray(m.plugins)) bad("marketplace.json needs name, owner, plugins");
+            for (const e of m.plugins) {
+              const p = JSON.parse(fs.readFileSync(e.source + "/.claude-plugin/plugin.json", "utf8"));
+              if (p.name !== e.name) bad(`entry ${e.name} != plugin.json name ${p.name}`);
+              if (!/^\d+\.\d+\.\d+$/.test(p.version || "")) bad(`${e.name}: version must be x.y.z`);
+              if (fs.existsSync(e.source + "/bin")) bad(`${e.name}: a top-level bin/ stops claude.ai and Cowork from installing it`);
+              for (const s of fs.readdirSync(e.source + "/skills")) {
+                const md = fs.readFileSync(`${e.source}/skills/${s}/SKILL.md`, "utf8");
+                const name = (md.match(/^name:\s*(.+)$/m) || [])[1];
+                if (name !== s) bad(`skill folder ${s} has name: ${name}`);
+                if (!/^description:\s*\S/m.test(md)) bad(`skill ${s} has no description`);
+              }
+              console.log(`ok: ${e.name}@${m.name} v${p.version}`);
+            }'
+      - name: claude plugin validate (best effort)
+        continue-on-error: true
+        run: |
+          npx -y @anthropic-ai/claude-code@latest plugin validate plugins/ad-styles
+          npx -y @anthropic-ai/claude-code@latest plugin validate .
+
+  render:
+    name: render (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: linux-x64, os: ubuntu-latest, shell: bash }
+          - { name: macos-arm64, os: macos-latest, shell: bash }
+          - { name: macos-intel, os: macos-15-intel, shell: bash }
+          - { name: windows-powershell-5.1, os: windows-latest, shell: powershell }
+          - { name: windows-pwsh-7, os: windows-latest, shell: pwsh }
+    env:
+      CODE_VIDEO_FORCE_PORTABLE: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      # ---- macOS / Linux: exactly what the skill runs ----
+      - name: First run (setup + render)
+        if: matrix.shell == 'bash'
+        shell: bash
+        run: |
+          export CODE_VIDEO_HOME="$RUNNER_TEMP/code-video"
+          start=$(date +%s)
+          bash plugins/ad-styles/runtime/run.sh plugins/ad-styles/skills/check-setup/scripts/render.mjs --out out
+          echo "first run: $(( $(date +%s) - start ))s"
+      - name: Second run (cached)
+        if: matrix.shell == 'bash'
+        shell: bash
+        run: |
+          export CODE_VIDEO_HOME="$RUNNER_TEMP/code-video"
+          start=$(date +%s)
+          bash plugins/ad-styles/runtime/run.sh plugins/ad-styles/skills/check-setup/scripts/render.mjs --out out-cached
+          echo "cached run: $(( $(date +%s) - start ))s"
+          bash plugins/ad-styles/runtime/run.sh --setup-only
+
+      # ---- Windows PowerShell 5.1: the command the skill tells Claude to run ----
+      - name: First run (setup + render) - PowerShell 5.1
+        if: matrix.shell == 'powershell'
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Continue'   # native stderr (setup logs) must not abort the step
+          $env:CODE_VIDEO_HOME = Join-Path $env:RUNNER_TEMP 'code-video'
+          $t = Measure-Command { powershell -NoProfile -ExecutionPolicy Bypass -File plugins\ad-styles\runtime\run.ps1 plugins\ad-styles\skills\check-setup\scripts\render.mjs --out out | Out-Host }
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          "first run: {0:N0}s" -f $t.TotalSeconds
+      - name: Second run (cached) - PowerShell 5.1
+        if: matrix.shell == 'powershell'
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Continue'   # native stderr (setup logs) must not abort the step
+          $env:CODE_VIDEO_HOME = Join-Path $env:RUNNER_TEMP 'code-video'
+          $t = Measure-Command { powershell -NoProfile -ExecutionPolicy Bypass -File plugins\ad-styles\runtime\run.ps1 plugins\ad-styles\skills\check-setup\scripts\render.mjs --out out-cached | Out-Host }
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          "cached run: {0:N0}s" -f $t.TotalSeconds
+          powershell -NoProfile -ExecutionPolicy Bypass -File plugins\ad-styles\runtime\run.ps1 --setup-only
+
+      # ---- Windows PowerShell 7 ----
+      - name: First run (setup + render) - pwsh 7
+        if: matrix.shell == 'pwsh'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Continue'   # native stderr (setup logs) must not abort the step
+          $env:CODE_VIDEO_HOME = Join-Path $env:RUNNER_TEMP 'code-video'
+          $t = Measure-Command { pwsh -NoProfile -ExecutionPolicy Bypass -File plugins/ad-styles/runtime/run.ps1 plugins/ad-styles/skills/check-setup/scripts/render.mjs --out out | Out-Host }
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          "first run: {0:N0}s" -f $t.TotalSeconds
+      - name: Second run (cached) - pwsh 7
+        if: matrix.shell == 'pwsh'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Continue'   # native stderr (setup logs) must not abort the step
+          $env:CODE_VIDEO_HOME = Join-Path $env:RUNNER_TEMP 'code-video'
+          $t = Measure-Command { pwsh -NoProfile -ExecutionPolicy Bypass -File plugins/ad-styles/runtime/run.ps1 plugins/ad-styles/skills/check-setup/scripts/render.mjs --out out-cached | Out-Host }
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          "cached run: {0:N0}s" -f $t.TotalSeconds
+          pwsh -NoProfile -ExecutionPolicy Bypass -File plugins/ad-styles/runtime/run.ps1 --setup-only
+
+      - name: Require PASS
+        shell: bash
+        run: |
+          for d in out out-cached; do
+            node -e "const r=require('./$d/smoke-report.json'); console.log('$d', r.ok ? 'PASS' : 'FAIL', r.where.platform + '-' + r.where.arch, r.msPerFrame + ' ms/frame', r.totalSeconds + ' s', 'node ' + r.where.node, 'ffmpeg ' + r.ffmpeg, 'enc ' + r.encoder); console.log(JSON.stringify(r.runtime)); if (!r.ok) { console.error(r.errors); process.exit(1) }"
+          done
+          test -s out/smoke-test.mp4
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: check-setup-${{ matrix.name }}
+          path: |
+            out/
+            out-cached/smoke-report.json
+          if-no-files-found: warn

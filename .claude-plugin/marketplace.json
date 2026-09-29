@@ -1,0 +1,15 @@
+{
+  "name": "dv0x",
+  "description": "Ad styles for Claude by DV0x: ads made entirely in code.",
+  "owner": {
+    "name": "DV0x",
+    "url": "https://github.com/DV0x"
+  },
+  "plugins": [
+    {
+      "name": "ad-styles",
+      "source": "./plugins/ad-styles",
+      "description": "Ad styles for Claude: make scroll-stopping video ads entirely in code, with no image or video generation. New styles arrive with each update."
+    }
+  ]
+}
