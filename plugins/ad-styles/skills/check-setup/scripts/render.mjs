@@ -188,7 +188,7 @@ function drawFrame(t, fi) {
     ctx.fillStyle = INK.paper; ctx.fillRect(-440, -120, 880, 240); ctx.lineWidth = 6; ctx.strokeStyle = INK.ink; ctx.strokeRect(-440, -120, 880, 240);
     ctx.font = '36px "JetBrains Mono"'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillStyle = INK.ink;
     ctx.fillText(`rendered on: ${where}`, -400, -70);
-    ctx.fillText(`node ${process.version} · ffmpeg ${report.ffmpeg ?? 'n/a'}`, -400, -18);
+    ctx.fillText(`node ${process.version} · ffmpeg ${(report.ffmpeg ?? 'n/a').split('-')[0]}`, -400, -18);
     ctx.fillText('no browser · no image gen · no network', -400, 34);
     ctx.fillStyle = INK.orange; ctx.fillText(`frame ${String(fi + 1).padStart(3, '0')} / ${N}`, -400, 86);
     ctx.restore();
