@@ -6,8 +6,8 @@
 #   powershell -NoProfile -ExecutionPolicy Bypass -File run.ps1 <script.mjs> [args...]
 #   powershell -NoProfile -ExecutionPolicy Bypass -File run.ps1 --setup-only
 #
-# Env: CODE_VIDEO_HOME (cache dir) · CODE_VIDEO_FORCE_PORTABLE=1 (ignore system node/ffmpeg)
-# Exit codes (same as run.sh): 1 general · 3 unsupported platform · 4 download failed · 5 checksum mismatch
+# Env: CODE_VIDEO_HOME (cache dir) - CODE_VIDEO_FORCE_PORTABLE=1 (ignore system node/ffmpeg)
+# Exit codes (same as run.sh): 1 general - 3 unsupported platform - 4 download failed - 5 checksum mismatch
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'   # Invoke-WebRequest is very slow in 5.1 with the progress bar on
@@ -151,7 +151,7 @@ $env:NAPI_RS_NATIVE_LIBRARY_PATH = $CanvasNode
 if ($args.Count -eq 0 -or $args[0] -eq '--setup-only') {
   $nv = Run-Native { & $Node -v 2>$null }
   $size = '{0:N0} MB' -f ((Get-ChildItem -LiteralPath $Root -Recurse -File -Force | Measure-Object -Property Length -Sum).Sum / 1MB)
-  Write-Output "READY · win32-x64$(if ($arch -eq 'ARM64') { ' (on ARM64, emulated)' })"
+  Write-Output "READY - win32-x64$(if ($arch -eq 'ARM64') { ' (on ARM64, emulated)' })"
   Write-Output "  node:   $Node ($nv)"
   Write-Output "  ffmpeg: $Ffmpeg"
   Write-Output "  canvas: $CanvasNode"
