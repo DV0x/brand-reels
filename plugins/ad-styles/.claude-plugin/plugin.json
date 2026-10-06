@@ -1,8 +1,8 @@
 {
   "name": "ad-styles",
   "displayName": "Ad Styles",
-  "version": "0.1.0",
-  "description": "Ad styles for Claude: make scroll-stopping video ads entirely in code, with no image or video generation. Includes a one-time setup check; new styles arrive with each update.",
+  "version": "0.2.0",
+  "description": "Ad styles for Claude: make scroll-stopping videos entirely in code, with no image or video generation. Includes product-explainer (explainer reels for D2C products, from a brand's website) and a one-time setup check.",
   "author": {
     "name": "DV0x",
     "url": "https://github.com/DV0x"

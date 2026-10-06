@@ -63,18 +63,21 @@ More about it:
 
 ## Styles
 
-| Style | Status |
-|---|---|
-| *First styles coming soon* | 🔜 |
+| Skill | What it makes | Status |
+|---|---|---|
+| `product-explainer` | A 25–45 s explainer reel for a D2C product, from the brand's website: research, script, contact sheet, then the video with voice, captions, music and sound | New |
 
-`check-setup` is included now. It verifies your computer can render.
+`check-setup` is included too. It verifies your computer can render.
 
 ---
 
 ## Privacy
 
-- **The styles run entirely on your computer.** Your briefs, products and videos are not uploaded anywhere by this plugin.
-- The only network access is the one-time setup downloads from the three sources above.
+- **Rendering runs entirely on your computer.** Your scripts, products and videos are not uploaded anywhere by this plugin.
+- **Network access:**
+  - the one-time setup downloads from the three sources above
+  - `product-explainer` reads the brand website you give it (pages, product data and photos)
+  - `product-explainer` sends the voiceover script to Cartesia, using your own Cartesia API key, if you choose a voiceover
 
 ## Licenses
 

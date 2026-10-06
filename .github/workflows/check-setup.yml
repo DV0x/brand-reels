@@ -117,6 +117,34 @@ jobs:
           "cached run: {0:N0}s" -f $t.TotalSeconds
           pwsh -NoProfile -ExecutionPolicy Bypass -File plugins/ad-styles/runtime/run.ps1 --setup-only
 
+      # ---- product-explainer: the template film, timed from its text (no network, no voice) ----
+      - name: product-explainer (template sheet + 3 s video)
+        if: matrix.shell == 'bash'
+        shell: bash
+        run: |
+          export CODE_VIDEO_HOME="$RUNNER_TEMP/code-video"
+          P="$RUNNER_TEMP/pe-test"; mkdir -p "$P"
+          cp plugins/ad-styles/skills/product-explainer/templates/film.mjs plugins/ad-styles/skills/product-explainer/templates/script.json "$P/"
+          bash plugins/ad-styles/runtime/run.sh plugins/ad-styles/skills/product-explainer/scripts/render.mjs "$P" sheet --estimate
+          bash plugins/ad-styles/runtime/run.sh plugins/ad-styles/skills/product-explainer/scripts/render.mjs "$P" video --estimate --to 3
+          test -s "$P/out/sheet.jpg"
+          test -s "$P/out/example-explainer-0-3.mp4"
+      - name: product-explainer (template sheet + 3 s video) - PowerShell
+        if: matrix.shell != 'bash'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Continue'
+          $env:CODE_VIDEO_HOME = Join-Path $env:RUNNER_TEMP 'code-video'
+          $exe = if ('${{ matrix.shell }}' -eq 'powershell') { 'powershell' } else { 'pwsh' }
+          $P = Join-Path $env:RUNNER_TEMP 'pe-test'; New-Item -ItemType Directory -Force $P | Out-Null
+          Copy-Item plugins\ad-styles\skills\product-explainer\templates\film.mjs, plugins\ad-styles\skills\product-explainer\templates\script.json $P
+          & $exe -NoProfile -ExecutionPolicy Bypass -File plugins\ad-styles\runtime\run.ps1 plugins\ad-styles\skills\product-explainer\scripts\render.mjs $P sheet --estimate | Out-Host
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & $exe -NoProfile -ExecutionPolicy Bypass -File plugins\ad-styles\runtime\run.ps1 plugins\ad-styles\skills\product-explainer\scripts\render.mjs $P video --estimate --to 3 | Out-Host
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if (-not (Test-Path (Join-Path $P 'out\sheet.jpg'))) { exit 1 }
+          if (-not (Test-Path (Join-Path $P 'out\example-explainer-0-3.mp4'))) { exit 1 }
+
       - name: Require PASS
         shell: bash
         run: |
@@ -132,4 +160,6 @@ jobs:
           path: |
             out/
             out-cached/smoke-report.json
+            ${{ runner.temp }}/pe-test/out/sheet.jpg
+            ${{ runner.temp }}/pe-test/out/*.mp4
           if-no-files-found: warn

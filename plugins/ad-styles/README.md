@@ -5,7 +5,7 @@ Make scroll-stopping video ads entirely in code, with no image or video generati
 ## Use it
 
 - Ask Claude to **"check my ad-styles setup"** first. The `check-setup` skill runs a one-time setup and renders a 3-second test clip.
-- Then ask for a style by name once styles are published.
+- Then ask for a skill by what it does. `product-explainer`: "make an explainer video for <brand website>".
 
 ## How it works
 
@@ -15,8 +15,10 @@ Make scroll-stopping video ads entirely in code, with no image or video generati
 
 ## Data
 
-- **Local only:** everything renders on your computer, and nothing you make is uploaded.
-- **Network:** limited to the one-time downloads from nodejs.org, github.com (ffmpeg-static) and registry.npmjs.org.
+- **Local rendering:** everything renders on your computer, and nothing you make is uploaded.
+- **Network:**
+  - the one-time downloads from nodejs.org, github.com (ffmpeg-static) and registry.npmjs.org
+  - `product-explainer` reads the brand site you give it and, if you want a voiceover, sends the script to Cartesia with your own key
 
 ## Licenses
 
