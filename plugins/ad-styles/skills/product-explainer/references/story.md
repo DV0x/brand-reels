@@ -42,5 +42,6 @@ For each shot:
 Count the events per shot. If a shot has fewer than one per 2 s, add actions, not decoration.
 
 ## Contact sheet
-The sheet shows one frame per shot (at its key moment) with its voice and on-screen words. It's for checking the look,
-the layout and the story's progress at a glance. Motion and timing are judged on the video.
+The sheet shows one finished frame per beat (each voice line, as it ends, or at `beats[id]`), then the end card, each
+with its voice and on-screen words. It's for checking the look, the layout and the story's progress beat by beat.
+Motion and timing are judged on the video.

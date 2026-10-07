@@ -65,10 +65,11 @@ const noise = (x, y, s = 0) => {
   const a = hash2(xi, yi, s), b = hash2(xi + 1, yi, s), c = hash2(xi, yi + 1, s), d = hash2(xi + 1, yi + 1, s);
   return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
 };
-const fbm = (x, y, oct = 4, s = 0) => { let sum = 0, amp = 0.5, f = 1, n = 0; for (let i = 0; i < oct; i++) { sum += amp * noise(x * f, y * f, s + i * 17); n += amp; amp *= 0.5; f *= 2.03; } return sum / n; };
+export { clamp, lerp, rng, hash2, noise };
+export const fbm = (x, y, oct = 4, s = 0) => { let sum = 0, amp = 0.5, f = 1, n = 0; for (let i = 0; i < oct; i++) { sum += amp * noise(x * f, y * f, s + i * 17); n += amp; amp *= 0.5; f *= 2.03; } return sum / n; };
 
 // ---------------------------------------------------------------- colour
-const rgb = hex => { const h = hex.replace('#', ''); const n = parseInt(h.length === 3 ? h.split('').map(c => c + c).join('') : h.slice(0, 6), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
+export const rgb = hex => { const h = hex.replace('#', ''); const n = parseInt(h.length === 3 ? h.split('').map(c => c + c).join('') : h.slice(0, 6), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
 const hex = ([r, g, b]) => '#' + [r, g, b].map(v => Math.round(clamp(v, 0, 255)).toString(16).padStart(2, '0')).join('');
 const mix = (a, b, t) => { const A = rgb(a), B = rgb(b); return hex([lerp(A[0], B[0], t), lerp(A[1], B[1], t), lerp(A[2], B[2], t)]); };
 const rgba = (c, a) => { const [r, g, b] = rgb(c); return `rgba(${r},${g},${b},${clamp(a).toFixed(3)})`; };
@@ -213,30 +214,6 @@ function placeholderProduct() {
   g.fillStyle = '#2E2A26'; g.textAlign = 'center'; g.font = '700 54px "Jost"'; g.fillText('YOUR', 260, 690); g.fillText('PRODUCT', 260, 760);
   g.font = '500 30px "Jost"'; g.fillText('placeholder photo', 260, 830);
   return prepProduct(c, 'placeholder');
-}
-
-// ---------------------------------------------------------------- material: the paper the film is printed on
-function materialLayer(kind) {
-  if (!kind || kind === 'none') return null;
-  const s = { paper: 1, print: 1.45, clean: 0.45 }[kind] ?? 1;
-  const c = createCanvas(W, H), g = c.getContext('2d');
-  // coarse mottle at 1/8 scale, smoothed up
-  const mw = W / 8, mh = H / 8, m = createCanvas(mw, mh), mg = m.getContext('2d'), md = mg.createImageData(mw, mh);
-  for (let y = 0; y < mh; y++) for (let x = 0; x < mw; x++) {
-    const v = 255 * (1 - s * (0.05 * fbm(x * 0.05, y * 0.05, 4, 3) + 0.025 * noise(x * 0.4, y * 0.04, 9))), i = (y * mw + x) * 4;
-    md.data[i] = v; md.data[i + 1] = v * (kind === 'clean' ? 1 : 0.992); md.data[i + 2] = v * (kind === 'clean' ? 1 : 0.975); md.data[i + 3] = 255;
-  }
-  mg.putImageData(md, 0, 0); g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high'; g.drawImage(m, 0, 0, W, H);
-  // fine tooth: a 512 tile of grain, multiplied
-  const tile = createCanvas(512, 512), tg = tile.getContext('2d'), td = tg.createImageData(512, 512), r = rng(41);
-  for (let i = 0; i < td.data.length; i += 4) { const v = 255 * (1 - s * (r() < 0.5 ? r() * r() * 0.085 : 0)); td.data[i] = v; td.data[i + 1] = v; td.data[i + 2] = v; td.data[i + 3] = 255; }
-  tg.putImageData(td, 0, 0);
-  g.globalCompositeOperation = 'multiply'; g.fillStyle = g.createPattern(tile, 'repeat'); g.fillRect(0, 0, W, H);
-  // a soft vignette
-  const vg = g.createRadialGradient(W / 2, H * 0.46, H * 0.32, W / 2, H * 0.46, H * 0.78);
-  vg.addColorStop(0, 'rgba(255,255,255,1)'); vg.addColorStop(1, `rgba(${kind === 'clean' ? '215,215,215' : '205,195,180'},1)`);
-  g.fillStyle = vg; g.fillRect(0, 0, W, H);
-  return c;
 }
 
 // ---------------------------------------------------------------- the kit
@@ -637,11 +614,16 @@ export async function makeKit({ project, script, timing }) {
   };
 
   // ---------- the look (drawn by the renderer after draw(), before captions)
-  let material = null, materialKind = null;
-  const applyLook = (g, kind) => {
-    if (kind !== materialKind) { material = materialLayer(kind); materialKind = kind; }
-    if (!material) return;
-    g.save(); g.globalCompositeOperation = 'multiply'; g.drawImage(material, 0, 0); g.restore();
+  // a layer made in its own medium, composited over g (for mixing media inside one frame). fn draws in screen space.
+  let MEDIA_IMPL = {}; const layerCanvases = [];
+  const medium = (g, name, t, o, fn) => {
+    const impl = MEDIA_IMPL[name]; if (!impl) throw new Error(`K.medium: no medium "${name}" (have: ${Object.keys(MEDIA_IMPL).join(', ')})`);
+    if (!layerCanvases.length) layerCanvases.push(createCanvas(W, H), createCanvas(W, H));
+    const [A, B] = layerCanvases, ag = A.getContext('2d'), bg = B.getContext('2d');
+    for (const c of [ag, bg]) { c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, W, H); }
+    ag.save(); fn(ag); ag.restore();
+    impl(bg, A, t, { ...(o || {}), layer: true });
+    g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.drawImage(B, 0, 0); g.restore();
   };
   const debugOverlay = g => {
     g.save(); g.strokeStyle = 'rgba(255,0,140,0.85)'; g.lineWidth = 3; g.setLineDash([14, 10]);
@@ -666,7 +648,8 @@ export async function makeKit({ project, script, timing }) {
     // used by render.mjs
     _setMotion(name) { M = MOTION[name] || MOTION.warm; },
     _setCaptions(o = {}) { Object.assign(capStyle, o); if (o.emph) capStyle.emph = { ...capStyle.emph, ...o.emph }; F.base.family = o.font || F.base.family; if (o.emph) F.emph = { ...F.emph, ...o.emph }; },
-    _captions: drawCaptions, _captionList: captions, _look: applyLook, _debug: debugOverlay, _events: events,
+    medium, _setMedia(m) { MEDIA_IMPL = m; },
+    _captions: drawCaptions, _captionList: captions, _debug: debugOverlay, _events: events,
   };
   return K;
 }

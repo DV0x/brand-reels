@@ -39,21 +39,40 @@ export default function film(K) {
   const P = K.product('main');      // the cut-out (a placeholder bottle until product/main.png exists)
   // set up here: cameras, cached backgrounds, positions as functions of t
   return {
-    look: 'paper',                  // paper | print | clean | none: the finish over the picture
+    look: 'painted',                // the medium (references/craft.md): painted | silkscreen | a custom one | t => name
+    media: { focus: [{ x: 540, y: 900, r: 360 }] },   // the medium's options (below)
     motion: 'warm',                 // warm | playful | crisp
     music: 'warm',                  // warm | bright | calm | none
-    background: '#EFE6D6',          // cleared to this each frame
+    background: '#EFE6D6',          // the world is cleared to this each frame
     captions: { font: 'Jost', size: 54, color: '#FFF8EC', style: 'shadow', emph: { family: 'Fraunces', italic: true, weight: 500 } },
-    shots: [{ name: 'Fridge opens', from: 0, to: T.at('l3'), key: 2.4, cut: true }, ...],   // for the sheet and QA
-    cues: [{ t: T.word('l1', 'fridge'), sfx: 'door' }, ...],                                 // one sound per action
-    draw(g, t) { /* everything, as a pure function of t */ },
+    shots: [{ name: 'Fridge opens', from: 0, to: T.at('l3'), cut: true }, ...],   // camera setups: names and the cut count
+    beats: { l3: 4.2 },             // optional: the moment the sheet shows for a line (default: as the line ends)
+    cues: [{ t: T.word('l1', 'fridge'), sfx: 'door' }, ...],                       // one sound per action
+    draw(g, t) { /* the world: everything but the product and the words; the medium remakes it */ },
+    over(g, t) { /* the crisp layer: the product photo, hands in front of it, statements, labels, marks, stamps */ },
   };
 }
 ```
 - `captions.font` also becomes the default font of `K.text` and `K.label`.
-- `shots[].cut: false` means the camera travels into the shot (not a cut). `key` is the time the sheet shows (default:
-  just before the shot ends).
+- `shots[].cut: false` means the camera travels into the shot (not a cut). The QA counts hard cuts from `shots`.
 - `musicEnd` (seconds) sets where the music resolves (default `T.endCard`).
+
+## The medium: `look` and `media`
+| look | What it does | `media` options |
+|---|---|---|
+| `'painted'` | underpainting, then about 35,000 colour-sampled bristle strokes along the forms, re-laid at 10 fps, canvas weave | `focus: [{x, y, r}]` (finer strokes there), `density` (1), `size` (1), `flow(x, y)` (stroke angle away from edges), `weave` (0.4), `grain` |
+| `'silkscreen'` | each ink its own plate, halftone fixed to the paper, plates off register, uneven ink, paper fibre | `inks: ['#..', ...]` (required, 4 to 8, lightest first), `paper`, `screen` (dot cell, 7 px), `register` (1.6 px), `grain` |
+| a custom medium | `media.custom = { riso(g, ref, t, o) { ... } }`, then `look: 'riso'`: read `ref` (the world as drawn) and remake the frame on `g` by the medium's physical steps. With `o.layer`, leave clear what `ref` leaves clear. | yours |
+| `t => name` | a different medium per world or shot, switching on a cut | |
+| `'none'` | debugging only: a flat render the QA flags as not for delivery | |
+
+**Mixing media inside a frame:** `K.medium(g, 'silkscreen', t, { inks: [...] }, lg => drawTheCallout(lg))` draws into a
+clear layer, remakes it in that medium and composites it over `g`. Call it from `draw` or `over` with no transform set
+(it works in screen space; use `K.view` inside `fn` for world positions).
+
+**What goes where:** anything the medium should make goes in `draw`. The product photo goes in `over`, and so does
+anything that has to sit in front of it (the front part of a hand holding it). Words, labels, marks and stamps go in
+`over` so they stay sharp. Use the same camera in both (`K.view(g, cam, t, 1, ...)`).
 
 ## Time: `K.T`
 - `T.at('l3')` and `T.end('l3')` give a line's start and end (with an optional offset: `T.at('l3', 0.2)`).
@@ -102,17 +121,22 @@ A key's `e` is the ease into it. Draw far layers bigger than the frame, so camer
 | `K.shape(g, pts, color, { t, boil, smooth, stroke })` | a filled shape from points, optionally boiling on twos |
 | `K.wipe(g, prog, fn, { shape: 'circle', cx, cy })` | reveals fn's drawing through a growing circle or edge |
 | `K.cache(key, w, h, (g) => ...)` | draws something once and returns the canvas: use it for static backgrounds |
+| `K.medium(g, name, t, opts, (lg) => ...)` | a layer made in its own medium, composited over g (mixed media) |
 | `K.spline`, `K.poly`, `K.circle`, `K.ellipse`, `K.roundRect`, `K.ribbon` | Path2D builders |
 | `K.rng(seed)`, `K.noise`, `K.fbm`, `K.jitter(color, r, amt)`, `K.mix`, `K.shade(color, k)`, `K.rgba` | randomness and colour |
 
 ## Patterns
-**Shots inside one draw:**
+**Shots inside one film:**
 ```js
 draw(g, t) {
-  if (t >= cardAt) return endCard(g, t);   // the one hard cut, into the end card
-  K.view(g, cam, t, 1, () => { room(g, t); jar(g, t); });
-  notes(g, t);                             // screen-space labels, after the world
-}
+  if (t >= cardAt) return endCardGround(g, t);   // the one hard cut, into the end card
+  K.view(g, cam, t, 1, () => room(g, t));
+},
+over(g, t) {
+  if (t >= cardAt) return endCardProduct(g, t);
+  let rect; K.view(g, cam, t, 1, () => { rect = P.draw(g, { ... }); });
+  notes(g, t, rect);                             // screen-space labels, after the product
+},
 ```
 **Holding the product without covering it:**
 ```js
@@ -128,6 +152,9 @@ const f = K.toScreen(cam, t, rect.point(410, 820)); K.mark(g, f[0], f[1], 120, 5
 ## Checking while building
 - `RUN render.mjs <project> frame 1.2 4.8 9 --estimate` (before the voice) or without `--estimate` (after it): look at
   the PNGs.
-- `RUN render.mjs <project> sheet`: the contact sheet and the QA (event gaps, cuts, statements, text outside the safe
-  zone, the product drawn bigger than its photo). Clear every warning.
+- `RUN render.mjs <project> frame 4.8 --crop 300,600,540,540`: also saves that part at 100%, to check the hero's
+  detail and the medium up close (`references/craft.md`, section 6).
+- `RUN render.mjs <project> sheet`: the contact sheet, one finished frame per beat, and the QA (event gaps, cuts,
+  statements, text outside the safe zone, the product drawn bigger than its photo, a missing medium). Clear every
+  warning.
 - Errors name the time: `film.draw failed at t=7.200 s: ...`.

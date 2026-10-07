@@ -4,6 +4,8 @@
 // The shape to keep: one hero object (the product) that something happens to, one continuous world the camera travels
 // through, something new every 1.5 to 2 s, every action with a sound cue, statements built into the scene, and a
 // hard cut only into the end card.
+// Two layers: draw() is the world, which the medium (look) remakes; over() is the crisp layer: the product photo, the
+// hands in front of it, the words and marks. The medium never touches over(). See references/craft.md.
 export default function film(K) {
   const { T, W, H } = K;
   const C = {
@@ -66,10 +68,9 @@ export default function film(K) {
     g.fillStyle = C.counter; g.fillRect(-400, 1570, 3400, 900);
   };
 
-  // ---------- the end card (a hard cut into it is the one cut we allow)
+  // ---------- the end card (a hard cut into it is the one cut we allow): the ground is painted, the product is not
+  const endCardWorld = g => { g.fillStyle = C.cream; g.fillRect(0, 0, W, H); K.contact(g, W / 2, 1120, 240, 30, 0.28); };
   const endCard = (g, t) => {
-    g.fillStyle = C.cream; g.fillRect(0, 0, W, H);
-    K.contact(g, W / 2, 1120, 240, 30, 0.28);
     P.draw(g, { x: W / 2, y: 1120, h: 470, t, at: cardAt + 0.05, enter: 'pop', rot: -0.03 });
     K.statement(g, t, 'l5', { x: W / 2, y: 420, size: 92, align: 'center', font: 'Fraunces', color: C.ink });
     K.text(g, 'EXAMPLE BRAND', W / 2, 1212, { size: 44, weight: 700, align: 'center', color: C.ink, alpha: K.p(t, cardAt + 0.6, 0.4), t });
@@ -77,7 +78,8 @@ export default function film(K) {
   };
 
   return {
-    look: 'paper',       // paper | print | clean | none
+    look: 'painted',     // the medium: painted | silkscreen | one of your own in media.custom; or t => ... to switch
+    media: { focus: [{ x: 560, y: 900, r: 380 }] },   // painted: finer strokes where the eye goes
     motion: 'warm',      // warm | playful | crisp (from the brand's voice)
     music: 'warm',       // warm | bright | calm | none
     background: C.wall,
@@ -101,8 +103,7 @@ export default function film(K) {
       { t: cardAt, sfx: 'paper' }, { t: cardAt + 0.7, sfx: 'sparkle', gain: 0.7 },
     ],
     draw(g, t) {
-      if (t >= cardAt) return endCard(g, t);
-      let rect = null;
+      if (t >= cardAt) return endCardWorld(g);
       // far: the wall moves a little less than the room
       K.view(g, cam, t, 0.85, () => g.drawImage(wall, -700, 0));
       // the room
@@ -114,6 +115,13 @@ export default function film(K) {
         const heat = K.fade(t, t2 - 0.2, t3 + 0.6, 0.5, 0.6);
         K.wisps(g, 440, 1270, t, { n: 3, h: 520, w: 60, color: '#F6B66A', alpha: 0.5, strength: heat });
         K.wisps(g, 760, 1270, t, { n: 2, h: 460, w: 50, color: '#F6B66A', alpha: 0.45, strength: heat, seed: 7 });
+      });
+    },
+    over(g, t) {
+      if (t >= cardAt) return endCard(g, t);
+      let rect = null;
+      K.view(g, cam, t, 1, () => {
+        const [x, y] = prodAt(t);
         // it shivers when the heat reaches it
         const shiver = K.p(t, T.word('l2', 'changes'), 0.15, 'linear') * (1 - K.p(t, T.word('l2', 'changes') + 0.6, 0.3, 'linear'));
         rect = P.draw(g, { x, y, h: 440, t, at: 0.15, enter: 'drop', rot: -0.025 + Math.sin(t * 40) * 0.012 * shiver });

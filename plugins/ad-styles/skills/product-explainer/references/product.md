@@ -23,6 +23,9 @@ Read the report, then **look at the check image** (`main-check.jpg`, the cut-out
 - **"almost nothing was removed":** the product and background are too close in colour. Try `--tol 10`, or use a
   different photo.
 - **"touches the edge":** the photo itself crops the product. Use another photo.
+- **A flat, boxy pack shot straight on** (a bar, a carton, a sachet) whose label is close to the background's colour
+  and touches its edge: the flood fill eats the label. Use `--box`, which keeps the pack's whole rectangle, with `--crop`
+  to the pack's edge if a soft cast shadow is attached. Look at the check image: the label must be whole.
 - A transparent PNG from the brand is just trimmed.
 
 Other views go next to it (`product/back.png`, `product/open.png`) and are used as `K.product('back')`.

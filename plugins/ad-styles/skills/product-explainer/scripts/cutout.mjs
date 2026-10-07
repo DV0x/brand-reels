@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // cutout.mjs: cuts a product out of a photo shot on a plain background (white, grey or one flat colour), in plain JS.
-//   cutout.mjs <photo> --out <project>/product/main.png [--tol 30] [--crop x0,y0,x1,y1] [--shadows remove]
+//   cutout.mjs <photo> --out <project>/product/main.png [--tol 30] [--crop x0,y0,x1,y1] [--shadows remove] [--box]
+// --box: for a flat, boxy pack shot straight on (a bar, a carton) whose label is close to the background's colour.
 // Prints a report: the background it found, how tall the product is in pixels, and anything to worry about, and saves
 // <out>-check.jpg (the cut-out on red and on near-black) to look at before using it.
 // A shadow cast on the background is kept by default (removing it can eat light parts of a label that touch the edge).
@@ -41,6 +42,19 @@ if (transparent) {
   report.background = '#' + bg.map(v => v.toString(16).padStart(2, '0')).join('');
   report.backgroundSpread = +spread.toFixed(1); report.tolerance = +T.toFixed(1);
   if (spread > 18) warnings.push('the background is not plain (a texture, a scene or a gradient), so the cut-out will be rough: ask the brand for a photo on a plain background');
+  // --box: a flat, boxy pack shot straight on (a bar, a carton). Its label can be the background's colour and touch its
+  // edge, which a flood fill would eat. Find the pack's rectangle from pixels clearly unlike the background (shadows,
+  // a darker shade of it, don't count) and keep everything inside it.
+  const bl = bg.map(v => Math.max(8, v)), isShadow = i => { const k = (d[i] + d[i + 1] + d[i + 2]) / (bl[0] + bl[1] + bl[2]); if (k < 0.42 || k > 1.03) return false; return Math.abs(d[i] / bl[0] - k) < 0.07 && Math.abs(d[i + 1] / bl[1] - k) < 0.07 && Math.abs(d[i + 2] / bl[2] - k) < 0.07; };
+  if (opts.box) {
+    const rows = new Int32Array(H), cols = new Int32Array(W);
+    for (let p = 0; p < N; p++) if (dist(p * 4) > T && !isShadow(p * 4)) { rows[(p / W) | 0]++; cols[p % W]++; }
+    const rmax = Math.max(...rows), cmax = Math.max(...cols), rIn = y => rows[y] > rmax * 0.08, cIn = x => cols[x] > cmax * 0.08;
+    let bx0 = 0, bx1 = W - 1, by0 = 0, by1 = H - 1;
+    while (bx0 < W - 1 && !cIn(bx0)) bx0++; while (bx1 > bx0 && !cIn(bx1)) bx1--; while (by0 < H - 1 && !rIn(by0)) by0++; while (by1 > by0 && !rIn(by1)) by1--;
+    for (let p = 0; p < N; p++) { const x = p % W, y = (p / W) | 0; alpha[p] = x >= bx0 && x <= bx1 && y >= by0 && y <= by1 ? 1 : 0; }
+    report.box = [bx0 + crop[0], by0 + crop[1], bx1 + crop[0], by1 + crop[1]];
+  } else {
   // flood fill the background from the edges
   const isBg = new Uint8Array(N), q = new Int32Array(N); let qh = 0, qt = 0;
   const push = p => { if (!isBg[p] && dist(p * 4) < T) { isBg[p] = 1; q[qt++] = p; } };
@@ -49,7 +63,6 @@ if (transparent) {
   while (qh < qt) { const p = q[qh++], x = p % W; if (x > 0) push(p - 1); if (x < W - 1) push(p + 1); if (p >= W) push(p - W); if (p < N - W) push(p + W); }
   // shadows cast on the background are a darker shade of it (same colour, less light): remove them too (--shadows keep to skip)
   if (opts.shadows === 'remove') {
-    const bl = bg.map(v => Math.max(8, v)), isShadow = i => { const k = (d[i] + d[i + 1] + d[i + 2]) / (bl[0] + bl[1] + bl[2]); if (k < 0.42 || k > 1.03) return false; return Math.abs(d[i] / bl[0] - k) < 0.07 && Math.abs(d[i + 1] / bl[1] - k) < 0.07 && Math.abs(d[i + 2] / bl[2] - k) < 0.07; };
     let shadowPx = 0; const push2 = p => { if (!isBg[p] && isShadow(p * 4)) { isBg[p] = 2; q[qt++] = p; shadowPx++; } };
     for (let p = 0; p < N; p++) if (isBg[p] === 1) { const x = p % W; if (x > 0) push2(p - 1); if (x < W - 1) push2(p + 1); if (p >= W) push2(p - W); if (p < N - W) push2(p + W); }
     while (qh < qt) { const p = q[qh++], x = p % W; if (x > 0) push2(p - 1); if (x < W - 1) push2(p + 1); if (p >= W) push2(p - W); if (p < N - W) push2(p + W); }
@@ -62,6 +75,7 @@ if (transparent) {
     if (!edge) { alpha[p] = 1; continue; }
     const a = Math.max(0.2, Math.min(1, (dist(p * 4) - T * 0.5) / (T * 1.4))); alpha[p] = a;
     for (let k = 0; k < 3; k++) d[p * 4 + k] = Math.max(0, Math.min(255, (d[p * 4 + k] - (1 - a) * bg[k]) / a));
+  }
   }
 }
 

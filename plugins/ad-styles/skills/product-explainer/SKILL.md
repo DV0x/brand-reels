@@ -26,11 +26,11 @@ Below, `RUN <script> <args>` means that command.
 |---|---|
 | `site.mjs <url> --out <project>` | Products, prices, photo sizes, fonts, colours and some of the brand's own copy, into `site.json` |
 | `site.mjs <url> --product <handle\|n\|url> --out <project>/product/raw` | That product's photos at full size, its description, any reviews printed on the page |
-| `cutout.mjs <photo> --out <project>/product/main.png [--crop x0,y0,x1,y1]` | Cuts the product out of a plain background; saves a check image and a report |
+| `cutout.mjs <photo> --out <project>/product/main.png [--crop x0,y0,x1,y1] [--box]` | Cuts the product out of a plain background (`--box` for flat, boxy packs); saves a check image and a report |
 | `voice.mjs --voices "<words>"` | Lists Cartesia voices (e.g. "indian english", "hindi", "warm female") |
 | `voice.mjs <project> [--key-file <.env>]` | The voiceover and the film's clock (`vo/timing.json`), one word timestamp per word |
-| `render.mjs <project> frame <t> [<t>...]` | Single frames as PNG, to look at while building |
-| `render.mjs <project> sheet` | The contact sheet (one frame per shot with its voice and on-screen words) plus QA |
+| `render.mjs <project> frame <t> [<t>...] [--crop x,y,w,h]` | Single frames as PNG, to look at while building; `--crop` also saves a 100% crop |
+| `render.mjs <project> sheet` | The contact sheet (one finished frame per beat, with its voice and on-screen words) plus QA |
 | `render.mjs <project> video` | The MP4 with sound, plus `out/report.json` |
 
 Add `--estimate` to `render.mjs` to time the lines from the text before the voice exists. Add `--debug` to see the safe zone.
@@ -51,8 +51,8 @@ Read `references/research.md` first. In short:
 ## Step 3. Questions (one round)
 Use AskUserQuestion if it's available, otherwise a short numbered list. Ask:
 - **Which product** (if several fit), with your recommendation first.
-- **Which topic**, 2 or 3 options. Each one is the viewer's problem or habit, its hook line, and the brand fact that answers
-  it. Write them by `references/copy.md` and show only hooks that pass its tests. Recommend one.
+- **Which topic**, 2 or 3 options. Each one is the viewer's problem or habit, its hook (first frame, on-screen text, and
+  the voice's four beats), and the brand fact that answers it. Write them by `references/copy.md` and show only hooks that pass its tests. Recommend one.
 - **The contact sheet:** do they want to see one before the video renders? (Recommend yes for the first video.)
 - **The product photo:** use the one from the site (say its size), or will they send a current one on a plain background?
 Also invite, in one line: "What do customers ask you or complain about most?" Their DMs beat any review site.
@@ -60,7 +60,8 @@ If the topic they pick needs more customer language, do up to 5 more searches on
 
 ## Step 4. The script, as text (approval 1)
 Write it by `references/copy.md` and plan the film by `references/story.md`. Show the user:
-1. **The first 3 seconds:** what's on screen, the on-screen line, the voice.
+1. **The hook, 0 to about 9 s:** the first frame's action, the on-screen text, and the voice's four beats (subject, setup,
+   turn, rehook).
 2. **A table:** `# | voice | on screen | what happens` (what happens is the action, not a description of a poster).
 3. **Length** in words and seconds, and the claim sources.
 
@@ -75,16 +76,20 @@ Run the self-check in `copy.md` before showing it. Wait for an OK or edits. Don'
 3. **Voice:** pick a voice that fits the brand and audience (`voice.mjs --voices ...`), set `voice.id`, then
    `RUN voice.mjs <project>`. No key: ask once for a key or a `.env` path; if there's none, say the film will be text-led
    and render with `--estimate`.
-4. **Film:** write `film.mjs` with the kit (`references/film-api.md`), to the craft bar in `references/craft.md`. Build
-   shot by shot: render frames at key moments (`frame`) and look at them. Fix crowding, unreadable text, a product too
-   small or covered, anything static.
-5. **QA:** `RUN render.mjs <project> sheet`. Clear every warning it prints: event gaps, hard cuts, text outside the safe
-   zone, an upscaled product. Look at the sheet yourself before anyone else does.
+4. **Film:** read `references/craft.md` first, all of it. Choose the medium from the brand's world and write down how
+   it's physically made and where the light is. Write `film.mjs` with the kit (`references/film-api.md`): the world in
+   `draw`, made in the medium (`look`), and the product and words in `over`, crisp. The picture fills the whole frame.
+   **Build the hardest beat to final first** and check it on 100% crops (`frame <t> --crop`) against the bar in
+   `craft.md`. Then build the rest shot by shot, rendering frames at key moments and looking at them. Fix crowding,
+   unreadable text, a product too small or covered, anything static, anything that looks like clip-art.
+5. **QA:** `RUN render.mjs <project> sheet` (one finished frame per beat). Clear every warning it prints: event gaps,
+   hard cuts, text outside the safe zone, an upscaled product, a missing medium. Then go through the checklist at the
+   end of `craft.md` yourself. If any frame looks cheaper than the bar, fix it before anyone sees it.
 6. **Contact sheet (approval 2, if they asked):** show `out/sheet.jpg` and describe the film in two lines. Wait for an OK
-   or changes.
+   or changes. If the medium isn't obvious from the brand, show the hardest beat in two media first and let them pick.
 
 ## Step 6. Render and deliver
-`RUN render.mjs <project> video` (about 1-2 minutes for 40 s on a laptop). Read `out/report.json`. Look at 4 or 5 frames
+`RUN render.mjs <project> video` (about 5 to 8 minutes for 30 s on a laptop: the medium repaints every frame). Read `out/report.json`. Look at 4 or 5 frames
 from the MP4 (ffmpeg can pull them) and listen for problems the report can't catch. Then give the user:
 - the MP4 path, length and size
 - one line on what the film does
@@ -96,6 +101,8 @@ from the MP4 (ffmpeg can pull them) and listen for problems the report can't cat
   (`references/copy.md`).
 - **Not a slideshow:** one hero object, a world the camera travels through, 5 hard cuts or fewer, something new every 2 s
   (`references/story.md`).
+- **Never clip-art:** every film is made in a medium, built the way that medium is physically made (`references/craft.md`).
+  Any style can be used, and media can be mixed with a rule; flat fills with drop shadows can't.
 - **The product is the real photo,** cut out, never repainted, never generated, never redrawn. Its label stays readable
   and uncovered.
 - **Every claim comes from the brand's own pages** or a source you can name. No invented numbers, no health claims beyond
