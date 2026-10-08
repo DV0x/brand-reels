@@ -209,4 +209,7 @@ chat reads, in order: `BRIEF.md`, `TREATMENT.md`, the last round of `REVIEW.md`,
   (the note, your reading of it, what you changed).
 - A vague note gets your best reading, stated in one line when you show the result; ask only when two readings would
   lead to different films.
+- **Keep the delivered version** before the first new render: copy the MP4, its `.srt`, `cover.jpg` and
+  `report.json` with a `-v1` suffix (a render overwrites them).
+- When shots or staging change, update `TREATMENT.md` too: the next chat reads it first.
 - Run the whole review loop (section 11) again before the new delivery, and add the lessons to `LEARNINGS.md`.

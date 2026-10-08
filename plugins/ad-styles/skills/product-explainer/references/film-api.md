@@ -140,7 +140,7 @@ K.view(g, cam, t, 1, () => drawRoom(g, t));       // depth < 1 is far (moves les
 const s = K.toScreen(cam, t, [worldX, worldY]);   // where a world point is on screen, for labels and rings
 ```
 A key is `{ t, x, y, z, r, e }`: the world point at the frame's centre, the zoom, the roll in radians, and the ease into
-the key. Shakes are `{ at, amp, dur }` or `[at, amp, dur]` (both work, here and in `D.camera`). **A hard cut** to a
+the key (any name in `K.ease`, default `inOut`). Shakes are `{ at, amp, dur }` or `[at, amp, dur]` (both work, here and in `D.camera`). **A hard cut** to a
 new framing: give the new shot its own camera, so no frame interpolates between the two. Draw far layers bigger than the frame, so a move never shows an edge. Anything that follows a subject goes
 through `K.toScreen`, never hand-typed screen positions. A style kit may wrap the camera (`D.camera`, section 12).
 
@@ -168,12 +168,12 @@ placeholder bottle. `P.w`, `P.h`, `P.aspect` and `P.srcH` give the photo's size.
 | `K.mark(g, cx, cy, rx, ry, prog, { color, width = 8, seed, turns = 1.12, tilt, alpha })` | a hand-drawn ring around something |
 | `K.arrow(g, from, to, prog, { bend = 0.18, width = 7, color, head = 26, t, bob = 5 })` | a curved arrow that draws on; `from`, `to` are `[x, y]` |
 | `K.strike(g, x0, y0, x1, y1, prog, { color, width = 9, seed })` | a strike-through |
-| `K.tick(g, x, y, size, prog, { color, width = 10 })` | a check mark |
+| `K.tick(g, x, y, size, prog, { color, width = 10 })` | a check mark about `size` wide, centred near `x, y` |
 | `K.drawOn(g, pts, prog, { width = 6, color, cap, smooth = true, alpha, dash })` | any line through points, drawing on |
 | `K.shape(g, pts, color, { t, boil, seed, smooth, stroke, width = 3 })` | a filled shape from points; returns its path |
 | `K.contact(g, x, y, rx, ry, alpha = 0.32, color)` | a soft contact shadow where something meets a surface |
 | `K.wisps(g, x, y, t, { n, h, w, color, alpha, width, speed, strength, seed })` | steam or scent rising |
-| `K.sparkle(g, x, y, t, at, { size = 26, color })` | a twinkle |
+| `K.sparkle(g, x, y, t, at, { size = 26, color })` | a twinkle that grows and shrinks over 0.7 s from `at` |
 | `K.hand(g, { x, y, rot, scale, pose, part, flip, skin, sleeve, t, boil })` | a hand: x, y = the wrist; fingers point along `rot` (0 = up). `pose`: `point`, `open`, `hold`, `pinch`. `part`: `back` or `front`, drawn either side of a held product |
 | `K.wipe(g, prog, fn, { shape = 'circle', cx, cy, edge })` | reveals `fn()` through a growing shape: `circle`, `left`, `right`, `up`, `down` |
 | `K.cache(key, w, h, fn(g, canvas))` | draws something once and returns the canvas |
@@ -188,7 +188,7 @@ SVG filter or WebGL.
 | Call | What it does |
 |---|---|
 | `K.statement(g, t, id, { x, y, size, font, weight, italic, emph, maxW, lineH, align, color, shadow, all, until, lead })` | the line `id` as big type, word by word as it is spoken. Mark the line `"show": "statement"` |
-| `K.text(g, str, x, y, { font, weight, italic, size, emph, maxW, lineH, align, color, alpha, t, id, role })` | static text with `*emphasis*`, wrapped at `maxW`; returns its box |
+| `K.text(g, str, x, y, { font, weight, italic, size, emph, maxW, lineH, align, color, alpha, t, id, role })` | static text with `*emphasis*`, wrapped at `maxW`; `align`: `left` (default), `center`, `right`; returns its box |
 | `K.label(g, str, { x, y, t, at, until, to, bend, size, font, weight, pad, color, bg, border, radius, shadow, rot, lineW, lineColor, role })` | a label that pops in, with a line to the point `to` it names. `x`, `y` are the label's **centre**: for a left edge at `L`, measure the width (`g.measureText`) and use `x: L + width / 2 + pad` |
 | `K.stamp(g, str, x, y, t, at, { size, color, font, weight, border, from, rot, alpha, blend, until })` | a stamp that slams in |
 | `K.noteText(id, { text, role, size, box: [x0, y0, x1, y1], t, spoken })` | registers your own drawn text for the checks |
@@ -277,7 +277,7 @@ story: it draws nothing unless a scene calls it. Its look and numbers are in `st
 **Dots and fields**
 | Call | What it does |
 |---|---|
-| `D.halftone(g, { x, y, w, h, step = 22, angle = 15, field, k = 0.68, color, blend, alpha, cache })` | a dot field; `field(x, y)` → 0..1 sets the dot size; `cache: 'key'` draws it once |
+| `D.halftone(g, { x, y, w, h, step = 22, angle = 15, field, k = 0.68, color, blend, alpha, cache })` | a dot field; `field(x, y)` → 0..1 sets the dot size; `cache: 'key'` draws it once. The rotated grid spills past the box's edges: clip it (`g.clip()`) for a hard edge |
 | `D.radial(cx, cy, R, pw = 1.2, gain = 1)`, `D.edge(R = 1, pw = 1.6, gain = 1.3)`, `D.ramp(x0, y0, x1, y1, a = 0.25, b = 1)` | density fields: a halo, the frame's edges, a gradient |
 | `D.max(...fields)`, `D.scaled(field, k)` | combine fields |
 | `D.dotFill(g, path, { fill, dot, step, angle, field, k, blend, box })` | a flat fill with a darker halftone clipped to the shape |
@@ -294,7 +294,7 @@ story: it draws nothing unless a scene calls it. Its look and numbers are in `st
 | Call | What it draws |
 |---|---|
 | `D.headline(g, t, text, { x, y, top, size = 120, font, color, shadow, dx, dy, maxW, lineH, align, upper, at, stagger, d, from, line, lead, until, emph, id, role })` | big type, letter by letter with a misregistered shadow. With `line: 'l3'` it follows that line's spoken words; `until` pops it out. Returns its box. To have it fully printed on the cover (frame 0), set `at` earlier than −(letters × stagger + 0.4) s |
-| `D.text(g, str, x, y, { face, size, weight, align, baseline, color, alpha, shadow, dx, dy, stroke, strokeW, t, id, role })` | static type in a face: `head`, `display`, `sans`, `mono`, `hand` |
+| `D.text(g, str, x, y, { face, size, weight, align, baseline, color, alpha, shadow, dx, dy, stroke, strokeW, t, id, role })` | static type in a face: `head`, `display`, `sans`, `mono`, `hand`; `align` and `baseline` take the canvas values (`left`, `center`, `right`; `alphabetic`, `middle`, `top`) |
 | `D.numeral(g, str, { x, y, size = 820, fill, dot, angle, t, at, rot, alpha })` | a giant halftone-filled numeral that pops in |
 | `D.stamp(g, t, str, { x, y, size = 96, at, until, rot = -8, color, alpha, blend })` | a rough-ink stamp that slams at `at` |
 | `D.redact(g, t, [x, y, w, h], { at, lift, color })` | a black bar drawn on at `at`, lifted at `lift` |

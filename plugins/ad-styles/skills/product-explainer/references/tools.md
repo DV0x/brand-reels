@@ -115,8 +115,8 @@ exists, and `--debug` to draw the safe box and the caption lane.
 |---|---|
 | Size | a caption under 56 px, a headline under 72, a label or stamp under 40, a note under 36 (texture is exempt) |
 | Safe zone | a word outside the placement's safe box (craft.md, section 3) |
-| Reading time | a headline, label or note tied to a spoken line leaves before that line's end + 0.6 s (at least 1.8 s on screen); any other one leaves before letters ÷ 15 + 1.5 s (at most 4.5 s needed). Text still on screen at the film's end is exempt |
-| Touching | two different headlines, labels or notes overlap, or come within 6 px, on 3 or more sampled frames |
+| Reading time | a text tied to a spoken line (a statement, or a headline drawn with `line`) leaves before that line's end + 0.6 s (at least 1.8 s on screen); any other headline, label or note leaves before letters ÷ 15 + 1.5 s (at most 4.5 s needed). Text still on screen at the film's end is exempt |
+| Touching | two different headlines, labels or notes overlap, or come within 6 px, on 3 or more sampled frames (a label's pointer line is not checked: look at it on a strip) |
 | Contrast | under 4.5:1 for text under 72 px, under 3:1 for larger |
 | Still moments | two frames 0.3 s apart in the middle of a line or the end card are the same |
 | Product size | the photo drawn bigger than it was taken |
@@ -161,4 +161,8 @@ photo, a decision).
   the film.
 - **Time:** `check` takes one to a few minutes for a 30-second film; `video` a few minutes; `frame`, `strip` and `contact`
   seconds. Look at small images: a contact sheet is enough for a full pass; crop to 100% only where you need detail.
-- **Space:** `out/frames/` and `out/strips/` can be deleted once reviewed.
+- **Space:** `out/frames/` and `out/strips/` can be deleted once reviewed, with absolute paths:
+  `rm -r "<film>/out/frames" "<film>/out/strips"`.
+- **Words in the bands:** a picture may run into the top and bottom bands, and so may text that is part of it and
+  carries no meaning (the numbers of a ruler, marked `role: 'texture'`, which the safe-box check skips). Words that
+  carry the fact stay inside the safe box.
