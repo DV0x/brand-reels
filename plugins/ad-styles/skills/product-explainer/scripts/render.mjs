@@ -4,7 +4,12 @@
 //                                                         (--crop also saves that part at 100%, for close-up QA)
 //   render.mjs <project> sheet [--debug]                 the contact sheet: one finished frame per beat (per voice line),
 //                                                         with its voice and on-screen words
-//   render.mjs <project> video [--fps 30] [--from a --to b] [--workers n]   the MP4 with sound, plus out/report.json
+//   render.mjs <project> video [--fps 30] [--from a --to b] [--workers n]   the MP4 with sound, subtitles (.srt), a cover
+//                                                         frame and out/report.json (loudness, frozen frames, decode)
+//   render.mjs <project> contact [--every 1]             the whole film, one frame every N seconds (out/contact.jpg)
+//   render.mjs <project> strip <from> <to> [--step 0.2]  one key action, a frame every step (out/strips/)
+//   render.mjs <project> check                           the machine checks: text size, safe zone, reading time,
+//                                                         contrast, still moments, hits on the beat; out/check.json
 //   add --estimate to any mode to time the lines from the text when there is no voice yet
 // Run it through the plugin's launcher: bash <plugin>/runtime/run.sh render.mjs <project> <mode> ...
 import fs from 'node:fs';
@@ -14,7 +19,8 @@ import { spawn } from 'node:child_process';
 import { once } from 'node:events';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads';
-import { createCanvas, registerFonts, FFMPEG } from './lib/canvas.mjs';
+import { spawnSync } from 'node:child_process';
+import { createCanvas, registerFonts, FFMPEG, SKILL } from './lib/canvas.mjs';
 import { makeKit, W, H, plain } from './lib/kit.mjs';
 import { buildAudio } from './lib/audio.mjs';
 import { MEDIA } from './lib/media.mjs';
@@ -38,64 +44,85 @@ function loadTiming(project, script, estimate) {
   return { duration: +(last.end + (script.tail ?? 2.6)).toFixed(3), lines, estimated: true };
 }
 
+const STYLES = path.join(SKILL, 'styles');
+const styleList = () => (fs.existsSync(STYLES) ? fs.readdirSync(STYLES).filter(d => fs.existsSync(path.join(STYLES, d, 'STYLE.md'))) : []);
+
 async function setup(project, { estimate = false } = {}) {
   const script = readJSON(path.join(project, 'script.json'));
   const timing = loadTiming(project, script, estimate);
+  // the style: its fonts, and its engine if it has one (styles/<style>/engine.mjs), handed to the film as K.style
+  const style = script.style || null;
+  if (style && !styleList().includes(style)) throw new Error(`script.json "style": "${style}" is not a style. Styles: ${styleList().join(', ')}`);
+  if (style) registerFonts(path.join(STYLES, style, 'fonts'));
   registerFonts(path.join(project, 'fonts'));
   const K = await makeKit({ project, script, timing }), S0 = {};
+  K.styleName = style;
+  const engineFile = style && path.join(STYLES, style, 'engine.mjs');
+  if (engineFile && fs.existsSync(engineFile)) K.style = (await import(pathToFileURL(engineFile).href)).default(K);
   const filmFile = path.join(project, 'film.mjs');
-  if (!fs.existsSync(filmFile)) throw new Error(`no ${filmFile}. Copy templates/film.mjs from the skill and write the film.`);
+  if (!fs.existsSync(filmFile)) throw new Error(`no ${filmFile}. Copy templates/film.mjs into the project as film.mjs and write the film from your treatment.`);
   const mod = await import(pathToFileURL(filmFile).href + '?v=' + Date.now());
   const F = mod.default(K);
   if (!F || typeof F.draw !== 'function') throw new Error('film.mjs must `export default function film(K)` that returns { draw(g, t), ... }');
   K._setMotion(F.motion || 'warm'); K._setCaptions(F.captions || {});
   K._setMedia({ ...MEDIA, ...(F.media?.custom || {}) });
   S0.media = { ...MEDIA, ...(F.media?.custom || {}) };
-  const lookAt = t => (typeof F.look === 'function' ? F.look(t) : F.look);
-  for (const t of [0, timing.duration / 2, timing.duration - 0.1]) { const l = lookAt(t); if (!S0.media[l] && l !== 'none') throw new Error(`look "${l}" at ${t.toFixed(1)} s: a film is made in a medium, one of ${Object.keys(S0.media).join(', ')} or one in media.custom (references/craft.md). "none" is for debugging only.`); }
+  // A film is made in a medium: a style draws in it directly ('direct'), or a pass remakes the world (painted, ...).
+  const direct = !!(style || F.finish);
+  const lookAt = t => { const l = typeof F.look === 'function' ? F.look(t) : F.look; return l ?? (direct ? 'direct' : undefined); };
+  for (const t of [0, timing.duration / 2, timing.duration - 0.1]) { const l = lookAt(t); if (!S0.media[l] && l !== 'none' && l !== 'direct') throw new Error(`look "${l}" at ${t.toFixed(1)} s: choose a style in script.json ("style": one of ${styleList().join(', ')}), or a pass: ${Object.keys(S0.media).join(', ')} or one in media.custom (references/craft.md). "none" is for debugging only.`); }
   const canvas = createCanvas(W, H), g = canvas.getContext('2d'), ref = createCanvas(W, H);
-  return { project, script, timing, K, F, canvas, g, ref, rg: ref.getContext('2d'), media: S0.media, lookAt };
+  return { project, script, timing, K, F, canvas, g, ref, rg: ref.getContext('2d'), media: S0.media, lookAt, style };
 }
 
-// A frame is made in three layers: the world, drawn plainly and then remade by the medium; the crisp layer (the
-// product photo, the words, marks and anything in front of the product), which the medium never touches; the captions.
+// A frame is made in layers:
+//   1. draw: the world, drawn in the style (or drawn plainly for a pass to remake);
+//   2. printed captions (captions.layer 'print'): part of the world, under the finish;
+//   3. the medium: a pass that remakes the world (look: painted, silkscreen, custom), and/or the style's finish (paper);
+//   4. over: the crisp layer, the product photo and anything in front of it, which the medium never touches;
+//   5. captions (the default layer), then top: transitions and flashes over everything.
 const reset = g => { g.setTransform(1, 0, 0, 1, 0, 0); g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; g.filter = 'none'; };
+const guard = (name, t, fn) => { try { fn(); } catch (e) { e.message = `film.${name} failed at t=${t.toFixed(3)} s: ${e.message}`; throw e; } };
 function drawFrame(S, t, debug = false) {
-  const { g, F, K } = S, look = S.lookAt(t), medium = S.media[look], wg = medium ? S.rg : g;
+  const { g, F, K } = S, look = S.lookAt(t), medium = S.media[look], wg = medium ? S.rg : g, printed = K._captionLayer === 'print';
   wg.save(); reset(wg); wg.fillStyle = F.background || '#F3EBDD'; wg.fillRect(0, 0, W, H); wg.restore();
-  wg.save();
-  try { F.draw(wg, t); } catch (e) { e.message = `film.draw failed at t=${t.toFixed(3)} s: ${e.message}`; throw e; }
-  wg.restore();
+  wg.save(); guard('draw', t, () => F.draw(wg, t)); wg.restore();
+  if (printed) { wg.save(); reset(wg); K._captions(wg, t); wg.restore(); }
   if (medium) { g.save(); reset(g); medium(g, S.ref, t, F.media || {}); g.restore(); }
-  if (F.over) { g.save(); try { F.over(g, t); } catch (e) { e.message = `film.over failed at t=${t.toFixed(3)} s: ${e.message}`; throw e; } g.restore(); }
-  g.save(); K._captions(g, t); g.restore();
+  if (F.finish) { g.save(); reset(g); guard('finish', t, () => F.finish(g, t)); g.restore(); }
+  if (F.over) { g.save(); guard('over', t, () => F.over(g, t)); g.restore(); }
+  if (!printed) { g.save(); K._captions(g, t); g.restore(); }
+  if (F.top) { g.save(); guard('top', t, () => F.top(g, t)); g.restore(); }
   if (debug) K._debug(g);
 }
 
 // ---------------------------------------------------------------- QA from the film's own declarations
 function qaOf(S) {
   const { F, K, timing } = S, T = K.T, cues = (F.cues || []).filter(c => c && Number.isFinite(c.t)).sort((a, b) => a.t - b.t);
-  const shots = F.shots || [], cuts = shots.filter((s, i) => i > 0 && s.cut !== false).length;
+  // a hard cut is a shot that starts with cut: true; transitions made by the medium (cut: 'wipe') are not hard cuts
+  const shots = F.shots || [], cuts = shots.filter((s, i) => i > 0 && (s.cut === true || s.cut === undefined)).length, wipes = shots.filter(s => typeof s.cut === 'string').length;
   const events = [...cues.map(c => c.t), ...shots.map(s => s.from), ...K._events].sort((a, b) => a - b), gaps = [];
   const a0 = timing.lines[0]?.start ?? 0, a1 = T.endCard;
-  let prev = a0; for (const e of [...events.filter(e => e > a0 && e < a1), a1]) { if (e - prev > 2.2) gaps.push([+prev.toFixed(2), +e.toFixed(2)]); prev = Math.max(prev, e); }
+  let prev = a0; for (const e of [...events.filter(e => e > a0 && e < a1), a1]) { if (e - prev > 4) gaps.push([+prev.toFixed(2), +e.toFixed(2)]); prev = Math.max(prev, e); }
   const statements = S.script.lines.filter(l => l.show === 'statement').length;
   const warnings = [];
-  if (cuts > 5) warnings.push(`${cuts} hard cuts: keep it to 5 or fewer and travel the camera between ideas instead`);
-  if (gaps.length) warnings.push(`nothing new happens for more than 2.2 s in: ${gaps.map(g => `${g[0]}-${g[1]} s`).join(', ')} (add an action there)`);
+  if (cuts > 5) warnings.push(`${cuts} hard cuts: keep it to 5 or fewer; travel the camera, or use the style's own transition`);
+  if (gaps.length) warnings.push(`nothing new happens for more than 4 s in: ${gaps.map(g => `${g[0]}-${g[1]} s`).join(', ')} (a breath is fine; a dead stretch is not)`);
   if (statements > 5) warnings.push(`${statements} statements: use 3 to 5`);
   if (timing.estimated) warnings.push('timing is estimated from the text: make the voice before the final render');
-  if ([0, timing.duration / 2].some(t => !S.media[S.lookAt(t)])) warnings.push('look "none": a flat debug render, never for delivery (references/craft.md)');
-  return { duration: timing.duration, shots: shots.length, hardCuts: cuts, cues: cues.length, statements, eventGaps: gaps, warnings };
+  if ([0, timing.duration / 2].some(t => S.lookAt(t) === 'none' || (!S.media[S.lookAt(t)] && S.lookAt(t) !== 'direct'))) warnings.push('look "none": a flat debug render, never for delivery (references/craft.md)');
+  return { duration: timing.duration, style: S.style || null, shots: shots.length, hardCuts: cuts, styleTransitions: wipes, cues: cues.length, statements, eventGaps: gaps, warnings };
 }
 
-// a quick pass over the whole film at quarter size: it finds every animation start and any text outside the safe zone
+// a pass over the whole film (no medium, no finish): it finds every animation start and records every text on screen
+// with its size, box and the times it shows (for the safe zone, size and reading-time checks)
 function probe(S, fps = 8) {
-  const c = createCanvas(W / 4, H / 4), g = c.getContext('2d');
+  const g = S.canvas.getContext('2d');
   for (let t = 0; t < S.timing.duration; t += 1 / fps) {
-    g.save(); g.scale(0.25, 0.25);
-    try { S.F.draw(g, t); if (S.F.over) S.F.over(g, t); } catch (e) { e.message = `film.draw failed at t=${t.toFixed(3)} s: ${e.message}`; throw e; }
-    g.restore();
+    g.save(); reset(g); g.clearRect(0, 0, W, H);
+    guard('draw', t, () => S.F.draw(g, t)); g.restore();
+    g.save(); reset(g); S.K._captions(g, t); g.restore();
+    if (S.F.over) { g.save(); reset(g); guard('over', t, () => S.F.over(g, t)); g.restore(); }
   }
 }
 
@@ -119,7 +146,7 @@ async function sheet(S, debug) {
   const q = qaOf(S);
   g.fillStyle = '#F3EAD6'; g.font = '700 44px "Jost"'; g.fillText(`${script.brand || ''} ${script.product ? '· ' + script.product : ''}: contact sheet`, M, 70);
   g.fillStyle = '#A79F8E'; g.font = '500 25px "Jost"';
-  g.fillText(`${q.duration.toFixed(1)} s · ${n} beats · ${q.shots} shots · ${q.hardCuts} hard cuts · ${q.statements} statements · medium ${typeof F.look === 'function' ? 'mixed' : F.look} · motion ${F.motion || 'warm'} · music ${F.music || 'warm'}${timing.estimated ? ' · TIMING ESTIMATED (no voice yet)' : ''}`, M, 112);
+  g.fillText(`${q.duration.toFixed(1)} s · ${n} beats · ${q.shots} shots · ${q.hardCuts} hard cuts · ${q.statements} statements · ${S.style ? 'style ' + S.style : 'medium ' + (typeof F.look === 'function' ? 'mixed' : F.look)} · motion ${F.motion || 'warm'} · music ${typeof F.music === 'object' ? (typeof F.music.score === 'function' ? 'own score' : F.music.preset) : F.music || 'warm'}${timing.estimated ? ' · TIMING ESTIMATED (no voice yet)' : ''}`, M, 112);
   if (q.warnings.length) { g.fillStyle = '#E8A33D'; g.font = '500 23px "Jost"'; g.fillText('Check: ' + q.warnings.join(' | ').slice(0, 190), M, 148); }
   for (let i = 0; i < n; i++) {
     const s = shots[i], c = i % cols, r = Math.floor(i / cols), x = M + c * (tw + G), y = head + r * (th + capH + G);
@@ -141,26 +168,161 @@ async function sheet(S, debug) {
   return { file, frames: fdir, qa: q, qaText: S.K.qa };
 }
 
+// ---------------------------------------------------------------- the review sheets: the whole film, and key actions
+// contact: one frame every `every` seconds, six to a row, each with its time (DIRECTOR's review loop, twice per film)
+async function contact(S, { every = 1, debug = false } = {}) {
+  const { timing, project, script } = S, outDir = path.join(project, 'out');
+  const times = []; for (let t = Math.min(0.5, every / 2); t < timing.duration - 0.01; t += every) times.push(+t.toFixed(2));
+  return tile(S, times, path.join(outDir, 'contact.jpg'), `${script.brand || ''} ${script.product ? '· ' + script.product : ''}: every ${every} s`, debug);
+}
+// strip: one key action at a fine step (anticipation, action, follow-through), to check it frame by frame
+async function strip(S, from, to, { step = 0.2, debug = false } = {}) {
+  const times = []; for (let t = from; t <= to + 1e-6; t += step) times.push(+t.toFixed(3));
+  const dir = path.join(S.project, 'out', 'strips'); fs.mkdirSync(dir, { recursive: true });
+  return tile(S, times, path.join(dir, `strip-${from.toFixed(2)}-${to.toFixed(2)}.jpg`), `${from.toFixed(2)} to ${to.toFixed(2)} s, every ${step} s`, debug, Math.min(8, times.length));
+}
+function tile(S, times, file, title, debug, cols = 6) {
+  const n = times.length, rows = Math.ceil(n / cols), tw = 270, th = 480, M = 30, G = 14, lab = 34, head = 70;
+  const sc = createCanvas(M * 2 + cols * tw + (cols - 1) * G, head + rows * (th + lab + G) + M), g = sc.getContext('2d');
+  g.fillStyle = '#17161a'; g.fillRect(0, 0, sc.width, sc.height);
+  g.fillStyle = '#F3EAD6'; g.font = '700 30px "Jost"'; g.fillText(title, M, 46);
+  times.forEach((t, i) => {
+    const x = M + (i % cols) * (tw + G), y = head + Math.floor(i / cols) * (th + lab + G);
+    drawFrame(S, t, debug); g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high'; g.drawImage(S.canvas, x, y, tw, th);
+    g.fillStyle = '#A79F8E'; g.font = '500 20px "Jost"'; g.fillText(`${t.toFixed(2)} s`, x, y + th + 24);
+  });
+  fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file, sc.toBuffer('image/jpeg', 86));
+  return { file, frames: n };
+}
+
+// ---------------------------------------------------------------- the machine checks (references/directing.md, "Checks")
+// Minimum text sizes on a 1080 x 1920 frame, by role. Texture (case numbers, rulers) has no minimum.
+const MIN_SIZE = { caption: 56, headline: 72, label: 40, stamp: 40, note: 36 };
+const lum = (r, g, b) => { const f = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
+// contrast inside a text box: the ratio between its light and dark extremes (4th and 96th percentile of luminance)
+function boxContrast(g, [x0, y0, x1, y1]) {
+  const x = Math.max(0, Math.floor(x0)), y = Math.max(0, Math.floor(y0)), w = Math.min(W, Math.ceil(x1)) - x, h = Math.min(H, Math.ceil(y1)) - y;
+  if (w < 4 || h < 4) return null;
+  const d = g.getImageData(x, y, w, h).data, L = [];
+  for (let i = 0; i < d.length; i += 4 * 3) L.push(lum(d[i], d[i + 1], d[i + 2]));
+  L.sort((a, b) => a - b);
+  const lo = L[Math.floor(L.length * 0.04)], hi = L[Math.floor(L.length * 0.96)];
+  return +((hi + 0.05) / (lo + 0.05)).toFixed(2);
+}
+// how different two frames are, on 8 x 8 block means (so dust and grain don't count as motion)
+function blockMeans(g) {
+  const d = g.getImageData(0, 0, W, H).data, bw = W / 8, bh = H / 8, out = new Float32Array(bw * bh);
+  for (let by = 0; by < bh; by++) for (let bx = 0; bx < bw; bx++) { let s = 0; for (let y = 0; y < 8; y += 2) for (let x = 0; x < 8; x += 2) { const i = ((by * 8 + y) * W + bx * 8 + x) * 4; s += d[i] + d[i + 1] + d[i + 2]; } out[by * bw + bx] = s / (16 * 3 * 255); }
+  return out;
+}
+async function check(S) {
+  const { K, F, timing, project } = S, out = path.join(project, 'out'); fs.mkdirSync(out, { recursive: true });
+  probe(S, 6);
+  const q = qaOf(S), texts = [...K._texts.values()], issues = [];
+  // 1. size, 2. safe zone (from the kit's checks), 3. reading time
+  for (const it of texts) {
+    const min = MIN_SIZE[it.role]; if (min && it.size && it.size < min - 0.5) issues.push({ check: 'size', t: it.first, text: it.text, msg: `${it.role} at ${Math.round(it.size)} px: at least ${min} px` });
+    const shown = it.last - it.first + 0.1, letters = it.text.replace(/\s/g, '').length;
+    if (it.role === 'headline' || it.role === 'label' || it.role === 'note') {
+      // words that appear as they are spoken are read with the voice: they hold their line + 0.6 s (at least 1.8 s)
+      const need = it.spoken != null ? Math.max(1.8, it.spoken + 0.6) : Math.min(4.5, letters / 15 + 1.5);
+      if (shown < need - 0.05 && it.last < timing.duration - 0.2) issues.push({ check: 'reading time', t: it.first, text: it.text, msg: `on screen ${shown.toFixed(1)} s, needs about ${need.toFixed(1)} s (${it.spoken != null ? 'its spoken line + 0.6' : 'letters / 15 + 1.5'})` });
+    }
+  }
+  for (const x of K.qa.text) issues.push({ check: 'safe zone', t: x.t, text: x.what, msg: `outside the safe box: ${x.box.join(', ')}` });
+  for (const x of K.qa.upscale) issues.push({ check: 'product size', t: x.t, text: x.product, msg: `drawn at ${x.drawnPx} px from a ${x.photoPx} px photo (${x.x}x): it goes soft` });
+  // 4. contrast: one finished frame per text, in the middle of its time on screen
+  const byTime = new Map();
+  // grouped into half-second bins, each measured at two moments 0.3 s apart (the better one counts, so a flash or a
+  // wipe passing over the text doesn't fail it)
+  for (const it of texts) { if (it.role === 'texture' || !it.boxes.length) continue; const tm = (it.first + it.last) / 2, b = it.boxes.reduce((a, c) => (Math.abs(c.t - tm) < Math.abs(a.t - tm) ? c : a)); const key = Math.round(b.t * 2) / 2; if (!byTime.has(key)) byTime.set(key, []); byTime.get(key).push({ it, box: b.box }); }
+  const times = [...byTime.keys()].sort((a, b) => a - b).slice(0, 40), contrast = [];
+  for (const tm of times) {
+    const best = new Map();
+    for (const dt of [-0.15, 0.15]) {
+      const tt = Math.min(timing.duration - 0.05, Math.max(0, tm + dt)); drawFrame(S, tt);
+      for (const { it, box } of byTime.get(tm)) { const c = boxContrast(S.g, box); if (c != null && c > (best.get(it) ?? 0)) best.set(it, c); }
+    }
+    for (const [it, c] of best) {
+      const need = it.size >= 72 ? 3 : 4.5;
+      contrast.push({ text: it.text.slice(0, 40), t: tm, ratio: c });
+      if (c < need) issues.push({ check: 'contrast', t: tm, text: it.text, msg: `contrast ${c}:1, needs ${need}:1` });
+    }
+  }
+  // 5. still moments: two frames 0.3 s apart in the middle of every line and of the end card must differ
+  const probes = [...timing.lines.map(l => (l.start + l.end) / 2 - 0.15), K.T.endCard + Math.max(0.2, (timing.duration - K.T.endCard) / 2 - 0.15)].filter(t => t + 0.3 < timing.duration), still = [];
+  for (const t of probes) {
+    drawFrame(S, t); const a = blockMeans(S.g); drawFrame(S, t + 0.3); const b = blockMeans(S.g);
+    let d = 0; for (let i = 0; i < a.length; i++) d += Math.abs(a[i] - b[i]); d /= a.length;
+    still.push({ t: +t.toFixed(2), diff: +d.toFixed(4) });
+    if (d < 0.0015) issues.push({ check: 'still', t: +t.toFixed(2), text: '', msg: `nothing moves between ${t.toFixed(2)} and ${(t + 0.3).toFixed(2)} s (mean change ${d.toFixed(4)})` });
+  }
+  // 6. hits on the beat: every hit the film declares lands on the music grid (a 16th note), within half a frame
+  const hits = [], bpm = F.music?.bpm, off = F.music?.offset ?? 0;
+  if (Array.isArray(F.hits) && bpm) {
+    const sixteenth = 60 / bpm / 4;
+    const seen = new Set();
+    for (const h of F.hits) {
+      const t = typeof h === 'number' ? h : h.t, name = typeof h === 'number' ? '' : h.name || '';
+      const key = `${(+t).toFixed(3)}|${name}`; if (!Number.isFinite(+t) || seen.has(key)) continue; seen.add(key);
+      const grid = h.grid ?? off, d = Math.abs(t - (grid + Math.round((t - grid) / sixteenth) * sixteenth));
+      hits.push({ t: +t.toFixed(3), name, offBy: +(d * 1000).toFixed(0) });
+      if (d > 0.017) issues.push({ check: 'beat', t, text: name, msg: `${(d * 1000).toFixed(0)} ms off the music grid (${bpm} BPM from ${grid} s)` });
+    }
+  }
+  const report = { ok: !issues.length, ...q, texts: texts.length, issues, contrast, still, hits };
+  fs.writeFileSync(path.join(out, 'check.json'), JSON.stringify(report, null, 1));
+  return report;
+}
+
+// subtitles: the captions' phrases and the statements, timed to the voice
+function srt(S) {
+  const { K, script } = S, items = [];
+  for (const c of K._captionList) items.push({ a: c.a, b: c.b, text: c.toks.map(k => k.w).join(' ') });
+  for (const L of script.lines) if (L.show === 'statement') { const tl = K.T.line(L.id); items.push({ a: tl.start, b: tl.end + 0.4, text: K.plain(L.text) }); }
+  items.sort((x, y) => x.a - y.a);
+  const ts = s => { const ms = Math.max(0, Math.round(s * 1000)), h = Math.floor(ms / 3600000), m = Math.floor(ms / 60000) % 60, sec = Math.floor(ms / 1000) % 60; return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')},${String(ms % 1000).padStart(3, '0')}`; };
+  return items.map((x, i) => `${i + 1}\n${ts(x.a)} --> ${ts(x.b)}\n${x.text}\n`).join('\n');
+}
+// after the encode: decode the whole file, count frozen stretches, measure loudness
+function afterEncode(file) {
+  const r = { decodeErrors: null, frozen: null, lufs: null, truePeak: null };
+  const dec = spawnSync(FFMPEG, ['-v', 'error', '-i', file, '-f', 'null', '-'], { encoding: 'utf8' });
+  r.decodeErrors = (dec.stderr || '').trim() ? (dec.stderr || '').trim().split('\n').length : 0;
+  const fz = spawnSync(FFMPEG, ['-hide_banner', '-nostats', '-i', file, '-vf', 'freezedetect=n=-60dB:d=0.4', '-map', '0:v', '-f', 'null', '-'], { encoding: 'utf8' });
+  r.frozen = ((fz.stderr || '').match(/freeze_start/g) || []).length;
+  const ld = spawnSync(FFMPEG, ['-hide_banner', '-nostats', '-i', file, '-af', 'loudnorm=I=-14:TP=-1.5:LRA=9:print_format=json', '-f', 'null', '-'], { encoding: 'utf8' });
+  const js = (ld.stderr || '').match(/\{[\s\S]*?\}/g)?.pop(); if (js) { const v = JSON.parse(js); r.lufs = +(+v.input_i).toFixed(1); r.truePeak = +(+v.input_tp).toFixed(1); }
+  return r;
+}
+
 // ---------------------------------------------------------------- video: frames on worker threads, in order into ffmpeg
+// free disk in GB where the film is written. On macOS the system's swap files share the disk, so a render that runs the
+// machine out of memory also eats disk; the render stops before the disk fills.
+const freeGB = dir => { try { const st = fs.statfsSync(dir); return (st.bavail * st.bsize) / 2 ** 30; } catch { return Infinity; } };
+const MIN_FREE_GB = 1.5, STOP_FREE_GB = 1.0;
 async function video(S, { fps = 30, from = 0, to = null, workers = 0, debug = false, project, estimate }) {
   const outDir = path.join(project, 'out'); fs.mkdirSync(outDir, { recursive: true });
+  if (freeGB(outDir) < MIN_FREE_GB) throw new Error(`only ${freeGB(outDir).toFixed(1)} GB free on the disk: free at least ${MIN_FREE_GB} GB before rendering (on macOS, closing apps also gives back the memory the system borrowed from the disk)`);
   const { F, K, timing, script } = S, dur = timing.duration, t1 = Math.min(dur, to ?? dur), N = Math.max(1, Math.round((t1 - from) * fps));
   // sound first: it is fast, and a bad cue should fail before the long part
   const voice = path.join(project, 'vo', 'voice.wav');
-  const audio = buildAudio({ dir: path.join(outDir, 'audio'), duration: dur, voiceWav: timing.estimated ? null : voice, cues: F.cues || [], music: F.music || 'warm', endAt: F.musicEnd ?? K.T.endCard });
+  const audio = buildAudio({ dir: path.join(outDir, 'audio'), duration: dur, voiceWav: timing.estimated ? null : voice, cues: F.cues || [], music: F.music || 'warm', endAt: F.musicEnd ?? (typeof F.music === 'object' ? F.music.end : null) ?? K.T.endCard });
   const name = (script.slug || [script.brand, script.product].filter(Boolean).join('-') || 'explainer').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
   const file = path.join(outDir, `${name}${from > 0 || to != null ? `-${from}-${t1}` : ''}.mp4`);
   const ff = spawn(FFMPEG, ['-hide_banner', '-loglevel', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'rgba', '-s', `${W}x${H}`, '-r', String(fps), '-i', '-',
     '-ss', String(from), '-t', String(t1 - from), '-i', audio.mix, '-map', '0:v', '-map', '1:a', '-c:v', 'libx264', '-preset', 'medium', '-crf', '18', '-pix_fmt', 'yuv420p',
     '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', file], { stdio: ['pipe', 'ignore', 'pipe'] });
   let ffErr = ''; ff.stderr.on('data', d => { ffErr += d; }); const ffDone = once(ff, 'close');
-  const nW = Math.max(1, workers || Math.min(6, os.cpus().length - 1)), t0 = performance.now();
+  // one worker per ~8 GB of memory (each holds a full-size canvas and the film), at most 6
+  const memGB = os.totalmem() / 2 ** 30, nW = Math.max(1, workers || Math.min(6, os.cpus().length - 1, memGB <= 8.5 ? 1 : memGB <= 16.5 ? 2 : 6)), t0 = performance.now();
+  const diskOk = f => { if (f % 60 === 0 && freeGB(outDir) < STOP_FREE_GB) throw new Error(`stopped at frame ${f}: free disk fell under ${STOP_FREE_GB} GB (the system is swapping). Close apps, then render again with --workers 1.`); };
   const qaAll = { text: [...K.qa.text], upscale: [...K.qa.upscale] };
   const merge = (qa2, evs = []) => { for (const k of ['text', 'upscale']) for (const it of qa2[k] || []) if (!qaAll[k].some(x => x.key === it.key)) qaAll[k].push(it); for (const e of evs) K._events.add(e); };
   const write = async buf => { if (!ff.stdin.write(buf)) await once(ff.stdin, 'drain'); };
   if (nW === 1) {
     for (let f = 0; f < N; f++) {
-      drawFrame(S, from + f / fps, debug); const d = S.g.getImageData(0, 0, W, H).data;
+      diskOk(f); drawFrame(S, from + f / fps, debug); const d = S.g.getImageData(0, 0, W, H).data;
       await write(Buffer.from(d.buffer, d.byteOffset, d.byteLength));
       if (f % 15 === 0) process.stdout.write(`\rframe ${f + 1}/${N}`);
     }
@@ -171,7 +333,7 @@ async function video(S, { fps = 30, from = 0, to = null, workers = 0, debug = fa
       const fail = e => { pool.forEach(w => w.terminate()); reject(e); };
       const pump = async () => {
         if (writing) return; writing = true;
-        while (done.has(written)) { const b = done.get(written); done.delete(written); await write(b); written++; if (written % 15 === 0) process.stdout.write(`\rframe ${written}/${N}`); }
+        while (done.has(written)) { const b = done.get(written); done.delete(written); await write(b); written++; if (written % 15 === 0) process.stdout.write(`\rframe ${written}/${N}`); diskOk(written); }
         writing = false;
         if (written === N) pool.forEach(w => w.postMessage({ type: 'exit' }));   // each worker answers with its QA, then we're done
         else pool.forEach(w => give(w));
@@ -194,10 +356,18 @@ async function video(S, { fps = 30, from = 0, to = null, workers = 0, debug = fa
   ff.stdin.end(); const [code] = await ffDone;
   if (code !== 0) throw new Error('ffmpeg failed: ' + ffErr.trim().split('\n').slice(-3).join(' | '));
   const ms = Math.round((performance.now() - t0) / N), q = qaOf(S);
+  // the deliverables next to the MP4: subtitles and a cover (frame 0 is the cover in the feed)
+  const base = file.replace(/\.mp4$/, '');
+  fs.writeFileSync(base + '.srt', srt(S));
+  if (from === 0) { drawFrame(S, 0); fs.writeFileSync(path.join(outDir, 'cover.jpg'), S.canvas.toBuffer('image/jpeg', 92)); }
+  const after = afterEncode(file);
   const report = {
-    file, duration: +(t1 - from).toFixed(2), fps, frames: N, workers: nW, msPerFrame: ms, renderSeconds: +((performance.now() - t0) / 1000).toFixed(1),
-    ...q, textOutsideSafeZone: qaAll.text, productUpscaled: qaAll.upscale, audioWarnings: audio.warnings,
+    file, srt: base + '.srt', duration: +(t1 - from).toFixed(2), fps, frames: N, workers: nW, msPerFrame: ms, renderSeconds: +((performance.now() - t0) / 1000).toFixed(1),
+    ...q, ...after, textOutsideSafeZone: qaAll.text, productUpscaled: qaAll.upscale, audioWarnings: audio.warnings, audioLevels: audio.levels,
   };
+  if (after.decodeErrors) report.warnings.push(`${after.decodeErrors} decode errors in the file`);
+  if (after.frozen) report.warnings.push(`${after.frozen} frozen stretches of 0.4 s or more`);
+  if (after.lufs != null && Math.abs(after.lufs + 14) > 1) report.warnings.push(`loudness ${after.lufs} LUFS, target -14`);
   fs.writeFileSync(path.join(outDir, 'report.json'), JSON.stringify(report, null, 2));
   return report;
 }
@@ -219,11 +389,11 @@ if (!isMainThread) {
 
 // ---------------------------------------------------------------- CLI
 else {
-  const argv = process.argv.slice(2), VAL = new Set(['fps', 'from', 'to', 'workers', 'crop']), pos = [], opts = {};
+  const argv = process.argv.slice(2), VAL = new Set(['fps', 'from', 'to', 'workers', 'crop', 'every', 'step']), pos = [], opts = {};
   for (let i = 0; i < argv.length; i++) { const a = argv[i]; if (a.startsWith('--')) { const k = a.slice(2); opts[k] = VAL.has(k) ? argv[++i] : true; } else pos.push(a); }
   const flag = k => opts[k] === true, opt = (k, d) => (opts[k] != null ? opts[k] : d);
   const [proj, mode = 'sheet', ...rest] = pos;
-  if (!proj) { console.log('usage: render.mjs <project> frame <t...> | sheet | video [--fps 30] [--from a --to b] [--workers n] [--debug] [--estimate]'); process.exit(1); }
+  if (!proj) { console.log('usage: render.mjs <project> frame <t...> | sheet | contact [--every 1] | strip <from> <to> [--step 0.2] | check | video [--fps 30] [--from a --to b] [--workers n] [--debug] [--estimate]'); process.exit(1); }
   const project = path.resolve(proj), estimate = flag('estimate'), debug = flag('debug');
   try {
     const S = await setup(project, { estimate });
@@ -242,10 +412,21 @@ else {
       const r = await sheet(S, debug);
       console.log('sheet  ' + r.file + '\nframes ' + r.frames);
       console.log(JSON.stringify({ ...r.qa, textOutsideSafeZone: r.qaText.text, productUpscaled: r.qaText.upscale }, null, 1));
+    } else if (mode === 'contact') {
+      const r = await contact(S, { every: +opt('every', 1), debug }); console.log(`contact  ${r.file}  (${r.frames} frames)`);
+    } else if (mode === 'strip') {
+      const [a, b] = rest.map(Number); if (!Number.isFinite(a) || !Number.isFinite(b)) throw new Error('give the action\'s start and end in seconds, e.g. strip 11.0 12.2');
+      const r = await strip(S, a, b, { step: +opt('step', 0.2), debug }); console.log(`strip  ${r.file}  (${r.frames} frames)`);
     } else if (mode === 'video') {
       const r = await video(S, { fps: +opt('fps', 30), from: +opt('from', 0), to: opt('to') != null ? +opt('to') : null, workers: +opt('workers', 0), debug, project, estimate });
       console.log('\n' + JSON.stringify(r, null, 1));
-    } else throw new Error(`unknown mode "${mode}" (frame | sheet | video)`);
+    } else if (mode === 'check') {
+      const r = await check(S);
+      console.log(`${r.ok ? 'PASS' : 'FIX'}  ${r.texts} texts checked, ${r.contrast.length} contrast samples, ${r.still.length} still-moment pairs, ${r.hits.length} hits on the beat`);
+      for (const i of r.issues) console.log(`- [${i.check}] ${i.t != null ? i.t.toFixed(2) + ' s ' : ''}${i.text ? '"' + String(i.text).slice(0, 40) + '" ' : ''}${i.msg}`);
+      for (const w of r.warnings) console.log(`- [film] ${w}`);
+      console.log(path.join(project, 'out', 'check.json'));
+    } else throw new Error(`unknown mode "${mode}" (frame | sheet | contact | strip | video | check)`);
     process.exit(0);
   } catch (e) {
     console.error('[product-explainer] ERROR: ' + (e.stack || e).toString().split('\n').slice(0, 4).join('\n'));

@@ -1,5 +1,13 @@
 # Copy: the topic, the hook and the script
 
+## Contents
+- Who is watching
+- The topic (and the hidden fact)
+- The hook: the first 8 to 10 seconds (three layers, four beats, formats, tests)
+- Story shapes: PAS with a fact (default), BAB, FAB
+- The script (format, beat notes, facts list, on-screen words)
+- Self-check before showing the script
+
 ## Who is watching
 A stranger, scrolling. They have **zero interest** in the brand, the category or the topic, and **zero context**: they
 don't know the product, the jargon or why any of it matters. They give the video about a second and a half. Nothing
@@ -11,6 +19,11 @@ on screen may assume they care, or know, anything.
   later, as the answer.
 - A good topic has four parts: a moment or habit strangers share, a consequence they didn't know, a fact from this brand
   that answers it, and a picture code can draw.
+- **The hidden fact is the reward.** People stop for something true and specific they didn't know (a number, a cause, a
+  hidden process), shown so it's easy to see. A sales claim isn't a fact; a fact the viewer already knows gives nothing.
+- **The retell test:** the fact fits in one sentence a viewer would send a friend ("a 70% bar is about 30% sugar").
+  People share what helps someone they know or makes them look smart, so the reel must make sense to someone who
+  receives it with no context.
 - The best ones come from what customers actually say (questions, complaints, habits), not from the About page.
 
 ## The hook: the first 8 to 10 seconds
@@ -82,14 +95,36 @@ on-screen text and its four beats.
 - Voice: "Seventy percent dark chocolate. You buy it because it's the healthy one. But nobody checks the other thirty
   percent." Then the rehook: the end of the bar breaks off and pours out as white grains: "In most bars, it's this."
 
+## Story shapes
+A framework is the shape of the story, never the idea: the hidden fact is the idea. Name the shape you used when you show
+the script; brands know these names.
+
+| Shape | Use it when | The beats |
+|---|---|---|
+| **PAS with a fact** (default) | almost always: a pain, a hidden cause, a product that answers it | **Problem**: the viewer's habit or belief (the hook). **Agitate with a surprising fact**, never with fear. **Solve**: the product as the answer, with its proof. **Tip**: one thing they can do or check, even without buying. |
+| **BAB** | the result shows over time (skin, hair, fitness, sleep) | **Before**: the viewer's now. **After**: what changes, with the brand's own numbers only. **Bridge**: the product and how it gets there. |
+| **FAB** | one ingredient or feature carries the story | **Feature**: the one thing. **Advantage**: what it does that the usual one doesn't. **Benefit**: what the viewer gets. |
+
+AIDA is too general to choose with (every good film already does it). Three changes make any shape shareable: agitate
+with a fact, end on a tip instead of "buy now", and keep the open loop (the answer held to about 9 s).
+
+**The shape is the script's, not the style's.** The style sets the look; how the story is staged comes later, in the
+treatment (directing.md), from the topic's own fact. Don't bend the script into a style's familiar structure (a case
+file's charge, exhibits and verdict): that is the style's cliché, and the treatment will find a better picture for the
+fact.
+
 ## The script
 - **Length comes from the words:** 25 to 45 s, about 65 to 110 words. Never pad.
-- **The shape:**
+- **The shape** (PAS by default):
   1. The hook (0 to about 9 s): subject, setup, turn, rehook. The answer comes after it.
   2. Why it happens: the mechanism, which the picture shows.
   3. What to do, or the turn.
   4. The brand's fact as the answer and the proof.
   5. A payoff, and one simple thing to do.
+- **Show it as a table** with a **beat note** per line: what the viewer must understand on screen while it's said.
+  `# | voice | on screen | beat note`. The beat note is what the picture teaches, not a description of a poster.
+- **A facts list** under the table: every number and claim the film puts on screen, with its source. Only these facts
+  go on screen, and an illustration is labelled as one ("a typical 70% bar").
 - **Rehooks:** after the hook, open a new question every 6 to 10 s ("So what if...", "But that's not the strange part").
 - **The brand appears only as the answer,** after the problem is clear, usually past the halfway mark.
 - **Written to be heard:** short sentences, contractions, one idea per line, words customers use ("coffee powder").
@@ -110,7 +145,9 @@ on-screen text and its four beats.
 - [ ] A rehook (a new question, a reversal, a reveal) every 6 to 10 s after that.
 - [ ] Every on-screen line passes the alone test.
 - [ ] No stand-ins, wordplay, teasers or second meanings anywhere.
-- [ ] Every claim has a source in `research.md`.
+- [ ] Every claim has a source in `research.md`, and the facts list holds every number on screen.
+- [ ] The fact passes the retell test, and the shape is named (PAS, BAB or FAB).
+- [ ] It agitates with a fact, not fear, and ends on a tip the viewer can use.
 - [ ] 3 to 5 statements, and no words shown twice.
 - [ ] The brand comes in as the answer, not the opener.
 - [ ] It ends with one clear thing to do.

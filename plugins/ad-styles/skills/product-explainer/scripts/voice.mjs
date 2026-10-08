@@ -2,10 +2,15 @@
 // voice.mjs: the voiceover, with a timestamp for every word, from Cartesia (needs a Cartesia API key).
 //   voice.mjs <project>                 -> <project>/vo/voice.wav and vo/timing.json (the film's clock)
 //   voice.mjs <project> --only l3       -> remake one line (after changing its text or the voice)
+//   voice.mjs <project> --words         -> also print every word's time inside its take (to plan the music grid)
 //   voice.mjs --voices [words]          -> list voices, e.g. --voices "indian english" or --voices hindi
 // The key comes from --key-file <.env>, the CARTESIA_API_KEY environment variable, or <project>/.env.
 // Each line is cached by its words and voice settings, so re-running only pays for lines that changed.
-// script.json: { voice: { id, model, language, speed }, lead, gap, tail, lines: [{ id, text, say?, pause? }] }
+// script.json: { voice: { id, model, language, speed }, lead, gap, tail, duration?, lines: [{ id, text, say?, pause?, at?, anchor? }] }
+//   Lines flow one after another (lead, then each take, gap and pause). A line with "at" is placed on the film's music
+//   grid instead: its take starts at "at" seconds, or, with "anchor": "word" ("word#2" for the second one), that word
+//   starts at "at". Re-running costs nothing for lines already voiced. "duration" fixes the film's length (else the last
+//   line's end + tail).
 //   text is what the captions show (*emphasis* allowed); say, if given, is what the voice reads (e.g. "₹499" -> "four ninety-nine rupees").
 import fs from 'node:fs';
 import path from 'node:path';
@@ -92,12 +97,33 @@ for (const L of script.lines) {
   words = words.map(w => ({ w: w.w, start: Math.max(0, w.start - off), end: Math.max(0, w.end - off) }));
   pieces.push({ L, said, data, words, dur: data.length / SR });
 }
-let t = script.lead ?? 0.4; const lines = [];
-for (const p of pieces) { lines.push({ id: p.L.id, text: plain(p.L.text), said: p.said !== plain(p.L.text) ? p.said : undefined, start: +t.toFixed(3), end: +(t + p.dur).toFixed(3), words: p.words.map(w => ({ w: w.w, start: +(t + w.start).toFixed(3), end: +(t + w.end).toFixed(3) })) }); p.at = t; t += p.dur + (script.gap ?? 0.35) + (p.L.pause ?? 0); }
-const duration = +(lines[lines.length - 1].end + (script.tail ?? 2.6)).toFixed(3);
+// place the takes: in flow, or on the grid ("at", optionally with an "anchor" word that lands on "at")
+const norm = x => String(x).toLowerCase().replace(/[^a-z0-9%]+/g, '');
+let t = script.lead ?? 0.4, prev = null; const lines = [];
+for (const p of pieces) {
+  let at = t;
+  if (Number.isFinite(p.L.at)) {
+    at = p.L.at;
+    if (p.L.anchor != null) {
+      const [word, nth = 1] = String(p.L.anchor).split('#'); let k = 0;
+      const w = p.words.find(x => norm(x.w) === norm(word) && ++k === +nth);
+      if (w) at = p.L.at - w.start;
+      else console.warn(`[voice] ${p.L.id}: anchor "${p.L.anchor}" is not a word of this line; its take starts at ${p.L.at} s instead`);
+    }
+  }
+  at = Math.max(0, at);
+  if (prev && at < prev.at + prev.dur - 0.02) console.warn(`[voice] ${p.L.id} starts ${(prev.at + prev.dur - at).toFixed(2)} s before ${prev.L.id} ends: the takes overlap`);
+  lines.push({ id: p.L.id, text: plain(p.L.text), said: p.said !== plain(p.L.text) ? p.said : undefined, start: +at.toFixed(3), end: +(at + p.dur).toFixed(3), take: +p.dur.toFixed(3), placed: Number.isFinite(p.L.at) ? 'grid' : 'flow', words: p.words.map(w => ({ w: w.w, start: +(at + w.start).toFixed(3), end: +(at + w.end).toFixed(3) })) });
+  p.at = at; prev = p; t = at + p.dur + (script.gap ?? 0.35) + (p.L.pause ?? 0);
+}
+const duration = +(script.duration ?? (lines[lines.length - 1].end + (script.tail ?? 2.6))).toFixed(3);
+if (lines[lines.length - 1].end > duration) console.warn(`[voice] the last line ends at ${lines[lines.length - 1].end} s, after "duration" (${duration} s)`);
 const track = new Float32Array(Math.ceil(duration * SR));
 for (const p of pieces) { const s0 = Math.round(p.at * SR); for (let i = 0; i < p.data.length && s0 + i < track.length; i++) track[s0 + i] += p.data[i]; }
 writeMonoWav(path.join(vo, 'voice.wav'), track, SR);
 fs.writeFileSync(path.join(vo, 'timing.json'), JSON.stringify({ duration, voice: v, lines }, null, 1));
-for (const l of lines) console.log(`${l.id}  ${l.start.toFixed(2)}–${l.end.toFixed(2)} s  ${l.text}`);
+for (const l of lines) {
+  console.log(`${l.id}  ${l.start.toFixed(2)}–${l.end.toFixed(2)} s  (take ${l.take.toFixed(2)} s, ${l.placed})  ${l.text}`);
+  if (opts.words) console.log('     ' + l.words.map(w => `${w.w} +${(w.start - l.start).toFixed(2)}`).join('  '));
+}
 console.log(`\n${duration.toFixed(1)} s with the end card · ${path.join(vo, 'voice.wav')} · ${path.join(vo, 'timing.json')}`);

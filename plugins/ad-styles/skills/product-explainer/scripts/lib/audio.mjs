@@ -6,15 +6,23 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { FFMPEG } from './canvas.mjs';
 
-export const SFX_NAMES = ['pop', 'click', 'tick', 'whoosh', 'swish', 'thud', 'stamp', 'paper', 'tape', 'marker', 'flip', 'crinkle', 'chime', 'ding', 'steam', 'door', 'pour', 'sparkle', 'rise', 'snap'];
-export const MUSIC_NAMES = ['warm', 'bright', 'calm', 'none'];
+export const SFX_NAMES = ['pop', 'click', 'tick', 'whoosh', 'swish', 'thud', 'stamp', 'stampbig', 'paper', 'tape', 'marker', 'flip', 'crinkle', 'chime', 'ding', 'steam', 'door', 'pour', 'sparkle', 'rise', 'snap', 'shutter', 'type', 'boing', 'plop'];
+export const MUSIC_NAMES = ['warm', 'bright', 'calm', 'dossier', 'none'];
+// Effects that sat 30 to 40 dB under the voice's peaks at gain 1, lifted by what the TWT test film measured it needed.
+const SFX_LIFT = { marker: 6, whoosh: 4, swish: 4, flip: 3.5, tick: 2.2, boing: 2.5, chime: 2.7, snap: 2.2 };
 
+// music: a preset name, or { preset, bpm, offset, sections: [{ at, kind }], silences: [[a, b]], end } for presets that
+// follow the film's sections (dossier: intro | groove | sneak | build | drop | outro), or a film's own score:
+// { bpm, offset, score(S) { ... }, silences: [[a, b]], end }. score() writes notes with the instruments in S (below,
+// "a film's own score"); notes are MIDI numbers (60 = C4) or names ('C4', 'F#3', 'Bb2'); times are seconds.
 export function buildAudio({ dir, duration, voiceWav = null, cues = [], music = 'warm', endAt = null, seed = 11 }) {
+  const plan = typeof music === 'object' && music ? music : { preset: music };
+  music = plan.preset || 'none';
   const SR = 48000, len = Math.round(SR * duration), TAU = Math.PI * 2, warnings = [];
   const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x)), seg = (t, a, b) => clamp((t - a) / (b - a)), sm = x => x * x * (3 - 2 * x);
   let sd = seed; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
   const stereo = () => ({ L: new Float32Array(len), R: new Float32Array(len) });
-  const MUS = stereo(), SFX = stereo();
+  const MUS = stereo(), SFX = stereo(), AMB = stereo();   // AMB: the room under the music, kept through its silences
   const add = (B, t0, dur, f, pan = 0) => {
     const s0 = Math.floor(t0 * SR), gl = Math.cos(((pan + 1) * Math.PI) / 4), gr = Math.sin(((pan + 1) * Math.PI) / 4);
     for (let i = 0; i < dur * SR; i++) { const j = s0 + i; if (j < 0) continue; if (j >= len) break; const v = f(i / SR, j / SR); B.L[j] += v * gl; B.R[j] += v * gr; }
@@ -34,7 +42,7 @@ export function buildAudio({ dir, duration, voiceWav = null, cues = [], music = 
     bright: { bpm: 108, root: 196.0, prog: [[0, 4, 7], [5, 9, 12], [9, 12, 16], [7, 11, 14]], pat: [0, 1, 2, 3, 2, 1, 2, 3], bright: 0.72, decay: 0.993, gain: 0.044, kick: true, shaker: true, clap: true },
     calm: { bpm: 76, root: 130.81, prog: [[0, 4, 7], [9, 12, 16], [5, 9, 12], [7, 11, 14]], pat: [0, 2, 3, 2], bright: 0.42, decay: 0.998, gain: 0.05, pad: true },
   }[music];
-  if (music !== 'none' && !P) warnings.push(`unknown music "${music}", using none`);
+  if (music !== 'none' && music !== 'dossier' && !P && typeof plan.score !== 'function') warnings.push(`unknown music "${music}", using none`);
   if (P) {
     const beat = 60 / P.bpm, bar = beat * 4, stop = endAt ?? duration - 1.5, semis = n => 2 ** (n / 12);
     for (let b = 0; b * bar < stop - 0.1; b++) {
@@ -51,6 +59,89 @@ export function buildAudio({ dir, duration, voiceWav = null, cues = [], music = 
     [...home, home[0] + 12, home[1] + 12].forEach((n, i) => pluck(MUS, tf + i * 0.035, P.root * 2 ** (n / 12), P.gain * 1.05, { decay: 0.999, bright: 0.55, dur: Math.max(0.5, duration - tf), pan: -0.25 + i * 0.12 }));
     pluck(MUS, tf, (P.root / 2) * 2 ** (home[0] / 12), P.gain * 1.3, { decay: 0.9985, bright: 0.2, dur: Math.max(0.5, duration - tf), pan: 0 });
     for (let i = 0; i < len; i++) { const t = i / SR, f = sm(seg(t, 0, 0.4)) * (1 - sm(seg(t, duration - 0.9, duration))); MUS.L[i] *= f; MUS.R[i] *= f; }
+  }
+
+  // ------------------------------------------------ dossier: a synth pop-print kit on the film's bar grid
+  // kick, snare, clap, hats, a square-ish 8th-note bass, a soft pad and a marimba-like pluck (a fundamental and a
+  // partial about 4x above), in C major, I-vi-IV-V. Sections follow the film; a 'drop' or a silence empties the music
+  // so a stamp lands alone. Adapted from lemo-opuscar's halftone-dossier score (MIT, (c) 2026 LemoLab).
+  // ------------------------------------------------ instruments: the synth pop-print kit (frequencies in Hz)
+  // Shared by the dossier preset and by a film's own score. Adapted from lemo-opuscar's halftone-dossier score (MIT).
+  const IK = {
+    kick: (t0, g = 1) => { sine(MUS, t0, 0.35, t => 50 + 110 * Math.exp(-t * 30), 0.12 * g, t => Math.exp(-t * 9), 0); band(MUS, t0, 0.006, 0.3, 0.9, () => 0.05 * g, 0); },
+    snare: (t0, g = 1) => { band(MUS, t0, 0.2, 0.15, 0.7, t => 0.05 * g * Math.exp(-t * 16), 0.05); sine(MUS, t0, 0.12, 185, 0.03 * g, t => Math.exp(-t * 25), 0.05); },
+    clap: (t0, g = 1) => { for (const d of [0, 0.012, 0.024]) band(MUS, t0 + d, 0.02, 0.25, 0.85, t => 0.04 * g * Math.exp(-t * 60), -0.1); band(MUS, t0 + 0.03, 0.15, 0.25, 0.85, t => 0.022 * g * Math.exp(-t * 22), -0.1); },
+    hat: (t0, g = 1) => band(MUS, t0, 0.05, 0.65, 0.98, t => 0.013 * g * Math.exp(-t * 90), 0.35),
+    snap: (t0, g = 1) => { band(MUS, t0, 0.03, 0.5, 0.95, t => 0.06 * g * Math.exp(-t * 120), 0.25); sine(MUS, t0, 0.02, 2600, 0.015 * g, t => Math.exp(-t * 200), 0.25); },
+    bass: (t0, f, len, g = 1) => add(MUS, t0, len + 0.06, t => { const e = Math.min(1, t / 0.005) * (t < 0.08 ? 1 - 0.4 * t / 0.08 : 0.6) * (t > len ? Math.exp(-(t - len) * 40) : 1); return 0.05 * g * e * (Math.sin(TAU * f * t) + Math.sin(TAU * 3 * f * t) / 3 + Math.sin(TAU * 5 * f * t) / 5) * 0.8; }, 0),
+    marimba: (t0, f, g = 1, pan = 0.15) => add(MUS, t0, 1.1, t => { const a = Math.min(1, t / 0.002); return 0.045 * g * a * (Math.sin(TAU * f * t) * Math.exp(-t * 7) + 0.35 * Math.sin(TAU * 3.99 * f * t) * Math.exp(-t * 22)); }, pan),
+    pad: (t0, freqs, len, g = 1) => freqs.forEach((f, i) => add(MUS, t0, len + 0.5, t => { const e = sm(seg(t, 0, 0.4)) * (1 - sm(seg(t, len, len + 0.5))); return 0.007 * g * e * (Math.sin(TAU * f * t) + Math.sin(TAU * 3 * f * t) / 9 + Math.sin(TAU * 5 * f * t) / 25); }, i % 2 ? 0.3 : -0.3)),
+    bell: (t0, f, g = 1, pan = 0) => add(MUS, t0, 2.2, t => 0.03 * g * Math.exp(-t * 2.2) * (Math.sin(TAU * f * t) + 0.4 * Math.sin(TAU * 2.76 * f * t) * Math.exp(-t * 2) + 0.2 * Math.sin(TAU * 5.4 * f * t) * Math.exp(-t * 4)), pan),
+  };
+  if (music === 'dossier') {
+    const bpm = plan.bpm || 120, beat = 60 / bpm, bar = beat * 4, off = plan.offset || 0, stop = endAt ?? plan.end ?? duration - 1.5;
+    const secs = (plan.sections || [{ at: 0, kind: 'groove' }]).slice().sort((a, b) => a.at - b.at);
+    const kindAt = t => { let k = secs[0]?.kind || 'groove'; for (const x of secs) if (x.at <= t + 0.01) k = x.kind; return k; };
+    const C3 = 130.81, hz = n => C3 * 2 ** (n / 12);
+    const prog = [[0, 4, 7], [9, 12, 16], [5, 9, 12], [7, 11, 14]], roots = [0, 9, 5, 7];
+    const { kick, snare, clap, hat, bass, marimba, bell } = IK, snapF = IK.snap, pad = (t0, notes, len) => IK.pad(t0, notes.map(hz), len);
+    const MEL = [[0, -1, 2, 1, -1, 2, 3, 2], [3, 2, -1, 1, 0, -1, 2, -1], [1, -1, 2, 3, -1, 2, 1, 0], [2, 3, -1, 2, 1, -1, 0, -1]];
+    for (let b = 0; off + b * bar < stop - 0.05; b++) {
+      const t0 = off + b * bar, kind = kindAt(t0 + 0.01), ch = prog[b % 4], tones = [ch[0] + 12, ch[1] + 12, ch[2] + 12, ch[0] + 24], root = roots[b % 4];
+      if (kind === 'drop') continue;
+      const on = t => t < stop - 0.02;
+      if (kind === 'groove' || kind === 'build') { for (const k of [0, 2]) if (on(t0 + k * beat)) kick(t0 + k * beat); if (kind === 'build') for (const k of [1, 3]) if (on(t0 + k * beat)) kick(t0 + k * beat); }
+      if (kind === 'groove') for (const k of [1, 3]) if (on(t0 + k * beat)) { snare(t0 + k * beat); clap(t0 + k * beat); }
+      if (kind === 'groove' || kind === 'intro') for (let k = 0; k < 8; k++) if (on(t0 + k * beat / 2)) hat(t0 + k * beat / 2, k % 2 ? 0.6 : 1);
+      if (kind === 'groove' || kind === 'build' || kind === 'sneak') for (let k = 0; k < 8; k++) { const tb = t0 + k * beat / 2; if (on(tb)) bass(tb, 65.41 * 2 ** ((root + (k % 4 === 2 ? 12 : 0)) / 12) * (root > 6 ? 0.5 : 1), kind === 'sneak' ? beat * 0.22 : beat * 0.4); }
+      if (kind === 'sneak') { for (const k of [1, 3]) if (on(t0 + k * beat)) snapF(t0 + k * beat); for (let k = 1; k < 8; k += 2) if (on(t0 + k * beat / 2)) pluck(MUS, t0 + k * beat / 2, hz(tones[(k >> 1) % 3]), 0.035, { decay: 0.99, bright: 0.6, dur: 0.4, pan: -0.2 }); }
+      if (kind === 'intro' || kind === 'groove') { const pat = MEL[b % 4]; pat.forEach((ix, k) => { const tb = t0 + k * beat / 2; if (ix >= 0 && on(tb) && (kind === 'groove' || k % 2 === 0)) marimba(tb, hz(tones[ix]), kind === 'intro' ? 0.8 : 1, k % 2 ? 0.25 : -0.05); }); }
+      if (kind === 'intro' || kind === 'groove' || kind === 'outro') pad(t0, [ch[0], ch[2]], Math.min(bar, stop - t0));
+      if (kind === 'build') { const n = 16; for (let k = 0; k < n; k++) { const tb = t0 + bar * (1 - (1 - k / n) ** 1.6); if (on(tb)) snare(tb, 0.4 + 0.6 * k / n); } sine(MUS, t0, bar, t => 220 + 900 * (t / bar) ** 2, 0.016, t => (t / bar) ** 1.5, 0); }
+      if (kind === 'outro') [0, 1, 2, 3].forEach(k => { const tb = t0 + k * beat; if (on(tb)) bell(tb, hz(tones[k]) * 2, 0.9, -0.2 + k * 0.13); });
+    }
+    // the ending: a bell arpeggio and the low root, left to ring
+    [0, 4, 7, 12].forEach((n, i) => bell(stop + 0.02 + i * 0.09, hz(n + 24), 0.9, -0.3 + i * 0.2));
+    bass(stop + 0.02, 65.41, 0.6);
+  }
+
+  // ------------------------------------------------ a film's own score: music.score(S), composed from the cue map
+  // S: the grid (bpm, beat, bar, offset, at(bar, beat)), hz(note), and instruments that write into the music stem:
+  //   kick(t, g) snare(t, g) clap(t, g) hat(t, g) snap(t, g) roll(t, dur, g) sweep(t, dur, g, down)
+  //   bass(t, note, len, g) marimba(t, note, g, pan) pad(t, [notes], len, g) bell(t, note, g, pan)
+  //   pluck(t, note, g, { decay, bright, dur, pan }) pizz(t, note, g, pan) tone(t, note, dur, g, { wave, attack, release, pan })
+  //   room(from, to, g) a soft room-tone bed; hum(from, to, hz, g) a faint electrical hum (both keep playing through
+  //   the music's silences, so a silence is a near-silence); noise(t, dur, lo, hi, g, pan)
+  //   silence(a, b) empties the music between a and b (a stamp or a reveal then lands alone)
+  const silences = [...(plan.silences || [])];
+  if (typeof plan.score === 'function') {
+    const bpm = plan.bpm || 120, beat = 60 / bpm, bar = beat * 4, offset = plan.offset || 0;
+    const NOTE = { c: 0, d: 2, e: 4, f: 5, g: 7, a: 9, b: 11 };
+    const hzOf = n => {
+      if (typeof n === 'number') return 440 * 2 ** ((n - 69) / 12);
+      const m = /^([A-Ga-g])([#b]?)(-?\d)$/.exec(String(n).trim()); if (!m) { warnings.push(`unknown note "${n}"`); return 440; }
+      return 440 * 2 ** ((12 * (+m[3] + 1) + NOTE[m[1].toLowerCase()] + (m[2] === '#' ? 1 : m[2] === 'b' ? -1 : 0) - 69) / 12);
+    };
+    const S = {
+      bpm, beat, bar, offset, duration, hz: hzOf, at: (b, k = 0) => offset + b * bar + k * beat,
+      kick: IK.kick, snare: IK.snare, clap: IK.clap, hat: IK.hat, snap: IK.snap,
+      bass: (t, n, l, g) => IK.bass(t, hzOf(n), l, g), marimba: (t, n, g, p) => IK.marimba(t, hzOf(n), g, p),
+      pad: (t, ns, l, g) => IK.pad(t, ns.map(hzOf), l, g), bell: (t, n, g, p) => IK.bell(t, hzOf(n), g, p),
+      pluck: (t, n, g = 1, o = {}) => pluck(MUS, t, hzOf(n), 0.04 * g, o),
+      pizz: (t, n, g = 1, pan = 0) => pluck(MUS, t, hzOf(n), 0.05 * g, { decay: 0.985, bright: 0.35, dur: 0.5, pan }),
+      tone: (t, n, dur, g = 1, o = {}) => { const f = hzOf(n), wave = o.wave || 'sine', a = o.attack ?? 0.01, r = o.release ?? 0.08; add(MUS, t, dur + r, x => { const ph = (f * x) % 1, v = wave === 'square' ? (ph < 0.5 ? 1 : -1) * 0.5 : wave === 'triangle' ? 1 - 4 * Math.abs(ph - 0.5) : Math.sin(TAU * ph); return 0.03 * g * v * sm(seg(x, 0, a)) * (1 - sm(seg(x, dur, dur + r))); }, o.pan ?? 0); },
+      roll: (t, dur, g = 1) => { const n = Math.max(4, Math.round(dur * 10)); for (let k = 0; k < n; k++) IK.snare(t + dur * (1 - (1 - k / n) ** 1.6), (0.4 + 0.6 * k / n) * g); },
+      sweep: (t, dur, g = 1, down = false) => sine(MUS, t, dur, x => (down ? 1120 - 900 * (x / dur) ** 2 : 220 + 900 * (x / dur) ** 2), 0.016 * g, x => (down ? 1 - x / dur : (x / dur) ** 1.5), 0),
+      noise: (t, dur, lo, hi, g = 1, pan = 0) => band(MUS, t, dur, lo, hi, x => 0.02 * g * sm(seg(x, 0, 0.05)) * (1 - sm(seg(x, dur - 0.05, dur))), pan),
+      room: (a, b, g = 1) => { let y = 0; add(AMB, a, b - a, x => { y = 0.995 * y + 0.02 * (rnd() * 2 - 1); return 0.05 * g * y * sm(seg(x, 0, 0.3)) * (1 - sm(seg(x, b - a - 0.3, b - a))); }, 0); },
+      hum: (a, b, f = 100, g = 1) => sine(AMB, a, b - a, f, 0.0025 * g, x => sm(seg(x, 0, 0.4)) * (1 - sm(seg(x, b - a - 0.4, b - a))), 0),
+      silence: (a, b) => silences.push([a, b]),
+    };
+    plan.score(S);
+  }
+  if (music === 'dossier' || typeof plan.score === 'function') {
+    for (const [a, b] of silences) { const i0 = Math.max(0, Math.floor(a * SR)), i1 = Math.min(len, Math.floor(b * SR)), f = Math.floor(0.015 * SR); for (let i = i0; i < i1; i++) { const k = Math.min(1, (i - i0) / f, (i1 - i) / f); const v = 1 - Math.max(0, k); MUS.L[i] *= v; MUS.R[i] *= v; } }
+    for (let i = 0; i < len; i++) { const t = i / SR, f = sm(seg(t, 0, 0.05)) * (1 - sm(seg(t, duration - 0.6, duration))); MUS.L[i] *= f; MUS.R[i] *= f; }
   }
 
   // ------------------------------------------------ sound effects
@@ -75,14 +166,46 @@ export function buildAudio({ dir, duration, voiceWav = null, cues = [], music = 
     pour: (t0, g, pan, dur = 0.9) => { let a = 0; add(SFX, t0, dur, t => { a += 0.06 * ((rnd() * 2 - 1) - a); return a * 0.5 * g * Math.sin(Math.PI * seg(t, 0, dur)) * (0.7 + 0.3 * Math.sin(TAU * (9 + 5 * Math.sin(t * 5)) * t)); }, pan); },
     sparkle: (t0, g, pan) => [0, 0.07, 0.15].forEach((d, i) => FX.ding(t0 + d, g * (0.6 - i * 0.12), pan + (i - 1) * 0.2, 0, 2093 * (1 + i * 0.26))),
     rise: (t0, g, pan, dur = 0.8) => { sine(SFX, t0, dur, t => 220 + 660 * (t / dur) ** 2, 0.03 * g, t => sm(seg(t, 0, dur * 0.8)) * (1 - seg(t, dur * 0.92, dur)), pan); band(SFX, t0, dur, 0.05, 0.4, t => 0.02 * g * (t / dur) ** 2, pan); },
+    // a big stamp: a lower boom, the click, and a crackle of ink
+    stampbig: (t0, g, pan) => { FX.stamp(t0, g * 1.2, pan); sine(SFX, t0, 0.45, t => 110 - 60 * t, 0.16 * g, t => Math.exp(-t * 10), pan); add(SFX, t0 + 0.01, 0.35, t => (rnd() < 0.03 * Math.exp(-t * 8) ? (rnd() * 2 - 1) * 0.3 * g : 0), pan); },
+    // a camera shutter: two mechanical clicks and a short whir
+    shutter: (t0, g, pan) => { band(SFX, t0, 0.02, 0.4, 0.95, t => 0.16 * g * Math.exp(-t * 250), pan); band(SFX, t0 + 0.012, 0.06, 0.1, 0.5, t => 0.03 * g * Math.sin(Math.PI * seg(t, 0, 0.06)), pan); band(SFX, t0 + 0.07, 0.02, 0.4, 0.95, t => 0.12 * g * Math.exp(-t * 250), pan); },
+    // a typewriter key: a sharp click and a small thunk
+    type: (t0, g, pan) => { band(SFX, t0, 0.015, 0.5, 0.97, t => 0.12 * g * Math.exp(-t * 300), pan); sine(SFX, t0 + 0.004, 0.05, 240, 0.04 * g, t => Math.exp(-t * 60), pan); },
+    // a spring: a pitch that wobbles and falls
+    boing: (t0, g, pan) => sine(SFX, t0, 0.5, t => 160 + 240 * Math.exp(-t * 5) * (1 + 0.35 * Math.sin(TAU * 14 * t)), 0.07 * g, t => Math.exp(-t * 6), pan),
+    // a drop: a short pitch rise
+    plop: (t0, g, pan) => sine(SFX, t0, 0.12, t => 300 + 1800 * (t / 0.12) ** 1.5, 0.08 * g, t => Math.sin(Math.PI * seg(t, 0, 0.12)), pan),
   };
   for (const c of cues) {
     const fn = FX[c.sfx]; if (!fn) { warnings.push(`unknown sfx "${c.sfx}" at ${(+c.t).toFixed(2)} s (use: ${SFX_NAMES.join(', ')})`); continue; }
     if (!(c.t >= 0 && c.t < duration)) { warnings.push(`sfx "${c.sfx}" at ${c.t} s is outside the film`); continue; }
-    fn(c.t, c.gain ?? 1, c.pan ?? 0, c.dur, c.f);
+    fn(c.t, (c.gain ?? 1) * (SFX_LIFT[c.sfx] ?? 1), c.pan ?? 0, c.dur, c.f);
   }
   // a short room on the effects, so they sit in a space
   for (const ch of [SFX.L, SFX.R]) { const wet = new Float32Array(len); for (const D of [1499, 1733, 1913, 2203]) { const b = new Float32Array(D); let j = 0; for (let i = 0; i < len; i++) { const y = b[j]; b[j] = ch[i] + y * 0.68; j = (j + 1) % D; wet[i] += y * 0.25; } } for (let i = 0; i < len; i++) ch[i] += 0.2 * wet[i]; }
+
+  // ------------------------------------------------ levels: the music a fixed step under the voice
+  // A film's own score is sparse and the presets are dense, so their raw levels differ by 20 dB or more. With a voice,
+  // the music stem is scaled so its sounding parts sit MUSIC_UNDER_VOICE dB under the voice's speech (before the mix
+  // ducks it further under each line). The room tone goes in after, untouched, so silences stay near-silent.
+  const MUSIC_UNDER_VOICE = plan.underVoice ?? 10, levels = {};
+  const rmsDb = (pick, n) => { let s2 = 0, c = 0; for (let i = 0; i < n; i++) { const v = pick(i); if (v !== null) { s2 += v * v; c++; } } return c ? 10 * Math.log10(s2 / c + 1e-12) : -120; };
+  let vData = null;
+  if (voiceWav && fs.existsSync(voiceWav)) { try { vData = readWav(voiceWav).data; } catch { vData = null; } }
+  if (vData) {
+    const vDb = rmsDb(i => (Math.abs(vData[i]) > 0.02 ? vData[i] : null), vData.length);
+    const mDb = rmsDb(i => { const v = 0.5 * (MUS.L[i] + MUS.R[i]); return Math.abs(v) > 1e-4 ? v : null; }, len);
+    if (mDb > -119) {
+      const gDb = Math.max(-12, Math.min(30, vDb - MUSIC_UNDER_VOICE - mDb)), g = 10 ** (gDb / 20);
+      for (let i = 0; i < len; i++) { MUS.L[i] *= g; MUS.R[i] *= g; }
+      levels.musicGainDb = +gDb.toFixed(1);
+    }
+    let vp = 0, sp = 0; for (let i = 0; i < vData.length; i++) vp = Math.max(vp, Math.abs(vData[i])); for (let i = 0; i < len; i++) sp = Math.max(sp, Math.abs(SFX.L[i]), Math.abs(SFX.R[i]));
+    levels.voiceSpeechDb = +vDb.toFixed(1); levels.musicUnderVoiceDb = MUSIC_UNDER_VOICE;
+    levels.sfxPeakVsVoicePeakDb = +(20 * Math.log10((sp + 1e-9) / (vp + 1e-9))).toFixed(1);
+  }
+  for (let i = 0; i < len; i++) { const t = i / SR, f = sm(seg(t, 0, 0.05)) * (1 - sm(seg(t, duration - 0.6, duration))); MUS.L[i] += AMB.L[i] * f; MUS.R[i] += AMB.R[i] * f; }
 
   // ------------------------------------------------ stems, mix, master
   const writeWav = (file, chans) => {
@@ -113,7 +236,7 @@ export function buildAudio({ dir, duration, voiceWav = null, cues = [], music = 
   if (js) { const v = JSON.parse(js); filter = `loudnorm=I=-14:TP=-1.5:LRA=9:measured_I=${v.input_i}:measured_TP=${v.input_tp}:measured_LRA=${v.input_lra}:measured_thresh=${v.input_thresh}:offset=${v.target_offset}:linear=true`; }
   const r2 = spawnSync(FFMPEG, ['-v', 'error', '-y', '-i', pre, '-af', filter, '-ar', '48000', '-ac', '2', mixed], { encoding: 'utf8' });
   if (r2.status !== 0) throw new Error('loudness pass failed: ' + (r2.stderr || '').trim().split('\n').slice(-3).join(' | '));
-  return { mix: mixed, warnings };
+  return { mix: mixed, warnings, levels };
 }
 
 // 16-bit PCM WAV -> Float32 mono (first channel)

@@ -7,10 +7,18 @@ import path from 'node:path';
 import { createCanvas, loadImage, Path2D, DOMMatrix, DOMPoint } from './canvas.mjs';
 
 export const W = 1080, H = 1920;
-// One safe box covers Reels, Shorts and TikTok: words and product details stay inside it.
-// Below y 840 the right edge is x 780 (the like/comment/share buttons).
-export const SAFE = { x0: 120, x1: 888, y0: 288, y1: 1248, clearX: 780, clearBelow: 840 };
-export const LANE = { x: 120, y1: 1236, maxW: 660 };   // the caption lane, bottom-aligned at y1
+// The picture always fills the whole 1080 x 1920 frame. Only words (and the product's label) keep to the safe box: the
+// part of the frame the app's own overlay never covers. Two placements, set by script.json "placement":
+//   organic (the default, a post): the app covers about the top 260 px (header) and the bottom 340 px (caption,
+//     username, audio); the like, comment and share buttons stand on the right from about y 1100 down.
+//   ad: Meta's ad safe zone, no text in the top 14% or the bottom 35% (the call-to-action button and the ad's text).
+// One box covers Reels, Shorts and TikTok. Below clearBelow the right edge is clearX (the buttons).
+export const PLACEMENTS = {
+  organic: { safe: { x0: 120, x1: 888, y0: 260, y1: 1580, clearX: 780, clearBelow: 1100 }, lane: { x: 120, y1: 1560, maxW: 660 } },
+  ad: { safe: { x0: 120, x1: 888, y0: 288, y1: 1248, clearX: 780, clearBelow: 840 }, lane: { x: 120, y1: 1236, maxW: 660 } },
+};
+export const SAFE = { ...PLACEMENTS.organic.safe };
+export const LANE = { ...PLACEMENTS.organic.lane };   // the caption lane, bottom-aligned at y1
 
 // ---------------------------------------------------------------- maths
 const TAU = Math.PI * 2;
@@ -218,6 +226,9 @@ function placeholderProduct() {
 
 // ---------------------------------------------------------------- the kit
 export async function makeKit({ project, script, timing }) {
+  const placement = PLACEMENTS[script.placement || 'organic'];
+  if (!placement) throw new Error(`script.json "placement": "${script.placement}" is not one of: ${Object.keys(PLACEMENTS).join(', ')}`);
+  Object.assign(SAFE, placement.safe); Object.assign(LANE, placement.lane);
   const products = {}, images = {};
   const pdir = path.join(project, 'product');
   if (fs.existsSync(pdir)) for (const f of fs.readdirSync(pdir)) if (/\.png$/i.test(f)) products[f.replace(/\.png$/i, '')] = prepProduct(await loadImage(path.join(pdir, f)), f);
@@ -229,6 +240,21 @@ export async function makeKit({ project, script, timing }) {
   const ev = at => { if (Number.isFinite(at) && at >= 0 && at <= timing.duration) events.add(Math.round(at * 100) / 100); return at; };
   const flag = (list, key, item) => { if (!list.some(x => x.key === key)) list.push({ key, ...item }); };
   let M = MOTION.warm;
+  // Every text that reaches the screen, for the checks (render.mjs check): its role sets the minimum size, and the
+  // first and last time it was seen give its reading time. Roles: headline, caption, label, note, stamp, texture.
+  const texts = new Map();
+  const noteText = (id, o) => {
+    if (!id || !o || !Number.isFinite(o.t)) return;
+    let it = texts.get(id);
+    if (!it) { it = { id, text: String(o.text ?? id).slice(0, 80), role: o.role || 'label', size: o.size || 0, first: o.t, last: o.t, boxes: [], spoken: o.spoken ?? null }; texts.set(id, it); }
+    it.first = Math.min(it.first, o.t); it.last = Math.max(it.last, o.t); it.size = Math.max(it.size || 0, o.size || 0);   // settled size: texts pop in from 0
+    if (o.box && (!it.boxes.length || Math.abs(it.boxes[it.boxes.length - 1].t - o.t) > 0.24)) it.boxes.push({ t: +o.t.toFixed(2), box: o.box.map(Math.round) });
+    // the safe box, for every text with a meaning that is fully on screen (a camera move may carry words off the frame)
+    if (o.box && !o.checked && it.role !== 'texture' && it.role !== 'caption') {
+      const [x0, y0, x1, y1] = o.box;
+      if (x0 >= 0 && y0 >= 0 && x1 <= W && y1 <= H) checkBox(x0, y0, x1, y1, o.t, `${it.role} "${it.text.slice(0, 28)}"`);
+    }
+  };
 
   // ---------- time: line and word lookups from the voice
   const byId = new Map(timing.lines.map(l => [l.id, l]));
@@ -384,7 +410,10 @@ export async function makeKit({ project, script, timing }) {
     });
     g.restore();
     const box = { x0: bx0, y0: y - size * 0.8, x1: bx1, y1: y + (lines.length - 1) * lh + size * 0.25 };
-    if (o.check !== false && o.t != null) checkBox(box.x0, box.y0, box.x1, box.y1, o.t, `text "${str.slice(0, 28)}"`);
+    if (o.check !== false && o.t != null) {
+      checkBox(box.x0, box.y0, box.x1, box.y1, o.t, `text "${str.slice(0, 28)}"`);
+      noteText(o.id || 'text:' + str.slice(0, 40), { checked: true, text: plain(str), role: o.role || (size >= 72 ? 'headline' : 'label'), size, box: [box.x0, box.y0, box.x1, box.y1], t: o.t });
+    }
     return box;
   };
   // a statement: big type that appears word by word as the voice says it. The line's caption steps aside
@@ -411,6 +440,7 @@ export async function makeKit({ project, script, timing }) {
     });
     g.restore();
     checkBox(bx0, y - size * 0.8, bx1, y + (lines.length - 1) * lh + size * 0.25, t, `statement ${id}`);
+    if (i && t >= (all != null ? all : times[0].a - lead)) noteText('statement:' + id, { checked: true, text: toks.map(k => k.w).join(' '), role: 'headline', size, box: [bx0, y - size * 0.8, bx1, y + (lines.length - 1) * lh + size * 0.25], t, spoken: tl.end - tl.start });
   };
   // a stamp that lands at `at`
   const stamps = new Map();
@@ -430,6 +460,7 @@ export async function makeKit({ project, script, timing }) {
     const k = clamp((t - at) / 0.13), sc = lerp(o.from ?? 1.65, 1, ease.out(k)), al = clamp((t - at) / 0.05) * (o.alpha ?? 0.92) * (1 - ss(seg(t, (o.until ?? 1e9) - 0.2, o.until ?? 1e9)));
     g.save(); g.globalAlpha *= al; g.globalCompositeOperation = o.blend || 'multiply'; g.translate(x, y); g.rotate(o.rot ?? -0.07); g.scale(sc, sc);
     g.drawImage(c, -c.width / 2, -c.height / 2); g.restore();
+    noteText('stamp:' + str, { text: str, role: 'stamp', size, box: [x - c.width / 2, y - c.height / 2, x + c.width / 2, y + c.height / 2], t });
   };
   // a label that pops in at (x, y) with a line drawn to the thing it names
   const label = (g, str, o) => {
@@ -449,7 +480,7 @@ export async function makeKit({ project, script, timing }) {
     if (o.border) { g.strokeStyle = o.border; g.lineWidth = 3; g.stroke(roundRect(-bw / 2, -bh / 2, bw, bh, o.radius ?? bh / 2)); }
     g.fillStyle = o.color || '#1d1a16'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(str, 0, size * 0.05);
     g.restore();
-    if (o.check !== false) checkBox(cx - bw / 2, cy - bh / 2, cx + bw / 2, cy + bh / 2, t, `label "${str}"`);
+    if (o.check !== false) { checkBox(cx - bw / 2, cy - bh / 2, cx + bw / 2, cy + bh / 2, t, `label "${str}"`); noteText('label:' + str, { checked: true, text: str, role: o.role || 'label', size, box: [cx - bw / 2, cy - bh / 2, cx + bw / 2, cy + bh / 2], t }); }
   };
   const counter = (t, at, dur, from, to, { decimals = 0, e = 'out' } = {}) => lerp(from, to, p(t, at, dur, e)).toFixed(decimals);
 
@@ -570,14 +601,17 @@ export async function makeKit({ project, script, timing }) {
   };
 
   // ---------- captions (drawn by the renderer after the look)
-  const capStyle = { font: 'Jost', weight: 600, size: 54, color: '#FFF8EC', emph: { family: 'Cormorant Garamond', weight: 600, italic: true, scale: 1.16 }, style: 'shadow', bg: 'rgba(24,18,12,0.72)' };
+  // A style can draw its own captions: captions.render(g, cap, t, { prev, next, i }) gets each phrase with its words'
+  // times (cap.toks[i], cap.times[i] = { a, b }), and captions.layer 'print' draws them into the world, under the
+  // style's finish. Captions are at least 56 px (a phone at arm's length).
+  const capStyle = { font: 'Jost', weight: 600, size: 56, color: '#FFF8EC', emph: { family: 'Cormorant Garamond', weight: 600, italic: true, scale: 1.16 }, style: 'shadow', bg: 'rgba(24,18,12,0.72)', render: null, layer: 'over' };
   const captions = [];
   for (const L of script.lines) {
     if ((L.show || 'caption') !== 'caption') continue;
     const tl = byId.get(L.id); if (!tl) continue;
     const toks = parseMarkup(L.caption || L.text), times = align(toks, tl.words || [], tl.start, tl.end);
     let cur = [];
-    const flush = () => { if (cur.length) captions.push({ id: L.id, toks: cur.map(i => toks[i]), a: times[cur[0]].a, last: times[cur[cur.length - 1]].b }); cur = []; };
+    const flush = () => { if (cur.length) captions.push({ id: L.id, toks: cur.map(i => toks[i]), times: cur.map(i => times[i]), a: times[cur[0]].a, last: times[cur[cur.length - 1]].b }); cur = []; };
     // short phrases on one line; never end a phrase on a little word like "the" or "of"
     const SMALL = /^(the|a|an|of|to|in|on|at|by|for|from|with|and|or|but|so|as|is|was|are|were|be|it|its|it's|your|my|our|their|this|that|than|then|if|not|no|very|just|more|most|every)$/i;
     toks.forEach((tk, i) => {
@@ -591,10 +625,16 @@ export async function makeKit({ project, script, timing }) {
     });
     flush();
   }
-  captions.forEach((c, i) => { const nx = captions[i + 1]; c.b = nx && nx.a < c.last + 0.6 ? nx.a - 0.02 : c.last + 0.4; });
+  // a phrase holds until the next one when it starts within 1.5 s (the caption stays up across short gaps), else
+  // 0.6 s after its last word: the reading time a spoken line needs (directing.md, rhythm)
+  captions.forEach((c, i) => { const nx = captions[i + 1]; c.b = nx && nx.a < c.last + 1.5 ? nx.a - 0.02 : c.last + 0.6; });
   const drawCaptions = (g, t) => {
-    for (const c of captions) {
-      if (t < c.a - 0.08 || t > c.b) continue;
+    for (let ci = 0; ci < captions.length; ci++) {
+      const c = captions[ci];
+      if (t < c.a - 0.12 || t > c.b) continue;
+      noteText(`caption:${c.id}:${ci}`, { text: c.toks.map(k => k.w).join(' '), role: 'caption', size: capStyle.size, box: [LANE.x, LANE.y1 - capStyle.size * 2.3, LANE.x + LANE.maxW, LANE.y1 + capStyle.size * 0.3], t });
+      if (capStyle.render) { g.save(); capStyle.render(g, c, t, { prev: captions[ci - 1], next: captions[ci + 1], i: ci, style: capStyle, lane: LANE }); g.restore(); continue; }
+      if (t < c.a - 0.08) continue;
       const al = Math.min(ss(seg(t, c.a - 0.08, c.a + 0.06)), 1 - ss(seg(t, c.b - 0.08, c.b))); if (al <= 0) continue;
       const rise = (1 - ease.out(seg(t, c.a - 0.08, c.a + 0.18))) * 12;
       const base = { family: capStyle.font, weight: capStyle.weight }; let lines = layoutTokens(g, c.toks, base, capStyle.emph, capStyle.size, LANE.maxW);
@@ -631,8 +671,19 @@ export async function makeKit({ project, script, timing }) {
     g.strokeStyle = 'rgba(0,160,255,0.85)'; g.strokeRect(LANE.x, LANE.y1 - capStyle.size * 2.2, LANE.maxW, capStyle.size * 2.45); g.restore();
   };
 
+  // ---------- the music grid: cuts and big hits land on the beat nearest their word (references/directing.md)
+  const grid = (bpm = 120, offset = 0) => {
+    const beat = 60 / bpm, bar = beat * 4;
+    return {
+      bpm, offset, beat, bar,
+      snap(t, mode = 'nearest', unit = beat) { const k = (t - offset) / unit, n = mode === 'next' ? Math.ceil(k - 1e-9) : mode === 'prev' ? Math.floor(k + 1e-9) : Math.round(k); return offset + n * unit; },
+      barIndex(t) { return Math.floor((t - offset + 1e-9) / bar); },
+      barStart(n) { return offset + n * bar; },
+    };
+  };
+
   const K = {
-    W, H, SAFE, LANE, T, script, products, images, qa,
+    W, H, SAFE, LANE, T, script, products, images, qa, grid, noteText, event: ev, parseMarkup, plain, align, norm,
     // maths and colour
     TAU, clamp, lerp, seg, ss, ease, rng, hash2, noise, fbm, rgb, hex, mix, rgba, shade, jitter,
     // paths
@@ -648,6 +699,7 @@ export async function makeKit({ project, script, timing }) {
     // used by render.mjs
     _setMotion(name) { M = MOTION[name] || MOTION.warm; },
     _setCaptions(o = {}) { Object.assign(capStyle, o); if (o.emph) capStyle.emph = { ...capStyle.emph, ...o.emph }; F.base.family = o.font || F.base.family; if (o.emph) F.emph = { ...F.emph, ...o.emph }; },
+    get _captionLayer() { return capStyle.layer; }, _texts: texts,
     medium, _setMedia(m) { MEDIA_IMPL = m; },
     _captions: drawCaptions, _captionList: captions, _debug: debugOverlay, _events: events,
   };

@@ -1,16 +1,15 @@
 {
-  "brand": "Example Brand",
-  "product": "Example Product",
-  "slug": "example-explainer",
+  "brand": "Brand",
+  "product": "Product name",
+  "slug": "brand-product-explainer",
+  "style": "halftone-dossier",
   "voice": { "provider": "cartesia", "id": "", "model": "sonic-3.6", "language": "en", "speed": 1.0 },
   "lead": 0.4,
   "gap": 0.35,
   "tail": 2.6,
   "lines": [
-    { "id": "l1", "text": "Most kitchens keep this right above the stove.", "show": "statement" },
-    { "id": "l2", "text": "But heat from the stove changes how it tastes.", "show": "caption" },
-    { "id": "l3", "text": "A cool, dark cupboard keeps it *the way it was made.*", "show": "caption" },
-    { "id": "l4", "text": "That's why every jar says the day it was packed.", "show": "caption" },
-    { "id": "l5", "text": "Keep it cool. Taste the difference.", "show": "statement" }
+    { "id": "l1", "text": "The first line, as the captions show it.", "say": "The first line, as the voice reads it." },
+    { "id": "l2", "text": "A line placed on the music grid.", "at": 4.5, "anchor": "grid" },
+    { "id": "l3", "text": "A held statement.", "show": "statement" }
   ]
 }
