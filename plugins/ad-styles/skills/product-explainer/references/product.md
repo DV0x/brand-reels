@@ -7,12 +7,12 @@ never redrawn and never generated (generated labels come out as gibberish).
 - **Best:** the brand sends a current front photo on a plain background. A phone photo against a plain wall in daylight
   is enough; the label's print file is better still, because close-ups stay sharp. Ask for the back too if the story
   needs it.
-- **Fallback:** `RUN site.mjs <url> --product <handle|n|url> --out <project>/product/raw` downloads every photo of the
+- **Fallback:** `RUN site.mjs <url> --product <handle|n|url> --out <film>/product/raw` downloads every photo of the
   product at full size, with its size listed. Look at them and pick the plain-background front packshot. Infographics,
   lifestyle shots and model shots don't cut out cleanly.
 
 ## 2. Cut it out
-`RUN cutout.mjs <project>/product/raw/img-01.jpg --out <project>/product/main.png`
+`RUN cutout.mjs <film>/product/raw/img-01.jpg --out <film>/product/main.png`
 Read the report, then **look at the check image** (`main-check.jpg`, the cut-out on red and on near-black). Then:
 - **"a shadow on the floor is probably attached":** crop it away with `--crop x0,y0,x1,y1` (pixels of the original
   photo), keeping the whole product. Only if the shadow is under the product, try `--shadows remove`, and check that the

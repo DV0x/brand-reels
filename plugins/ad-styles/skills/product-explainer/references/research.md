@@ -1,6 +1,6 @@
 # Research: what to find, where, and when to stop
 
-Budget: about 20 tool calls for step 2, and up to 5 more after the topic is chosen. Research is for finding a topic a
+Budget: about 20 tool calls for the research (SKILL.md, step 1), and up to 5 more after the topic is chosen. Research is for finding a topic a
 stranger cares about and the true facts to answer it. It is not a report. Stop when `research.md` has what's below.
 
 ## 1. The brand and its products
@@ -15,7 +15,7 @@ Write a voice card:
 - 8 to 10 lines copied exactly from their pages, with the page they came from.
 - Three words for how they sound, and one they never do (e.g. "warm, wry, reassuring; never loud").
 - Who they talk to and how: "you" or "we", formal or casual, Hindi words or not, emoji or not, British or US spelling.
-- Fonts (site.json `fonts`; note any Google Font, it can be downloaded into `<project>/fonts/`) and colours (site.json
+- Fonts (site.json `fonts`; note any Google Font, it can be downloaded into `<film>/fonts/`) and colours (site.json
   `colors`, plus the packaging's own colours from the photo).
 - How their own videos move, if you see them (calm, bouncy, clinical): this sets the motion setting (warm, playful, crisp).
 

@@ -8,3 +8,6 @@ smoke-frames/
 node_modules/
 .DS_Store
 *.part.*
+# a film's API keys and voice cache never go in the repository
+.env
+vo/

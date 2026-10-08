@@ -441,14 +441,19 @@ export default function dossier(K) {
   };
 
   // ---------------------------------------------------------------- the HUD (screen space)
+  // o.until: the HUD leaves with the style's pop (folds flat in 0.15 s), like a headline's until
   const hud = (g, t, o = {}) => {
     const dark = !!o.dark, inkC = dark ? C.cream : C.ink;
+    if (o.until != null) ev(o.until);
+    const out = o.until != null ? clamp((t - o.until) / 0.15) : 0, kOut = 1 - E.in(out);
+    if (out >= 1) return;
+    const fold = (yc, fn) => { g.save(); g.translate(0, yc); g.scale(1, Math.max(0.01, kOut)); g.translate(0, -yc); fn(); g.restore(); };
     g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.textBaseline = 'alphabetic'; g.textAlign = 'left';
-    if (o.caseNo) { g.font = font(F.mono, 28, 800); g.fillStyle = inkC; g.fillText(o.caseNo, SAFE.x0, SAFE.y0 + 38); }
+    if (o.caseNo) fold(SAFE.y0 + 28, () => { g.font = font(F.mono, 28, 800); g.fillStyle = inkC; g.fillText(o.caseNo, SAFE.x0, SAFE.y0 + 38); });
     if (o.chip) {
       const [a, b] = o.chip, size = 40; g.font = font(F.mono, size, 800);
       const wa = g.measureText(a).width, wb = b ? g.measureText(b).width : 0, pad = 16, ch = 58, y = SAFE.y0 + 52, w = wa + (b ? wb + pad : 0) + pad * 2;
-      const k = o.chipAt != null ? E.back(seg(t, o.chipAt, o.chipAt + 0.25)) : 1;
+      const k = (o.chipAt != null ? E.back(seg(t, o.chipAt, o.chipAt + 0.25)) : 1) * kOut;
       g.save(); g.translate(SAFE.x0, y); g.scale(1, Math.max(0.01, k));
       g.fillStyle = dark ? C.cream : C.ink; g.fill(roundRect(0, 0, w, ch, 8));
       g.fillStyle = dark ? C.ink : C.highlight; g.fillText(a, pad, ch * 0.72);
@@ -456,12 +461,12 @@ export default function dossier(K) {
       g.restore();
       K.noteText('chip:' + a + (b || ''), { text: `${a} ${b || ''}`, role: 'label', size, box: [SAFE.x0, y, SAFE.x0 + w, y + ch], t });
     }
-    if (o.date) {
+    if (o.date) fold(SAFE.y0 + 27, () => {
       g.font = font(F.mono, 30, 800); const dw = g.measureText(o.date).width, bw = dw + 76, bx = SAFE.x1 - bw, by = SAFE.y0 + 2;
       g.strokeStyle = inkC; g.lineWidth = 4; g.stroke(roundRect(bx, by, bw, 50, 8));
       g.globalAlpha = Math.floor(t * 2) % 2 ? 0.25 : 1; g.fillStyle = C.stamp; g.fill(circle(bx + 26, by + 25, 9)); g.globalAlpha = 1;
       g.fillStyle = inkC; g.fillText(o.date, bx + 48, by + 36);
-    }
+    });
     g.restore();
   };
 

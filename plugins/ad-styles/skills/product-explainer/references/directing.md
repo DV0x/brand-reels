@@ -19,6 +19,8 @@ frame is a phone (1080 × 1920). Licences: `THIRD-PARTY-NOTICES.md` at the plugi
 9. Performance
 10. The failures seen most
 11. The review loop, before delivery
+12. Deliver, and keep the brand's memory
+13. Changes after delivery
 
 ## 1. What is fixed and what is yours
 - **The style's `STYLE.md` is fixed:** its look, colour, type, motion, camera grammar, sound palette, native moves and
@@ -56,8 +58,8 @@ The benchmark lifts quality more than any rule below.
   remove it.
 
 ## 4. Write the treatment
-Write `TREATMENT.md` in the project after the script is approved and before drawing anything, and before you look at any
-other film in this style:
+Write `TREATMENT.md` in the film folder after the script is approved and `BRIEF.md` is saved, and before drawing
+anything:
 1. **Three candidate structures**, a few lines each (a single journey, a before and after, a countdown, a list that
    turns, a fill-in-the-blank...), then the one you chose and why. Choose the opening image, the ending and the shape of
    the score from the topic too. Say why you rejected the other two.
@@ -74,7 +76,7 @@ other film in this style:
 
 ## 5. Prove the look: style frames and design review
 - **Three style frames from the film,** drawn with the film's real code, not a mock-up: one is the signature shot, one
-  shows the product. Finish those scenes first, then render them (`render.mjs <project> frame <t>`).
+  shows the product. Finish those scenes first, then render them (`render.mjs <film> frame <t>`).
 - **Review them in rounds, and write each round in `REVIEW.md`:** what you saw, what you changed. Look at full size and
   at phone size. Fix and render again until a round finds nothing. Expect several rounds: labels touching, a stamp
   too pale, a prop that reads as something else.
@@ -82,7 +84,7 @@ other film in this style:
   pitfalls): one subject with empty ground around it, a clear order from top to bottom, colours with jobs, three text
   sizes at most, one texture field at most and only with a job, nothing the treatment didn't ask for, nothing touching
   or crowding, every shape reading as what it is.
-- **If the user asked to see the look first,** show the frames with their lines and wait for the OK (APPROVAL 2).
+- **If the user asked to see the look first,** show the frames with their lines and wait for the OK.
   Otherwise don't stop.
 
 ## 6. Sound is half the film
@@ -158,19 +160,15 @@ other film in this style:
   file's mugshot, exhibits and verdict) loses to a film that starts from the fact.
 
 ## 11. The review loop, before delivery
-**By script:** `RUN render.mjs <project> check`, fix every issue, and run it again until it prints PASS.
+**By script:** `RUN render.mjs <film> check`, fix every issue, and run it again until it prints PASS (exit 0). What each
+check measures: [tools.md](tools.md), section 6. Treat its warnings as issues too: a film outside 25 to 35 s goes back
+to the script, not to the timing. The video adds: a full decode with no errors, no frozen stretch of 0.4 s or more, and
+loudness within 1 LU of −14.
 
-| Check | Passes when |
-|---|---|
-| Size | captions ≥ 56 px, headlines ≥ 72 px, labels and stamps ≥ 40 px, notes ≥ 36 px (texture is exempt) |
-| Safe zone | words inside the placement's safe box (craft.md section 3); organic: x 120–888, y 260–1580, and left of x 780 below y 1100 |
-| Reading time | each headline, label and note stays at least letters ÷ 15 + 1.5 s, or its spoken line + 0.6 s |
-| Contrast | ≥ 4.5:1 for text under 72 px, ≥ 3:1 for larger |
-| Still moments | two frames 0.3 s apart in the middle of every line and the end differ |
-| Product size | the photo is never drawn bigger than it was taken |
-| Hits on the beat | every declared hit is within half a frame of the music grid |
-
-The video adds: a full decode with no errors, no frozen stretch of 0.4 s or more, and loudness within 1 LU of −14.
+**Small images first.** Review on contact sheets and strips (each frame is 270 × 480 there): that is enough to judge
+story order, layout and motion. Open a full-size frame, or a 100% crop (`frame <t> --crop x,y,w,h`), only for a detail
+you can't judge small: a label's edge, a thin line, the product's print. Every full-size image you look at stays in your
+memory for the rest of the film.
 
 **By eye, in rounds written in `REVIEW.md`:**
 1. **Contact sheets of the whole film,** one frame per second (`render.mjs contact`), at least two full passes: story
@@ -182,3 +180,32 @@ The video adds: a full decode with no errors, no frozen stretch of 0.4 s or more
 4. **Watch it once at full speed with sound.** If you can't, say so, and ask the user to watch it before it goes out.
 
 The film is ready when a full round finds nothing to change.
+
+## 12. Deliver, and keep the brand's memory
+Write these in the film folder from the templates (`templates/CREDITS.md`, `templates/DELIVERY.md`):
+- **`CREDITS.md`:** every font (family, licence, where from), the voice (Cartesia, the voice's name and id), the music
+  and effects (made in code by this skill), the product photo (where it came from, and its date if known), any other
+  picture, with its licence. Nothing goes in the film without a line here.
+- **`DELIVERY.md`:** the MP4 path, its length and size, the cover and the subtitles; one line on what the film does; a
+  post caption in the brand's voice; the benchmark you used; the check result and the loudness; **what you could not do,
+  and why** (a shot you cut, a check you could not run, something you could not hear); anything you were not sure of (a
+  claim, the photo's age, a pronunciation); and the one command that renders it again
+  (`RUN render.mjs <film> video`). If the user is not the brand, say the post must be labelled as a concept or spec
+  film. Don't post anything yourself.
+- **The brand's memory** (in the brand folder, one level up): add this film's lessons to `LEARNINGS.md` (what worked,
+  what the user changed, what to avoid next time; dated, short). Update `BRAND.md`: the facts used and their sources,
+  the film made, its style and topic, and the user's verdict when you have it. The next film for this brand reads both
+  first and skips the questions they answer.
+
+Then tell the user where the film folder is, and ask them to watch the film once with sound before it goes out.
+
+## 13. Changes after delivery
+Changes happen in a **new chat**, so the old film's images and tool output don't fill the new agent's memory. The new
+chat reads, in order: `BRIEF.md`, `TREATMENT.md`, the last round of `REVIEW.md`, `DELIVERY.md`, then the user's notes.
+- Notes about the words go back to the script: show the changed lines for approval, update `BRIEF.md`, run `voice.mjs`
+  again (only changed lines cost anything).
+- Notes about the look, the timing or the sound are directing: change `film.mjs`, and write the round in `REVIEW.md`
+  (the note, your reading of it, what you changed).
+- A vague note gets your best reading, stated in one line when you show the result; ask only when two readings would
+  lead to different films.
+- Run the whole review loop (section 11) again before the new delivery, and add the lessons to `LEARNINGS.md`.

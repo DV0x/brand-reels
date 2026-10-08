@@ -65,7 +65,14 @@ More about it:
 
 | Skill | What it makes | Status |
 |---|---|---|
-| `product-explainer` | A 25–45 s explainer reel for a D2C product, from the brand's website: research, script, contact sheet, then the video with voice, captions, music and sound | New |
+| `product-explainer` | An explainer reel of about 30 s for a D2C product, from the brand's website: research, a script you approve, then the video with voice, captions, music and sound | New |
+
+Ask for it in plain words: "make an explainer reel for <brand website>".
+
+| Film style (inside `product-explainer`) | Best for | Status |
+|---|---|---|
+| Halftone Dossier: a retro print case file | myth-busting, label honesty, hidden facts | **Tested** |
+| 22 more (mid-century cartoon, Swiss motion, data storytelling, risograph, watercolor, pixel RPG and others) | | Drafts: ask for one by name; Claude says it is not tested yet |
 
 `check-setup` is included too. It verifies your computer can render.
 
@@ -77,6 +84,7 @@ More about it:
 - **Network access:**
   - the one-time setup downloads from the three sources above
   - `product-explainer` reads the brand website you give it (pages, product data and photos)
+  - `product-explainer` runs web searches through your Claude app to research the brand and what its customers say
   - `product-explainer` sends the voiceover script to Cartesia, using your own Cartesia API key, if you choose a voiceover
 
 ## Licenses

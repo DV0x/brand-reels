@@ -5,10 +5,16 @@ This plugin adapts methods, specifications and code from the projects below. Eac
 ## lemo-opuscar (MIT)
 https://github.com/lemomo-ai/lemo-opuscar. Copyright (c) 2026 LemoLab.
 
-Adapted: the directing method (`DIRECTOR.md`) in `skills/product-explainer/references/directing.md`; the style
-specifications (`styles/<style>/STYLE.md`) in `skills/product-explainer/styles/*/STYLE.md`, rewritten for 9:16 product
-reels; the Halftone Dossier drawing techniques and its synth pop-print score in
-`skills/product-explainer/styles/halftone-dossier/engine.mjs` and `skills/product-explainer/scripts/lib/audio.mjs`.
+Copied: the Halftone Dossier style specification (`styles/halftone-dossier/STYLE.md`), word for word, in
+`skills/product-explainer/styles/halftone-dossier/STYLE.md`, with notes marked "For 9:16 reels" and a section 12 that
+are ours (its pointers to lemo's demo film are left out).
+
+Adapted: the directing method (`DIRECTOR.md`) in `skills/product-explainer/references/directing.md`; the manual's
+routing table and workflow (`AGENTS.md`) in `skills/product-explainer/SKILL.md`; the tools manual (`core/README.md`)
+in `skills/product-explainer/references/tools.md`; the other style specifications (`styles/<style>/STYLE.md`) in
+`skills/product-explainer/styles/*/STYLE.md`, rewritten for 9:16 product reels (drafts); the Halftone Dossier drawing
+techniques and its synth pop-print score in `skills/product-explainer/styles/halftone-dossier/engine.mjs` and
+`skills/product-explainer/scripts/lib/audio.mjs`.
 
 > Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 > documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
@@ -31,5 +37,7 @@ still moments, reading time) in `skills/product-explainer/scripts/`. The MIT per
 
 ## Fonts (SIL Open Font License 1.1)
 Bundled in `skills/product-explainer/styles/halftone-dossier/fonts/`, each with its licence file: Alfa Slab One,
-Archivo Black, Bagel Fat One, JetBrains Mono. Fonts a film downloads with `fonts.mjs` come from Google Fonts under the
-same licence; the film's `CREDITS` lists them.
+Archivo Black, Bagel Fat One, JetBrains Mono. Bundled in `skills/product-explainer/assets/fonts/`: Caveat, Cormorant
+Garamond, DM Serif Display, Fraunces, Inter, Jost; and in `skills/check-setup/assets/fonts/`: Bangers, JetBrains Mono.
+Fonts a film downloads with `fonts.mjs` come from Google Fonts under the same licence; each film's `CREDITS.md` lists
+them.

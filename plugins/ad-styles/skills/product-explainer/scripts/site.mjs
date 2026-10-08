@@ -4,12 +4,15 @@
 //   site.mjs <url> --product <handle|number|url> --out <project>/product/raw
 //                                                    -> that product's photos at full size, product.json, and any reviews on the page
 // Shopify stores are read from /products.json; other sites from the page's own product data (JSON-LD) and og:image.
+// Exit codes: 0 done, 1 failed (the message says how to fix it), 2 wrong call (usage).
 import fs from 'node:fs';
 import path from 'node:path';
 
 const argv = process.argv.slice(2), opts = {}, pos = [];
 for (let i = 0; i < argv.length; i++) { if (argv[i].startsWith('--')) opts[argv[i].slice(2)] = argv[i + 1] && !argv[i + 1].startsWith('--') ? argv[++i] : true; else pos.push(argv[i]); }
-if (!pos[0]) { console.log('usage: site.mjs <url> [--out dir] [--product handle|n|url]'); process.exit(1); }
+const USAGE = 'usage: site.mjs <url> --out <dir>   |   site.mjs <url> --product <handle|n|url> --out <project>/product/raw';
+if (opts.help) { console.log(USAGE); process.exit(0); }
+if (!pos[0]) { console.error('[product-explainer] ERROR: no website given.\n' + USAGE); process.exit(2); }
 const start = new URL(/^https?:/.test(pos[0]) ? pos[0] : 'https://' + pos[0]), origin = start.origin, out = path.resolve(opts.out || '.');
 fs.mkdirSync(out, { recursive: true });
 
@@ -46,7 +49,7 @@ async function productMode() {
   if (/^https?:/.test(sel) || sel.includes('/')) pageUrl = abs(sel);
   else if (shop?.products) {
     const p = /^\d+$/.test(sel) ? shop.products[+sel - 1] : shop.products.find(x => x.handle === sel);
-    if (!p) { console.error(`no product "${sel}" (use a handle or a number from the list)`); process.exit(1); }
+    if (!p) { console.error(`[product-explainer] ERROR: no product "${sel}". Use a handle or a number from the list that site.mjs <url> --out <dir> prints.`); process.exit(2); }
     pageUrl = `${origin}/products/${p.handle}`;
   } else pageUrl = abs(`/products/${sel}`);
   // Shopify gives the original uploads with their sizes
@@ -78,7 +81,7 @@ async function productMode() {
       files.push({ file: f, w, h });
     }
   }
-  if (!prod) { console.error('could not read that product page'); process.exit(1); }
+  if (!prod) { console.error('[product-explainer] ERROR: could not read that product page. Open it with WebFetch and save the photos by hand, or ask the brand for a photo.'); process.exit(1); }
   // reviews printed into the page by common review apps (many load later with JavaScript and won't show here)
   const reviews = [];
   if (html) {

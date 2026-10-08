@@ -9,13 +9,17 @@
 // last resort, and its check image must be looked at.
 // Photos with a busy background (a table, a hand, a room) need a plain-background photo instead: ask the brand.
 // A PNG that is already transparent is just trimmed.
+// Exit codes: 0 done, 1 failed (the message says how to fix it), 2 wrong call (usage).
 import fs from 'node:fs';
 import path from 'node:path';
 import { createCanvas, loadImage } from './lib/canvas.mjs';
 
 const argv = process.argv.slice(2), opts = {}, pos = [];
 for (let i = 0; i < argv.length; i++) { if (argv[i].startsWith('--')) opts[argv[i].slice(2)] = argv[i + 1] && !argv[i + 1].startsWith('--') ? argv[++i] : true; else pos.push(argv[i]); }
-if (!pos[0]) { console.log('usage: cutout.mjs <photo> --out <file.png> [--tol 30]'); process.exit(1); }
+const USAGE = 'usage: cutout.mjs <photo> --out <project>/product/main.png [--tol 30] [--crop x0,y0,x1,y1] [--shadows remove] [--box]';
+if (opts.help) { console.log(USAGE); process.exit(0); }
+if (!pos[0]) { console.error('[product-explainer] ERROR: no photo given.\n' + USAGE); process.exit(2); }
+if (!fs.existsSync(pos[0])) { console.error(`[product-explainer] ERROR: no file at ${pos[0]}. Download the product's photos first: site.mjs <url> --product <handle> --out <project>/product/raw\n` + USAGE); process.exit(2); }
 const src = path.resolve(pos[0]), outFile = path.resolve(opts.out || src.replace(/\.[^.]+$/, '') + '-cut.png');
 
 const img = await loadImage(fs.readFileSync(src));

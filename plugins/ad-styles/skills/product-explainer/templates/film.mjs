@@ -1,6 +1,8 @@
-// film.mjs: the film, written from TREATMENT.md. Copy this file into the project as film.mjs.
+// film.mjs: the film, written from TREATMENT.md. Copy this file into the film folder as film.mjs.
 // It is an empty skeleton, not a story: there are no scenes, props or words in it, and nothing appears on screen
-// unless one of your scenes draws it. Read references/directing.md (the method) and references/film-api.md (the API).
+// unless one of your scenes draws it. Read references/directing.md (the method) and references/film-api.md (every call).
+// The film is about 30 s (25 to 35), on the time map from copy.md: 0-9 s the hook, 9-18 s the hidden fact and why,
+// 18-25 s the product as the answer, 25-30 s the tip and the end card.
 //
 // The order of work:
 //   1. The timeline, from the treatment's cue map: the music grid, the lines placed on it (script.json "at" and
@@ -17,13 +19,15 @@ export default function film(K) {
   // ---------------------------------------------------------------- 1. the timeline: one source of truth
   // The music grid comes first. Every cut, big hit and caption lands on it; the voice lines are placed on it in
   // script.json. Times come from words (T.word, T.at, T.end) or the grid (G.barStart), never from typed guesses.
-  const G = K.grid(120, 0);           // TODO: the treatment's tempo and first downbeat (seconds)
+  const G = K.grid(90, 0.5);          // TODO: the treatment's tempo (75, 90 or 150 BPM: 16ths on whole frames) and first downbeat
+  // The four parts of the time map, from the script's lines (TODO: the ids that open each part)
+  const PART = { hook: 0, fact: T.at('l4'), answer: T.at('l5'), tip: T.at('l6'), endCard: T.endCard };
   const on16 = t => G.snap(t, 'nearest', G.beat / 4);   // a hit lands on the 16th note nearest its word
 
   // The shot list, in order. cut: true is a hard cut (the contrast tool, rare); 'wipe' is the style's own transition;
   // false continues the camera.
   const SHOTS = [
-    // { name: 'shot 1', from: 0, to: T.at('l3'), cut: true },
+    // { name: 'the hook', from: PART.hook, to: PART.fact, cut: true },
   ];
   const hits = [];                    // every big hit, checked against the grid: hit(t, 'stamp')
   const cues = [];                    // one sound per visible action: cue(t, 'paper', 0.8)

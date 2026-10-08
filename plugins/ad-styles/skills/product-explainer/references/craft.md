@@ -70,17 +70,17 @@ stuff. The style's `STYLE.md` holds its own numbers; this file holds what is tru
 - **Richness comes from variation, not more colours:** jitter every repeated element by 4 to 13% in value, size and
   angle (`K.jitter`, seeded noise). Never stamp identical copies.
 - **Detail where the camera gets closest.** Plan each subject's closest shot and build its detail for that size; check
-  it on a 100% crop (`render.mjs <project> frame <t> --crop x,y,w,h`) before anyone else sees it.
+  it on a 100% crop (`render.mjs <film> frame <t> --crop x,y,w,h`) before anyone else sees it.
 - **Specific, never generic:** props come from this brand's story and its customers' lives (an object from their daily
   routine, the real ingredient), researched before drawn.
 - **Material goes on last and stays put:** the medium's texture (paper, screen, weave, pixel grid) is fixed to the
   frame or the page, so subjects move under it; an object's own texture rides with the object.
 
 ## 6. Building a style that has no engine yet
-Styles marked "rules" in SKILL.md have a full `STYLE.md` but no drawing code. Build it before the film:
+Draft styles (SKILL.md, "The styles") have a full `STYLE.md` but no drawing code. Build it before the film:
 1. Read the whole `STYLE.md`. Its section 10 lists the primitives to write: the material, the signature mark, the type
    treatment, the caption, the transition and the product treatment, with their numbers.
-2. Write them in `<project>/style.mjs` (a module the film imports) as pure functions of t, on the canvas API. Draw
+2. Write them in `<film>/style.mjs` (a module the film imports) as pure functions of t, on the canvas API. Draw
    with paths, fills, composite modes (multiply, screen) and ImageData passes; there's no browser, SVG filter or WebGL.
 3. Test each primitive on a 100% crop, then compose one style frame (the hardest card) and check it against the style's
    sections 1 to 6. Only then build the film from `templates/film.mjs`.

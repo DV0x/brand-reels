@@ -9,7 +9,7 @@
     {
       "name": "ad-styles",
       "source": "./plugins/ad-styles",
-      "description": "Ad styles for Claude: make scroll-stopping video ads entirely in code, with no image or video generation. New styles arrive with each update."
+      "description": "Ad styles for Claude: scroll-stopping videos made entirely in code, with no image or video generation. Starts with product-explainer: about-30-second explainer reels for D2C products. New styles arrive with each update."
     }
   ]
 }

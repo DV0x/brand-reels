@@ -12,6 +12,7 @@
 //   starts at "at". Re-running costs nothing for lines already voiced. "duration" fixes the film's length (else the last
 //   line's end + tail).
 //   text is what the captions show (*emphasis* allowed); say, if given, is what the voice reads (e.g. "₹499" -> "four ninety-nine rupees").
+// Exit codes: 0 done, 1 failed (the message says how to fix it), 2 wrong call (usage).
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -26,7 +27,7 @@ const API = 'https://api.cartesia.ai', VERSION = '2026-08-14', SR = 48000;
 function key() {
   const fromFile = f => { if (!f || !fs.existsSync(f)) return null; const m = fs.readFileSync(f, 'utf8').match(/CARTESIA_API_KEY\s*=\s*"?([^"\n#\s]+)/); return m ? m[1] : null; };
   const k = fromFile(opts['key-file']) || process.env.CARTESIA_API_KEY || (project && fromFile(path.join(project, '.env')));
-  if (!k) { console.error('[product-explainer] ERROR: no Cartesia API key. Pass --key-file <path to a .env with CARTESIA_API_KEY=...>, set CARTESIA_API_KEY, or put it in <project>/.env.\nWithout a key, render with --estimate for a text-only cut (no voice).'); process.exit(3); }
+  if (!k) { console.error('[product-explainer] ERROR: no Cartesia API key. Pass --key-file <path to a .env with CARTESIA_API_KEY=...>, set CARTESIA_API_KEY, or put it in <project>/.env.\nWithout a key, render with --estimate for a text-only cut (no voice).'); process.exit(1); }
   return k;
 }
 const headers = () => ({ Authorization: `Bearer ${key()}`, 'Cartesia-Version': VERSION, 'Content-Type': 'application/json' });
@@ -37,7 +38,7 @@ if (opts.voices) {
   let all = [], after = null;
   for (let page = 0; page < 10; page++) {
     const r = await fetch(`${API}/voices?limit=100${after ? '&starting_after=' + after : ''}`, { headers: headers() });
-    if (!r.ok) { console.error(r.status, await r.text()); process.exit(1); }
+    if (!r.ok) { console.error(`[product-explainer] ERROR: Cartesia ${r.status}: ${(await r.text()).slice(0, 200)} (401 or 403: check the API key)`); process.exit(1); }
     const j = await r.json(), list = Array.isArray(j) ? j : j.data || [];
     all = all.concat(list);
     if (Array.isArray(j) || !j.has_more || !list.length) break;
@@ -48,7 +49,10 @@ if (opts.voices) {
   console.log(`${hit.length} of ${all.length} voices`);
   process.exit(0);
 }
-if (!project) { console.log('usage: voice.mjs <project> [--only id] [--key-file .env] | voice.mjs --voices [words]'); process.exit(1); }
+const USAGE = 'usage: voice.mjs <project> [--words] [--only id] [--key-file .env]   |   voice.mjs --voices [words]';
+if (opts.help) { console.log(USAGE); process.exit(0); }
+if (!project) { console.error('[product-explainer] ERROR: no project folder.\n' + USAGE); process.exit(2); }
+if (!fs.existsSync(path.join(project, 'script.json'))) { console.error(`[product-explainer] ERROR: no script.json in ${project}. Start from templates/script.json.\n` + USAGE); process.exit(2); }
 
 // ---------------------------------------------------------------- one line through Cartesia (SSE, with word timestamps)
 async function tts(transcript, v) {

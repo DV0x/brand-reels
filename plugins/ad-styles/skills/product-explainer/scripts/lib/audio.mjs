@@ -8,8 +8,10 @@ import { FFMPEG } from './canvas.mjs';
 
 export const SFX_NAMES = ['pop', 'click', 'tick', 'whoosh', 'swish', 'thud', 'stamp', 'stampbig', 'paper', 'tape', 'marker', 'flip', 'crinkle', 'chime', 'ding', 'steam', 'door', 'pour', 'sparkle', 'rise', 'snap', 'shutter', 'type', 'boing', 'plop'];
 export const MUSIC_NAMES = ['warm', 'bright', 'calm', 'dossier', 'none'];
-// Effects that sat 30 to 40 dB under the voice's peaks at gain 1, lifted by what the TWT test film measured it needed.
-const SFX_LIFT = { marker: 6, whoosh: 4, swish: 4, flip: 3.5, tick: 2.2, boing: 2.5, chime: 2.7, snap: 2.2 };
+// Effects that sat 30 to 40 dB under the voice's peaks at gain 1, lifted by what a test film measured each one needed
+// to be heard under the voice, so a film's cue gain of 1 is a normal level for every effect.
+const SFX_LIFT = { marker: 6, whoosh: 4, swish: 4, flip: 3.5, tick: 2.2, boing: 2.5, chime: 2.7, snap: 2.2,
+  sparkle: 2, ding: 2, crinkle: 2, click: 1.6, paper: 1.3, thud: 1.4, pour: 1.4 };
 
 // music: a preset name, or { preset, bpm, offset, sections: [{ at, kind }], silences: [[a, b]], end } for presets that
 // follow the film's sections (dossier: intro | groove | sneak | build | drop | outro), or a film's own score:

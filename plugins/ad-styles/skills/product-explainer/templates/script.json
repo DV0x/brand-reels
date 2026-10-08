@@ -1,15 +1,19 @@
 {
   "brand": "Brand",
   "product": "Product name",
-  "slug": "brand-product-explainer",
+  "slug": "brand-product",
   "style": "halftone-dossier",
+  "placement": "organic",
   "voice": { "provider": "cartesia", "id": "", "model": "sonic-3.6", "language": "en", "speed": 1.0 },
   "lead": 0.4,
   "gap": 0.35,
   "tail": 2.6,
   "lines": [
-    { "id": "l1", "text": "The first line, as the captions show it.", "say": "The first line, as the voice reads it." },
-    { "id": "l2", "text": "A line placed on the music grid.", "at": 4.5, "anchor": "grid" },
-    { "id": "l3", "text": "A held statement.", "show": "statement" }
+    { "id": "l1", "text": "The hook's subject, in the first two words.", "at": 0.5 },
+    { "id": "l2", "text": "The viewer's belief, as captions show it.", "say": "The viewer's belief, as the voice reads it." },
+    { "id": "l3", "text": "The turn.", "show": "statement" },
+    { "id": "l4", "text": "The hidden fact starts near nine seconds.", "at": 9.0, "anchor": "hidden" },
+    { "id": "l5", "text": "The product as the answer starts near eighteen seconds.", "at": 18.0, "anchor": "product" },
+    { "id": "l6", "text": "The tip starts near twenty-five seconds.", "at": 25.0, "anchor": "tip" }
   ]
 }

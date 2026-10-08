@@ -8,16 +8,16 @@ The bar for every film. Each entry is real, and its numbers come from the source
 - Short-form reels (1 to 8)
 - Brand films (9 to 19)
 - Three whole films, beat by beat
-- Which entry shows which technique
 - Sources
 
 ## How to use this file
-- Read it before you write hooks (step 2), and again before the treatment.
+- Read it before you write hooks (SKILL.md, step 2), and again before the treatment.
 - Pick 1 or 2 entries that fit the topic. Write what to learn from each and what not to take: in `research.md` for the
   hooks, in `TREATMENT.md` for the film.
 - Learn the grammar only: how the first second works, how the question is held, how the proof is shown. Never reuse an
   entry's words, subject, product, character or joke. Your hook comes from this brand's own fact.
 - These are the bar, not templates. If your hooks would look weak next to them, write more hooks.
+- Which entry shows which technique: the technique table in [copy.md](copy.md) ("Techniques").
 
 ## Short-form reels
 
@@ -135,19 +135,6 @@ In our own words; no scripts are copied.
    billboard → two girls look up at it → the line.
 3. **McDonald's photo shoot:** the customer's question → a burger bought in a restaurant → the studio → the stylist
    builds the ad burger → the photo and the edit → both burgers side by side.
-
-## Which entry shows which technique
-| Technique | Entries |
-|---|---|
-| The viewer's belief, then broken | 1, 6 |
-| A customer's or sceptic's question | 2, 9, 15, 18 |
-| A number made physical | 3, 4 |
-| Proof in the first second | 3, 7, 13, 17 |
-| A hidden process shown | 8, 14, 15, 16 |
-| Text and voice that add up | 5 |
-| An awkward fact said plainly | 10, 11 |
-| A question held open for long | 12, 19 |
-| A test the product passes | 12, 13, 17 |
 
 ## Sources
 1. https://www.instagram.com/reel/Dbsp-PZonNb/ (plays read 2026-10-06; words from speech-to-text)

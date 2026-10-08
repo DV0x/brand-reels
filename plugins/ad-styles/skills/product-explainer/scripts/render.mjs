@@ -11,6 +11,7 @@
 //   render.mjs <project> check                           the machine checks: text size, safe zone, reading time,
 //                                                         contrast, still moments, hits on the beat; out/check.json
 //   add --estimate to any mode to time the lines from the text when there is no voice yet
+// Exit codes: 0 done (check: PASS), 1 failed (check: issues to fix), 2 wrong call (usage, no script.json, bad mode).
 // Run it through the plugin's launcher: bash <plugin>/runtime/run.sh render.mjs <project> <mode> ...
 import fs from 'node:fs';
 import os from 'node:os';
@@ -27,6 +28,11 @@ import { MEDIA } from './lib/media.mjs';
 
 const SELF = fileURLToPath(import.meta.url);
 const readJSON = f => JSON.parse(fs.readFileSync(f, 'utf8'));
+// a wrong call (exit 2), as opposed to a failure while rendering (exit 1)
+class UsageError extends Error {}
+const USAGE = 'usage: render.mjs <project> frame <t...> [--crop x,y,w,h] | sheet | contact [--every 1] | strip <from> <to> [--step 0.2] | check | video [--fps 30] [--from a --to b] [--workers n]   options: --debug (show the safe zone), --estimate (time the lines from the text)';
+// a film's target length (copy.md): about 30 s, never under 25 or over 35
+const LEN_MIN = 25, LEN_MAX = 35;
 
 // ---------------------------------------------------------------- timing: the voice's, or an estimate from the text
 function loadTiming(project, script, estimate) {
@@ -48,6 +54,7 @@ const STYLES = path.join(SKILL, 'styles');
 const styleList = () => (fs.existsSync(STYLES) ? fs.readdirSync(STYLES).filter(d => fs.existsSync(path.join(STYLES, d, 'STYLE.md'))) : []);
 
 async function setup(project, { estimate = false } = {}) {
+  if (!fs.existsSync(path.join(project, 'script.json'))) throw new UsageError(`no script.json in ${project}. Give the film's project folder (it holds script.json); start from templates/script.json.`);
   const script = readJSON(path.join(project, 'script.json'));
   const timing = loadTiming(project, script, estimate);
   // the style: its fonts, and its engine if it has one (styles/<style>/engine.mjs), handed to the film as K.style
@@ -108,7 +115,8 @@ function qaOf(S) {
   const warnings = [];
   if (cuts > 5) warnings.push(`${cuts} hard cuts: keep it to 5 or fewer; travel the camera, or use the style's own transition`);
   if (gaps.length) warnings.push(`nothing new happens for more than 4 s in: ${gaps.map(g => `${g[0]}-${g[1]} s`).join(', ')} (a breath is fine; a dead stretch is not)`);
-  if (statements > 5) warnings.push(`${statements} statements: use 3 to 5`);
+  if (statements > 4) warnings.push(`${statements} statements: use 3 or 4 (copy.md)`);
+  if (timing.duration < LEN_MIN || timing.duration > LEN_MAX) warnings.push(`the film is ${timing.duration.toFixed(1)} s: aim for about 30 s (${LEN_MIN} to ${LEN_MAX}). Cut or add words in the script; never pad with pauses or speed up the voice (copy.md)`);
   if (timing.estimated) warnings.push('timing is estimated from the text: make the voice before the final render');
   if ([0, timing.duration / 2].some(t => S.lookAt(t) === 'none' || (!S.media[S.lookAt(t)] && S.lookAt(t) !== 'direct'))) warnings.push('look "none": a flat debug render, never for delivery (references/craft.md)');
   return { duration: timing.duration, style: S.style || null, shots: shots.length, hardCuts: cuts, styleTransitions: wipes, cues: cues.length, statements, eventGaps: gaps, warnings };
@@ -117,13 +125,26 @@ function qaOf(S) {
 // a pass over the whole film (no medium, no finish): it finds every animation start and records every text on screen
 // with its size, box and the times it shows (for the safe zone, size and reading-time checks)
 function probe(S, fps = 8) {
-  const g = S.canvas.getContext('2d');
-  for (let t = 0; t < S.timing.duration; t += 1 / fps) {
+  const g = S.canvas.getContext('2d'), at = t => {
     g.save(); reset(g); g.clearRect(0, 0, W, H);
     guard('draw', t, () => S.F.draw(g, t)); g.restore();
     g.save(); reset(g); S.K._captions(g, t); g.restore();
     if (S.F.over) { g.save(); reset(g); guard('over', t, () => S.F.over(g, t)); g.restore(); }
-  }
+  };
+  const seen = new Set();
+  for (let t = 0; t < S.timing.duration; t += 1 / fps) { at(t); seen.add(Math.round(t * 30)); }
+  return { at, seen };
+}
+// fast moves (a whip, a slam, a cut) happen around hits, cues, shot changes and animation starts: sample those windows
+// at every frame (30 fps), so a text that crosses out of the safe box for a few frames is caught before the video
+function probeDense(S, P, { before = 0.1, after = 0.5, cap = 900 } = {}) {
+  const { F, K, timing } = S, ev = [...(F.hits || []).map(h => (typeof h === 'number' ? h : h?.t)), ...(F.cues || []).map(c => c?.t),
+    ...(F.shots || []).map(s => s?.from), ...K._events].filter(Number.isFinite);
+  const frames = new Set();
+  for (const e of ev) for (let f = Math.ceil((e - before) * 30); f <= Math.floor((e + after) * 30); f++) if (f >= 0 && f / 30 < timing.duration && !P.seen.has(f)) frames.add(f);
+  const list = [...frames].sort((a, b) => a - b).slice(0, cap);
+  for (const f of list) P.at(f / 30);
+  return list.length;
 }
 
 // ---------------------------------------------------------------- the contact sheet
@@ -217,7 +238,7 @@ function blockMeans(g) {
 }
 async function check(S) {
   const { K, F, timing, project } = S, out = path.join(project, 'out'); fs.mkdirSync(out, { recursive: true });
-  probe(S, 6);
+  const dense = probeDense(S, probe(S, 6));
   const q = qaOf(S), texts = [...K._texts.values()], issues = [];
   // 1. size, 2. safe zone (from the kit's checks), 3. reading time
   for (const it of texts) {
@@ -270,7 +291,7 @@ async function check(S) {
       if (d > 0.017) issues.push({ check: 'beat', t, text: name, msg: `${(d * 1000).toFixed(0)} ms off the music grid (${bpm} BPM from ${grid} s)` });
     }
   }
-  const report = { ok: !issues.length, ...q, texts: texts.length, issues, contrast, still, hits };
+  const report = { ok: !issues.length, ...q, texts: texts.length, denseFrames: dense, issues, contrast, still, hits };
   fs.writeFileSync(path.join(out, 'check.json'), JSON.stringify(report, null, 1));
   return report;
 }
@@ -393,14 +414,16 @@ else {
   for (let i = 0; i < argv.length; i++) { const a = argv[i]; if (a.startsWith('--')) { const k = a.slice(2); opts[k] = VAL.has(k) ? argv[++i] : true; } else pos.push(a); }
   const flag = k => opts[k] === true, opt = (k, d) => (opts[k] != null ? opts[k] : d);
   const [proj, mode = 'sheet', ...rest] = pos;
-  if (!proj) { console.log('usage: render.mjs <project> frame <t...> | sheet | contact [--every 1] | strip <from> <to> [--step 0.2] | check | video [--fps 30] [--from a --to b] [--workers n] [--debug] [--estimate]'); process.exit(1); }
+  if (flag('help')) { console.log(USAGE); process.exit(0); }
+  if (!proj) { console.error('[product-explainer] ERROR: no project folder.\n' + USAGE); process.exit(2); }
   const project = path.resolve(proj), estimate = flag('estimate'), debug = flag('debug');
   try {
+    if (!['frame', 'sheet', 'contact', 'strip', 'check', 'video'].includes(mode)) throw new UsageError(`unknown mode "${mode}" (frame | sheet | contact | strip | check | video)`);
     const S = await setup(project, { estimate });
     if (mode === 'frame') {
       const dir = path.join(project, 'out', 'frames'); fs.mkdirSync(dir, { recursive: true });
       const times = rest.map(Number).filter(Number.isFinite);
-      if (!times.length) throw new Error('give one or more times in seconds, e.g. frame 1.5 4');
+      if (!times.length) throw new UsageError('give one or more times in seconds, e.g. frame 1.5 4');
       const crop = opts.crop ? String(opts.crop).split(',').map(Number) : null;
       for (const t of times) {
         drawFrame(S, t, debug); const f = path.join(dir, `t-${t.toFixed(2)}.png`); fs.writeFileSync(f, S.canvas.toBuffer('image/png')); console.log(f);
@@ -415,20 +438,22 @@ else {
     } else if (mode === 'contact') {
       const r = await contact(S, { every: +opt('every', 1), debug }); console.log(`contact  ${r.file}  (${r.frames} frames)`);
     } else if (mode === 'strip') {
-      const [a, b] = rest.map(Number); if (!Number.isFinite(a) || !Number.isFinite(b)) throw new Error('give the action\'s start and end in seconds, e.g. strip 11.0 12.2');
+      const [a, b] = rest.map(Number); if (!Number.isFinite(a) || !Number.isFinite(b)) throw new UsageError('give the action\'s start and end in seconds, e.g. strip 11.0 12.2');
       const r = await strip(S, a, b, { step: +opt('step', 0.2), debug }); console.log(`strip  ${r.file}  (${r.frames} frames)`);
     } else if (mode === 'video') {
       const r = await video(S, { fps: +opt('fps', 30), from: +opt('from', 0), to: opt('to') != null ? +opt('to') : null, workers: +opt('workers', 0), debug, project, estimate });
       console.log('\n' + JSON.stringify(r, null, 1));
     } else if (mode === 'check') {
       const r = await check(S);
-      console.log(`${r.ok ? 'PASS' : 'FIX'}  ${r.texts} texts checked, ${r.contrast.length} contrast samples, ${r.still.length} still-moment pairs, ${r.hits.length} hits on the beat`);
+      console.log(`${r.ok ? 'PASS' : 'FIX'}  ${r.texts} texts checked (${r.denseFrames} extra frames around fast moves), ${r.contrast.length} contrast samples, ${r.still.length} still-moment pairs, ${r.hits.length} hits on the beat`);
       for (const i of r.issues) console.log(`- [${i.check}] ${i.t != null ? i.t.toFixed(2) + ' s ' : ''}${i.text ? '"' + String(i.text).slice(0, 40) + '" ' : ''}${i.msg}`);
       for (const w of r.warnings) console.log(`- [film] ${w}`);
       console.log(path.join(project, 'out', 'check.json'));
-    } else throw new Error(`unknown mode "${mode}" (frame | sheet | contact | strip | video | check)`);
+      process.exit(r.ok ? 0 : 1);
+    }
     process.exit(0);
   } catch (e) {
+    if (e instanceof UsageError) { console.error('[product-explainer] ERROR: ' + e.message + '\n' + USAGE); process.exit(2); }
     console.error('[product-explainer] ERROR: ' + (e.stack || e).toString().split('\n').slice(0, 4).join('\n'));
     process.exit(1);
   }

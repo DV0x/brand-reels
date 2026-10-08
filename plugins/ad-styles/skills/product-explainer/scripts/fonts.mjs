@@ -3,15 +3,15 @@
 //   fonts.mjs "Gochi Hand:400" "Archivo:400,800,400i" --out <project>/fonts
 // Weights are comma-separated; an "i" after a weight is its italic. Files are named <Family_Name>-<weight>[-italic].ttf,
 // the name the renderer reads the family from. Fonts in <project>/fonts are loaded for that project only.
+// Exit codes: 0 done, 1 failed (the message says how to fix it), 2 wrong call (usage).
 import fs from 'node:fs';
 import path from 'node:path';
 
 const argv = process.argv.slice(2), specs = [], opts = {};
-for (let i = 0; i < argv.length; i++) { if (argv[i] === '--out') opts.out = argv[++i]; else specs.push(argv[i]); }
-if (!specs.length || !opts.out) {
-  console.log('usage: fonts.mjs "<Family>:<weights>" ... --out <dir>   e.g. "Gochi Hand:400" "Archivo:400,800,400i"');
-  process.exit(1);
-}
+for (let i = 0; i < argv.length; i++) { if (argv[i] === '--out') opts.out = argv[++i]; else if (argv[i] === '--help') opts.help = true; else specs.push(argv[i]); }
+const USAGE = 'usage: fonts.mjs "<Family>:<weights>" ... --out <dir>   e.g. "Gochi Hand:400" "Archivo:400,800,400i"';
+if (opts.help) { console.log(USAGE); process.exit(0); }
+if (!specs.length || !opts.out) { console.error(`[product-explainer] ERROR: ${specs.length ? 'no --out folder' : 'no font given'}.\n` + USAGE); process.exit(2); }
 fs.mkdirSync(opts.out, { recursive: true });
 // an old-style user agent: the CSS API then serves one static TrueType file per style and weight
 const UA = 'curl/8.0';

@@ -3,9 +3,9 @@
 ## Contents
 - Who is watching
 - The topic (and the hidden fact)
-- The hook: the first 8 to 10 seconds (three layers, four beats, formats, tests)
+- The hook: the first 9 seconds (three layers, four beats, techniques, tests)
 - Story shapes: PAS with a fact (default), BAB, FAB
-- The script (format, beat notes, facts list, on-screen words)
+- The script: about 30 seconds (the time map, format, beat notes, facts list, on-screen words)
 - Self-check before showing the script
 
 ## Who is watching
@@ -27,7 +27,7 @@ on screen may assume they care, or know, anything.
   receives it with no context.
 - The best ones come from what customers actually say (questions, complaints, habits), not from the About page.
 
-## The hook: the first 8 to 10 seconds
+## The hook: the first 9 seconds
 A hook is not one line. It's a short sequence that **opens a question and holds the answer back.** Studied on the top reels
 of food-label and explainer accounts (The Whole Truth, FoodPharmer, Bobby Parrish, Kallaway): every one names its subject
 in the first second, and none of them gives the answer inside the first 10 seconds.
@@ -54,12 +54,23 @@ Both are entries in [benchmarks.md](benchmarks.md).
 
 The full answer comes after that. The rhythm is fragment, fragment, one longer line, then a short punch.
 
-### Formats that work in a drawn explainer
-- **The number made physical:** the sugar in a drink as spoons on a board, the protein as eggs.
-- **Front claim, then flip:** circle the claim on the front of the pack, turn the pack, reveal the ingredient behind it.
-- **Guess which:** two of the viewer's things side by side. They bet on one, and the turn breaks the bet.
-- **The sceptic's question:** a customer's real doubt held on screen ("Date powder is just sugar?").
-- **Expectation, then broken:** "Same calories. ... It didn't."
+### Techniques (each with its benchmark entries)
+Pick one for the hook; a film may use a second one later. The numbers are entries in [benchmarks.md](benchmarks.md):
+read the entry to see the technique at its best, then use only its grammar.
+
+| Technique | How it works in a drawn explainer | Entries |
+|---|---|---|
+| **The viewer's belief, then broken** | their assumption in short pieces, then a 2 or 3 word turn: "Same calories. ... It didn't." | 1, 6 |
+| **Guess which** | two or three of the viewer's own things side by side; they bet on one, and the turn breaks the bet | 1 |
+| **A customer's or sceptic's question** | a real doubt from the research, held on screen as the open loop | 2, 9, 15, 18 |
+| **The number made physical** | the number shown as that many things: sugar as sachets on a board, protein as eggs | 3, 4 |
+| **Front claim, then flip** | circle the claim on the front of the pack, turn the pack, reveal what is behind it | 4 |
+| **Proof in the first second** | the evidence is already on screen in frame 0, and the voice explains it | 3, 7, 13, 17 |
+| **A hidden process shown** | a process the viewer never sees, played fast from start to end (or backward) | 8, 14, 15, 16 |
+| **Text and voice that add up** | the on-screen line and the voice say different things that make one idea together | 5 |
+| **An awkward fact said plainly** | the thing people avoid saying, said in plain words; the product removes the problem | 10, 11 |
+| **A question held open** | the question in the first words; the answer held to about 9 s, and the payoff at the end | 12, 19 |
+| **A test the product passes** | a test the viewer can picture at home; the result is the product fact | 12, 13, 17 |
 
 ### Tests (every hook, before it's shown)
 1. **Open loop, not teaser.** A teaser hides what it's about ("You won't believe this"). An open loop says exactly what
@@ -106,25 +117,29 @@ file's charge, exhibits and verdict): that is the style's cliché, and the treat
 fact.
 
 ## The script
-- **Length comes from the words:** 25 to 45 s, about 65 to 110 words. Never pad.
-- **The shape** (PAS by default):
-  1. The hook (0 to about 9 s): subject, setup, turn, rehook. The answer comes after it.
-  2. Why it happens: the mechanism, which the picture shows.
-  3. What to do, or the turn.
-  4. The brand's fact as the answer and the proof.
-  5. A payoff, and one simple thing to do.
+- **Length: about 30 seconds** (25 to 35), **about 70 words.** Never pad with pauses, and never speed the voice up to
+  fit: cut or add words instead. `render.mjs check` warns outside 25 to 35 s.
+- **The time map** (PAS by default; BAB and FAB use the same four parts):
+
+  | Time | Part | What happens |
+  |---|---|---|
+  | 0 to 9 s | **The hook** | subject, setup, turn, rehook (the four beats above). The answer comes after it |
+  | 9 to 18 s | **The hidden fact and why** | the fact, and the mechanism behind it, which the picture shows |
+  | 18 to 25 s | **The product as the answer** | the brand's fact as the answer, with its proof |
+  | 25 to 30 s | **The tip and the end card** | one simple thing the viewer can do or check, then the product big and clear |
 - **Show it as a table** with a **beat note** per line: what the viewer must understand on screen while it's said.
   `# | voice | on screen | beat note`. The beat note is what the picture teaches, not a description of a poster.
 - **A facts list** under the table: every number and claim the film puts on screen, with its source. Only these facts
   go on screen, and an illustration is labelled as one ("a typical brand").
-- **Rehooks:** after the hook, open a new question every 6 to 10 s ("So what if...", "But that's not the strange part").
+- **Two rehooks after the hook:** one in the fact part (about 12 s) and one just before the product (about 18 s). Each
+  opens a new question ("So what if...", "But that's not the strange part").
 - **The brand appears only as the answer,** after the problem is clear, usually past the halfway mark.
 - **Written to be heard:** short sentences, contractions, one idea per line, words customers use ("face wash", not "facial cleanser").
 - **In the brand's voice** (the voice card in `research.md`): a warm host and a clinical expert say the same fact differently.
 - **Every claim has a source** in `research.md`. Keep their numbers exactly as they publish them. No health or results
   claims beyond theirs. If unsure, cut the claim.
 - **On screen:**
-  - 3 to 5 statements: big type built into the scene. The hook is usually one, the end line another.
+  - 3 or 4 statements: big type built into the scene. The hook is usually one, the end line another.
   - Captions carry everything else, phrase by phrase.
   - Never show the same words twice: a line that is a statement has no caption (`"show": "statement"`).
 - **Emphasis:** mark one word or short phrase in about one caption in three with `*asterisks*`.
@@ -136,13 +151,14 @@ fact.
       their words or subjects.
 - [ ] The hook passes the alone test and the zero-interest test, and opens on the viewer's own thing with an action.
 - [ ] The hook opens a question and doesn't answer it before about 9 s. The on-screen text adds to the voice, not repeats it.
-- [ ] A rehook (a new question, a reversal, a reveal) every 6 to 10 s after that.
+- [ ] Two rehooks after the hook (a new question, a reversal, a reveal), near 12 s and 18 s.
 - [ ] Every on-screen line passes the alone test.
 - [ ] No stand-ins, wordplay, teasers or second meanings anywhere.
 - [ ] Every claim has a source in `research.md`, and the facts list holds every number on screen.
 - [ ] The fact passes the retell test, and the shape is named (PAS, BAB or FAB).
 - [ ] It agitates with a fact, not fear, and ends on a tip the viewer can use.
-- [ ] 3 to 5 statements, and no words shown twice.
+- [ ] 3 or 4 statements, and no words shown twice.
+- [ ] About 70 words, read aloud in 25 to 35 s, and each part lands in its slot of the time map.
 - [ ] The brand comes in as the answer, not the opener.
 - [ ] It ends with one clear thing to do.
 - [ ] Read aloud, it sounds like a person in the brand's voice, not a brochure.

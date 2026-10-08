@@ -1,189 +1,104 @@
 ---
 name: product-explainer
-description: Makes 25-45 second vertical explainer reels (Instagram Reels, TikTok, YouTube Shorts) for a D2C brand's product, drawn entirely in code in one of 23 film styles (halftone case file, mid-century cartoon, Swiss motion, data story, isometric, silkscreen, risograph, engraving, block print, paper-cut, watercolor, whiteboard, pixel RPG and more), with the real product photo, a voiceover timed word by word, captions, music and sound. It researches the brand and its customers, writes a hook and script built on a fact the viewer doesn't know, directs the film from a written treatment, and renders the MP4 on this computer. Use it whenever someone wants a reel, an explainer, a short video or a video ad for a product or brand, gives a brand website or product link and wants content from it, or names one of these styles, even if they never say "explainer".
+description: Makes about-30-second vertical explainer reels (Reels, TikTok, Shorts) for a D2C brand's product, drawn entirely in code, with the real product photo, a timed voiceover, captions, music and sound. It researches the brand, writes a script on a fact the viewer doesn't know, gets it approved, directs the film and renders the MP4 locally. The tested style is Halftone Dossier (a print case file); draft styles can be asked for by name (mid-century cartoon, Swiss motion, data storytelling, isometric infographic, silkscreen poster, risograph, copperplate engraving, hologram HUD, dark keynote, living screencast, rubber hose, sci-fi toon, spy titles, art deco, one-line drawing, watercolor, whiteboard, block print, paper-cut, pictogram motion, pixel RPG). Use it whenever someone wants a reel, an explainer, a short video or a video ad for a product or brand, shares a brand website or product link, or names one of these styles, even if they never say "explainer". Not for editing or converting existing video files.
 ---
 
 # Product explainer
 
-One finished 1080 x 1920 reel with sound, made from a brand's website. Every frame is drawn in code on this computer:
-no image generation, no stock footage. The real product photo is cut out and placed inside the style; its label is
-never redrawn.
+One finished 1080 × 1920 reel of about 30 seconds, with sound, made from a brand's website. Every frame is drawn in
+code on this computer: no image generation, no stock footage. The real product photo is cut out and placed inside the
+style; its label is never redrawn. **Needed:** the website; a Cartesia API key for the voice (without one the film is
+text-led) or the brand's recording; a product photo on a plain background (the site usually has one).
+
+| The request | Go to |
+|---|---|
+| A reel for a brand or product (the normal case) | **The workflow** below |
+| "Which styles are there?" | **The styles** below |
+| Research, customer words, facts | [references/research.md](references/research.md) |
+| Topic, hook, script, the 30-second time map | [references/copy.md](references/copy.md), the bar in [references/benchmarks.md](references/benchmarks.md) |
+| The product photo | [references/product.md](references/product.md) |
+| Directing: treatment, sound, rhythm, camera, review, delivery, changes | [references/directing.md](references/directing.md), design rules in [references/craft.md](references/craft.md) |
+| Building the film: every call and option | [references/film-api.md](references/film-api.md) |
+| Commands, options, exit codes, errors | [references/tools.md](references/tools.md) |
 
 **The film is for the brand's customer**, scrolling with zero interest. Its spine is **a pain the viewer feels → a
-hidden fact behind it → the product as the answer**, and it should be worth sending to a friend: the fact fits in one
-sentence.
+hidden fact behind it → the product as the answer**, and the fact fits in one sentence they would send a friend.
 
-**You are the director.** The style (`styles/<style>/STYLE.md`) fixes the look; the story, the shots, the timing and the
-music are made fresh for each film, from a written treatment, before anything is drawn. A film is judged on sound,
-rhythm, camera and directing, in that order; good frames are only the start (references/directing.md).
+**You write the script; the user approves it. Then you are the director.** The style's `STYLE.md` fixes the look;
+the story, shots, timing, music and sound are made fresh for each film from a written treatment, before anything is
+drawn. A film is judged on sound, rhythm, camera and directing, in that order.
 
-**What's needed:** the brand's website. A Cartesia API key for the voiceover (without one, the film is text-led with
-music), or the brand's own recording. A product photo on a plain background (the site usually has one).
+## Where files go
+In the folder the user started from (ask once if they want another place):
+- `<brand>/`: `BRAND.md` and `LEARNINGS.md` (the brand's memory, from `templates/`), `research.md`, `site.json`.
+- `<brand>/<film>/`: one folder per film: `script.json`, `BRIEF.md`, `TREATMENT.md`, `film.mjs`, `REVIEW.md`,
+  `CREDITS.md`, `DELIVERY.md`, `product/`, `vo/`, `out/` (film-api.md, section 1).
 
-## Commands
-Every script runs through the plugin's launcher, which sets up Node, ffmpeg and the canvas engine once (about 60 MB,
-no admin rights). Don't install anything yourself.
-- macOS / Linux: `bash "${CLAUDE_SKILL_DIR}/../../runtime/run.sh" "${CLAUDE_SKILL_DIR}/scripts/<script>.mjs" <args>`
-- Windows: `powershell -NoProfile -ExecutionPolicy Bypass -File "${CLAUDE_SKILL_DIR}/../../runtime/run.ps1" "${CLAUDE_SKILL_DIR}/scripts/<script>.mjs" <args>`
-
-Below, `RUN <script> <args>` means that command.
-
-| Script | What it does |
-|---|---|
-| `site.mjs <url> --out <folder>` | Products, prices, photo sizes, fonts, colours and some of the brand's own copy, into `site.json` |
-| `site.mjs <url> --product <handle\|n\|url> --out <project>/product/raw` | That product's photos at full size, its description, any reviews on the page |
-| `cutout.mjs <photo> --out <project>/product/main.png [--crop x0,y0,x1,y1] [--box]` | Cuts the product out of a plain background; saves a check image and a report |
-| `fonts.mjs "<Family>:<weights>" ... --out <project>/fonts` | Downloads a style's Google Fonts (SIL OFL) as files the renderer can use |
-| `voice.mjs --voices "<words>"` | Lists Cartesia voices ("indian english", "hindi", "warm female") |
-| `voice.mjs <project> [--words] [--key-file <.env>]` | The voiceover and the film's clock (`vo/timing.json`), with each line placed on the music grid; `--words` prints word times |
-| `render.mjs <project> frame <t> [<t>...] [--crop x,y,w,h]` | Single frames as PNG; `--crop` also saves a 100% crop |
-| `render.mjs <project> contact [--every 1]` | The whole film on one sheet, one frame every second |
-| `render.mjs <project> strip <from> <to> [--step 0.2]` | One key action, frame by frame |
-| `render.mjs <project> sheet` | One finished frame per voice line with its words (the sheet a user approves) |
-| `render.mjs <project> check` | The machine checks: text size, safe zone, reading time, contrast, still moments, hits on the beat |
-| `render.mjs <project> video` | The MP4 with sound, subtitles (`.srt`), a cover frame and `out/report.json` |
-
-Add `--estimate` to `render.mjs` to time the lines from the text before the voice exists, and `--debug` to see the
-safe zone.
+Scripts run through the plugin's launcher: `RUN <script> <args>` in the guides (tools.md, section 1). Don't install
+anything yourself.
 
 ## The workflow
-Copy this checklist into your reply and tick it off. There are two approvals: the script (always) and the look (when
-the user wants to see it first).
+Copy this checklist into your reply and tick it off. You stop for the user only for the questions and the script
+approval, and for the look only if they asked to see it.
 
 ```
 Explainer progress:
-- [ ] 1. Website and research (research.md)
-- [ ] 2. One round of questions: product, topic, style, see the look first?, photo, voice
-- [ ] 3. Script as text (APPROVAL 1)
-- [ ] 4. Product cut-out and voice takes
-- [ ] 5. Treatment, before any drawing: benchmark, three structures, shots, cue map, sounds
-- [ ] 6. Style frames and design review rounds (APPROVAL 2 if asked)
+- [ ] 1. Brand folder and research
+- [ ] 2. One round of questions
+- [ ] 3. The script as text (APPROVAL), then BRIEF.md
+- [ ] 4. Product cut-out and voice
+- [ ] 5. Treatment, before any drawing
+- [ ] 6. Style frames and design review (show them only if asked)
 - [ ] 7. The film: lines on the grid, every scene, the score, a sound per action
-- [ ] 8. Review loop: checks, two contact sheets, strips, the video
-- [ ] 9. Deliver
+- [ ] 8. Review loop: checks, contact sheets, strips, the video
+- [ ] 9. Deliver, and update the brand's memory
 ```
 
-**1. Website and research** (about 20 tool calls; read [references/research.md](references/research.md)). Ask for the
-website and where to save the work if you don't have them. `RUN site.mjs <url> --out <brand>-research`, read two or
-three of their pages, and find what customers say and the facts they don't know. Write `research.md`.
-
-**2. Questions** (one round; AskUserQuestion if available). Ask:
-- **Which product**, if several fit (your pick first).
-- **Which topic**: 2 or 3 options, each a viewer's pain or habit, its hook, and the hidden fact the product answers.
-  Write them by [references/copy.md](references/copy.md); show only hooks that pass its tests. The bar is
-  [references/benchmarks.md](references/benchmarks.md): pick 1 or 2 entries before you write.
-- **Which style**: recommend 2 or 3 from the menu below, one reason each. The style sets the look, not the story.
-- **The look first:** do they want to see three finished style frames before the film? (Recommend yes for a first film.)
-- **The product photo:** the site's (say its size), or a current one they send.
-- **The voice:** a Cartesia voice you'll suggest, or their own recording.
-- **A post or an ad:** a post by default; an ad keeps words out of the bottom 35% (`"placement"` in `script.json`).
-Also ask, in one line: "What do customers ask you or complain about most?" Then decide every other gap yourself.
-
-**3. The script, as text** (APPROVAL 1). Write it by [references/copy.md](references/copy.md): the hook's four beats, a
-table `# | voice | on screen | beat note`, a facts list with sources, the story shape you used (PAS by default), and the
-length. Run copy.md's self-check first. Don't draw anything before the OK.
-
-**4. Product and voice.** Read [references/product.md](references/product.md). Cut the photo out and look at the check
-image. Pick a voice that fits the brand (`voice.mjs --voices`), set it in `script.json`, `RUN voice.mjs <project>
---words`: the takes and every word's time, which the cue map needs. No key: ask once for a key or a `.env` path;
-otherwise render with `--estimate`.
-
-**5. Treatment, before any drawing.** Read [references/directing.md](references/directing.md) and the style's
-`STYLE.md` in full. Write `TREATMENT.md`: a benchmark (what to learn, what not to take), three candidate structures and
-the pick with reasons, the logline and arc, the shot list with a reason for every shot, a second-by-second beat sheet,
-the cue map (tempo, where each line sits on the grid), the sound table, the caption design, and where the product
-appears. Start from the topic's fact: the first idea a style suggests is usually its cliché.
-
-**6. Style frames and design review.** Set `"style"` in `script.json`, get any fonts the style doesn't bundle
-(`fonts.mjs`; a style with a drawing kit bundles its own), and copy
-`templates/film.mjs` to `<project>/film.mjs`. Write its timeline from the cue map, then finish three scenes first: the
-signature shot, the product's shot and one more. A style with a drawing kit (`engine.mjs`, its STYLE.md section 10)
-gives you its parts; a rules-only style needs its primitives built first ([references/craft.md](references/craft.md),
-section 6). Render the three frames, check them against craft.md's checklist and the STYLE.md, fix and render again,
-and write each round in `REVIEW.md` until a round finds nothing. If the user asked to see the look, show the frames
-with their lines now (APPROVAL 2). API: [references/film-api.md](references/film-api.md).
-
-**7. The film.** Place each voice line on the grid in `script.json` (`at` and `anchor`) and run `voice.mjs` again
-(voiced lines cost nothing). Write every scene in the treatment: each action on its spoken word or the grid, never a
-typed time; one subject that changes rather than a new scene per line; nothing on screen the treatment didn't ask for.
-Compose the score from the cue map (`music.score`), declare the big hits (`hits`), and give every visible action a
-sound. How: [references/film-api.md](references/film-api.md) (placing lines, the score, the kit); why:
-[references/directing.md](references/directing.md) sections 6 to 9 (sound, rhythm, camera, performance).
-
-**8. Review loop** ([references/directing.md](references/directing.md) section 11; the checklist is
-[references/craft.md](references/craft.md) section 8). `RUN render.mjs <project> check` and fix every issue until it
-prints PASS. Then `contact` (one frame per second) and look at every frame against the checklist; `strip` every key action at 0.2 s; fix and repeat, at least
-two full passes, each written in `REVIEW.md`. Then `RUN render.mjs <project> video` (a few minutes), read
-`out/report.json` (loudness, frozen frames, decode errors) and pull 4 or 5 frames from the MP4. You can't hear the film:
-say so, and ask the user to watch it once with sound.
-
-**9. Deliver:** the MP4 path, length and size; the subtitles, cover, `TREATMENT.md` and `REVIEW.md`; one line on what
-the film does; a post caption in the brand's voice; anything you weren't sure of (a claim, the photo's age, a
-pronunciation). If the user isn't the brand, say the post should be labelled as a concept or spec video. Don't post
-anything yourself.
+1. **Brand folder and research.** If `<brand>/BRAND.md` exists, read it and `LEARNINGS.md` first; a new brand starts
+   both from the templates. `RUN site.mjs <url> --out <brand>`, then customers' words and facts (research.md).
+2. **One round of questions** (AskUserQuestion if available; skip what the brand folder or the request answers):
+   - **Which product**, if several fit (your pick first).
+   - **Which topic:** 2 or 3, each a viewer's pain or habit, its hook and the hidden fact (copy.md; pick 1 or 2
+     benchmark entries before you write hooks). Show only hooks that pass copy.md's tests.
+   - **Which style:** recommend from the menu below, with one reason.
+   - **See the look first?** Three finished style frames before the film (recommend yes for a first film).
+   - **The product photo:** the site's (say its size), or a current one they send.
+   - **The voice:** a Cartesia voice you'll suggest, or their recording. **A post or an ad** (post by default).
+   - In one line: "What do customers ask you or complain about most?" Then decide every other gap yourself.
+3. **The script, as text (APPROVAL).** Write it by copy.md: about 30 s and 70 words on the time map, the hook's four
+   beats, the table `# | voice | on screen | beat note`, the facts list with sources, the shape (PAS by default). Run
+   copy.md's self-check first. After the OK, save `BRIEF.md` from `templates/BRIEF.md`: from here you work alone.
+4. **Product and voice** (product.md, tools.md). Cut the photo out and look at the check image. Pick a voice, set
+   it in `script.json`, `RUN voice.mjs <film> --words`. No key: ask once; otherwise render with `--estimate`.
+5. **Treatment, before any drawing.** Read directing.md and the style's `STYLE.md` in full. Write `TREATMENT.md`:
+   benchmark, three structures and the pick, shots, beat sheet, cue map, sound table, captions, the product.
+6. **Style frames.** Copy `templates/film.mjs`, write the timeline, finish three scenes (the signature shot, the
+   product's shot, one more), review them in written rounds in `REVIEW.md` (directing.md, section 5). Show them only
+   if the user asked to see the look, and wait for the OK.
+7. **The film.** Place the lines on the grid, re-run `voice.mjs`, write every scene of the treatment, the score and
+   a sound per action (film-api.md for every call; directing.md sections 6 to 9 for why).
+8. **Review loop** (directing.md, section 11): `check` until PASS, contact sheets and strips in written rounds until a
+   round finds nothing, then `video` and its report. You can't hear the film: say so.
+9. **Deliver** (directing.md, section 12): `CREDITS.md`, `DELIVERY.md` (with what you could not do, and why), the
+   lessons in `LEARNINGS.md`, the film in `BRAND.md`. Changes later happen in a new chat (directing.md, section 13).
 
 ## The styles
-Each folder holds `STYLE.md`: the style's look with numbers (materials, colour, type and captions, motion, camera and
-the 9:16 page, sound, native moves, pitfalls, its drawing kit, variation space, the product and brand fit). It has no
-story: that comes from your treatment. Read only the one you use.
-
 | Style | Best for | Status |
 |---|---|---|
-| [Halftone Dossier](styles/halftone-dossier/STYLE.md) | myth-busting, label honesty, hidden facts | drawing kit |
-| [Mid-century Cartoon](styles/midcentury-toon/STYLE.md) | how to use it, rituals, step by step | rules |
-| [Swiss Motion](styles/swiss-motion/STYLE.md) | formulas, percentages, prices as a poster | rules |
-| [Data Storytelling](styles/dataviz/STYLE.md) | one number or chart that changes | rules |
-| [Isometric Infographic](styles/iso-infographic/STYLE.md) | process, supply chain, scale | rules |
-| [Silkscreen Poster](styles/silkscreen-poster/STYLE.md) | drops, variants, origin | rules |
-| [Risograph](styles/risograph/STYLE.md) | blends, flavour drops, zine energy | rules |
-| [Copperplate Engraving](styles/engraving/STYLE.md) | the active ingredient as a specimen | rules |
-| [Sci-fi Hologram HUD](styles/hologram-hud/STYLE.md) | specs, layers, what's inside | rules |
-| [Dark Tech Keynote](styles/dark-keynote/STYLE.md) | one big number, launches | rules |
-| [Living Screencast](styles/living-screencast/STYLE.md) | the brand's own site or app, reviews | rules |
-| [1930s Rubber Hose](styles/rubber-hose/STYLE.md) | a problem as a villain, slapstick | rules |
-| [Sci-fi Sitcom Toon](styles/scifi-toon/STYLE.md) | characters, dialogue, a running joke | rules |
-| [60s Spy Titles](styles/spy-titles/STYLE.md) | teasers, secret recipes, restocks | rules |
-| [Art Deco](styles/art-deco/STYLE.md) | premium launches, gifting | rules |
-| [One-line Drawing](styles/one-line/STYLE.md) | the problem turning into the product | rules |
-| [Watercolor](styles/watercolor/STYLE.md) | botanicals, softness, seasons | rules |
-| [Whiteboard](styles/whiteboard/STYLE.md) | the science behind one claim, myth vs fact | rules |
-| [Block Print](styles/block-print/STYLE.md) | origin, craft, festive series | rules |
-| [Paper-cut (Sanjhi)](styles/papercut/STYLE.md) | festivals and gifting | rules |
-| [Pictogram Motion](styles/pictogram-motion/STYLE.md) | one product, many uses; diet labels | rules |
-| [16-bit Pixel RPG](styles/pixel-rpg/STYLE.md) | results over time, routines as quests | rules |
-| [Glass Product (3D)](styles/glass-product/STYLE.md) | what's inside a bottle | not available yet |
+| [Halftone Dossier](styles/halftone-dossier/STYLE.md) | myth-busting, label honesty, hidden facts | **tested**, with a drawing kit |
 
-"Drawing kit" styles have tested code for the style's parts (texture, type, props, captions, transitions, the product
-treatment); every film still writes its own scenes from its treatment. "Rules" styles are built from their `STYLE.md`
-in the project; expect more time on the first film. Glass needs a 3D renderer this runtime doesn't have: say so and
-offer Dark Tech Keynote or Hologram HUD.
-
-## References
-- [references/research.md](references/research.md): what to find, where, and when to stop
-- [references/copy.md](references/copy.md): topics, the hook, story shapes (PAS, BAB, FAB), the script format
-- [references/benchmarks.md](references/benchmarks.md): elite hooks and brand films, checked, with sources: the bar
-- [references/directing.md](references/directing.md): the method: benchmark, story, treatment, style frames, sound, rhythm, camera, the review loop
-- [references/craft.md](references/craft.md): the design rules every style shares, and how to build a style's primitives
-- [references/product.md](references/product.md): getting, cutting out and placing the product photo
-- [references/film-api.md](references/film-api.md): `script.json` (lines on the grid), `film.mjs`, a style's kit, the score, the kit
+**Drafts** (not tested yet): a user may ask for one by name. Say it is not tested yet, then build its primitives from its
+`STYLE.md` (craft.md, section 6) and expect more time. Folders under `styles/`: `midcentury-toon`, `swiss-motion`,
+`dataviz`, `iso-infographic`, `silkscreen-poster`, `risograph`, `engraving`, `hologram-hud`, `dark-keynote`,
+`living-screencast`, `rubber-hose`, `scifi-toon`, `spy-titles`, `art-deco`, `one-line`, `watercolor`, `whiteboard`,
+`block-print`, `papercut`, `pictogram-motion`, `pixel-rpg`. `glass-product` needs a 3D renderer this runtime doesn't
+have: offer Halftone Dossier or a draft instead. Read only the style you use.
 
 ## Rules, with the reason for each
-- **Write for the stranger scrolling past.** They know nothing about the brand and owe it nothing, so every line must
-  earn the next second (copy.md).
-- **Build the film on a true fact the viewer doesn't know.** Facts are what make people stop and share; a slogan isn't
-  one. Every claim needs a source in `research.md`, and only facts from the script's facts list go on screen.
-- **The story comes from the topic, the look from the style.** A style's familiar structure is its cliché; a film that
-  started from its fact beat one that replayed the style's demo (directing.md, section 1).
-- **Write the treatment before drawing anything.** A plan with a benchmark and three compared structures finds the one
-  picture that carries the film; drawing first finds the first idea.
-- **Nothing on screen that the treatment didn't ask for.** Empty ground is part of the design; texture and props added
-  to fill space read as clutter on a phone (craft.md).
-- **Draw every element in the style.** A filter over a scene reads as clip-art; the style's rules say how each shape,
-  word and transition is made (STYLE.md, craft.md).
-- **The product is the real photo,** cut out and placed by the style's product rule. Generated or redrawn labels come out
-  garbled, and the label must stay readable and uncovered.
-- **The music grid comes first, the voice sits on it, and every action is timed to a word or a beat.** A film timed by
-  hand drifts from its voice and feels like a slideshow (directing.md).
-- **Review in rounds, in writing,** until a round finds nothing. The checks catch readability, not design; only looking
-  at every frame does (directing.md, section 11).
-- **Get the script approved before drawing.** Changing words after the art is built wastes most of the work.
+- **A true fact the viewer doesn't know,** sourced in `research.md`: facts make people stop and share.
+- **About 30 seconds, never padded:** cut words; never speed up the voice or stretch pauses (copy.md).
+- **The script approved before drawing:** changing words after the art is built wastes most of the work.
+- **The story from the topic, the look from the style:** a style's familiar structure is its cliché.
+- **The real product photo,** never redrawn: generated labels come out garbled.
+- **Every action on a word or a beat;** nothing on screen the treatment didn't ask for (filler is clutter on a phone).
+- **Tools fail loudly:** read the error, fix the cause, run again (tools.md, section 7).
