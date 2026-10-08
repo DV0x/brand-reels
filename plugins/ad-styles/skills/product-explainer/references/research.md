@@ -24,7 +24,7 @@ Collect 10 to 20 lines in customers' own words, each with where it came from. Lo
 - **Questions** they ask ("can I use it with...", "how long does it last", "why does it...").
 - **Complaints and confusions** about the product type, not just this brand ("tastes bitter", "breaks me out", "goes flat").
 - **Habits** around the product type (where they keep it, how they use it, what they do wrong).
-- **The words they use** for things ("coffee powder", not "ground coffee"; "tan", not "hyperpigmentation").
+- **The words they use** for things ("face wash", not "facial cleanser"; "tan", not "hyperpigmentation").
 
 Where:
 - `site.mjs --product` prints reviews if the page has them.

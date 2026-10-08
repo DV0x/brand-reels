@@ -71,8 +71,8 @@ stuff. The style's `STYLE.md` holds its own numbers; this file holds what is tru
   angle (`K.jitter`, seeded noise). Never stamp identical copies.
 - **Detail where the camera gets closest.** Plan each subject's closest shot and build its detail for that size; check
   it on a 100% crop (`render.mjs <project> frame <t> --crop x,y,w,h`) before anyone else sees it.
-- **Specific, never generic:** props come from this brand's story and its customers' lives (the steel teaspoon, the
-  date, the cocoa pod), researched before drawn.
+- **Specific, never generic:** props come from this brand's story and its customers' lives (an object from their daily
+  routine, the real ingredient), researched before drawn.
 - **Material goes on last and stays put:** the medium's texture (paper, screen, weave, pixel grid) is fixed to the
   frame or the page, so subjects move under it; an object's own texture rides with the object.
 
@@ -104,7 +104,7 @@ them: gradients, blur and fake 3D light fight print.
       didn't ask for?
 - [ ] At most one texture field, with a job? No filler in the bands? Nothing touching or crowding?
 - [ ] Words inside the safe box, three text sizes at most, nothing important under the caption?
-- [ ] Does every shape read as what it is at phone size (a spoon, not a pin or a lollipop)?
+- [ ] Does every shape read as what it is at phone size, and not as some other object?
 - [ ] Does every arrow, ring, bracket or pointer carry a short label (1 to 3 words) that says why it points, without
       repeating the words it points at?
 - [ ] Does every element have a job a stranger would notice? A style's apparatus (a case number, a file tag, a frame,

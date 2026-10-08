@@ -33,7 +33,8 @@ frame is a phone (1080 × 1920). Licences: `THIRD-PARTY-NOTICES.md` at the plugi
 
 ## 2. Find a benchmark first
 Before writing anything, pick one or two reference works (films, title sequences, ads, games) that set the bar for
-**this style and this topic**. They are your choice, made for this film. Write down:
+**this style and this topic**. They are your choice, made for this film; [benchmarks.md](benchmarks.md) lists
+checked, elite brand films and reels, so use one when it fits. Write down:
 - **What to learn:** composition, pacing, camera grammar, colour logic, score structure.
 - **What not to take:** characters, designs, melodies, specific shots, logos, fonts.
 
@@ -48,7 +49,8 @@ The benchmark lifts quality more than any rule below.
 - **An ending that echoes.** Bookend the opening, reveal the scale, or let the viewer do the thing right the second time.
 - **One native move:** a moment only this medium can do (STYLE.md section 8 lists the style's; pick or invent the one
   your story needs). Put it at the emotional peak.
-- **The picture proves the fact:** seven teaspoons are seven heaped spoons, not a label saying 7. Only facts from the
+- **The picture proves the fact:** a number of things is shown as that many things, not as a label with
+  the number. Only facts from the
   script's facts list go on screen; an illustration is labelled as one.
 - **Cut the extras.** One gag the audience reads at thumbnail size beats three they can't. If a beat needs explaining,
   remove it.
@@ -144,16 +146,16 @@ other film in this style:
 - Blank frames in a transition; a wipe that doesn't fully cover at the cut.
 - A timed effect (a ring, a zoom, a follow) that stops tracking its subject after the camera moves.
 - **A new scene for every line:** an animated slideshow.
-- **A filled frame:** dot fields on every scene, props in the empty bands, a folder across the bottom. Our first test
-  film did this; the verdict was "too much dots, no design language".
-- **A small subject in the top two-thirds and an empty bottom third** (our second test film): the words' safe box was
-  treated as the picture's. Only words keep out of the bands.
-- **A pointer with no label:** arrows on the pack's "71% COCOA" and "29% DATES" made the viewer guess why they were
-  there. Every arrow, ring or bracket says, in a word or three, what it shows.
-- **The style's apparatus with no job:** a case number and a "FILE 01" tag on every frame read as decoration. Keep a
-  tag only when it tells the viewer something (A TYPICAL 70% BAR: this is not a real brand).
-- **The style's cliché instead of the topic's idea:** the same first test film replayed the style's familiar case file
-  (a mugshot, exhibits, a verdict) and lost to a film that started from the fact.
+- **A filled frame:** a texture field on every scene, props in the empty bands, decoration along the bottom. On a phone
+  it reads as clutter, with no design language.
+- **A small subject in the top two-thirds and an empty bottom third:** the words' safe box treated as the picture's.
+  Only words keep out of the bands.
+- **A pointer with no label:** an arrow on a printed number makes the viewer guess why it is there. Every arrow, ring
+  or bracket says, in a word or three, what it shows.
+- **The style's apparatus with no job:** a case number or a file tag on every frame reads as decoration. Keep a tag
+  only when it tells the viewer something (A TYPICAL BRAND: this is not a real one).
+- **The style's cliché instead of the topic's idea:** a film that replays the style's familiar structure (a case
+  file's mugshot, exhibits and verdict) loses to a film that starts from the fact.
 
 ## 11. The review loop, before delivery
 **By script:** `RUN render.mjs <project> check`, fix every issue, and run it again until it prints PASS.

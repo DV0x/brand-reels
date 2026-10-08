@@ -21,7 +21,8 @@ on screen may assume they care, or know, anything.
   that answers it, and a picture code can draw.
 - **The hidden fact is the reward.** People stop for something true and specific they didn't know (a number, a cause, a
   hidden process), shown so it's easy to see. A sales claim isn't a fact; a fact the viewer already knows gives nothing.
-- **The retell test:** the fact fits in one sentence a viewer would send a friend ("a 70% bar is about 30% sugar").
+- **The retell test:** the fact fits in one sentence a viewer would send a friend ("the burger in the ad is styled
+  for hours; yours is made in a minute").
   People share what helps someone they know or makes them look smart, so the reel must make sense to someone who
   receives it with no context.
 - The best ones come from what customers actually say (questions, complaints, habits), not from the About page.
@@ -37,42 +38,45 @@ in the first second, and none of them gives the answer inside the first 10 secon
    setting, not the product, not the brand, not a symbol to decode. In a drawn film there's no face to react, so the
    action has to come from the object.
 2. **The on-screen text (second):** up from the first frame. Either the open question, held until it's answered
-   ("How do our bars last long without any preservatives?"), or the idea squeezed into a headline ("UBER EATS FOR
+   ("Date powder is just sugar?"), or the idea squeezed into a headline ("UBER EATS FOR
    SUNLIGHT"). It **adds to the voice and doesn't repeat it**, so together they open the gap. Word captions run separately.
 3. **The voice (third):** follows the four beats below.
 
 ### The four beats
-| Time | Beat | Example (TWT, 49M plays) |
-|---|---|---|
-| 0-1 s | **Subject:** name the real thing in the first 1-2 words | "Three desserts." |
-| 1-4 s | **Setup:** what the viewer already assumes, in short pieces, often with a number | "Same calories. My body should have treated them the same." |
-| 4-5 s | **Turn:** 2-3 words that break the setup | "It didn't." |
-| 5-9 s | **Rehook:** a half answer that opens a bigger question | "One barely moved the needle." (Which one?) |
+| Time | Beat | The Whole Truth, 49M plays | Kallaway, 8M plays |
+|---|---|---|---|
+| 0-1 s | **Subject:** name the real thing in the first 1-2 words | "Three desserts." | "The tech in the Vegas Sphere..." |
+| 1-4 s | **Setup:** what the viewer already assumes, in short pieces, often with a number | "Same calories. My body should have treated them the same." | "Biggest screen ever built, 20 times bigger than an IMAX." |
+| 4-5 s | **Turn:** 2-3 words that break the setup | "It didn't." | "But get this," |
+| 5-9 s | **Rehook:** a half answer that opens a bigger question | "One barely moved the needle." (Which one?) | "...the screen is the least impressive part." (What is?) |
+
+Both are entries in [benchmarks.md](benchmarks.md).
 
 The full answer comes after that. The rhythm is fragment, fragment, one longer line, then a short punch.
 
 ### Formats that work in a drawn explainer
 - **The number made physical:** the sugar in a drink as spoons on a board, the protein as eggs.
-- **Front claim, then flip:** circle the claim on the front ("BROWN"), turn the pack, reveal the ingredient
-  ("contains brown colour").
+- **Front claim, then flip:** circle the claim on the front of the pack, turn the pack, reveal the ingredient behind it.
 - **Guess which:** two of the viewer's things side by side. They bet on one, and the turn breaks the bet.
 - **The sceptic's question:** a customer's real doubt held on screen ("Date powder is just sugar?").
 - **Expectation, then broken:** "Same calories. ... It didn't."
 
 ### Tests (every hook, before it's shown)
 1. **Open loop, not teaser.** A teaser hides what it's about ("You won't believe this"). An open loop says exactly what
-   it's about and hides the answer ("70% dark chocolate. What's the other 30%?"). **A hook that contains its own answer
-   fails:** "In 70% dark chocolate, the other 30% is sugar" gives the whole film away in two seconds.
+   it's about and hides the answer ("Three desserts. Same calories. ... It didn't." Which one?). **A hook that contains
+   its own answer fails:** if the first line already says which dessert and why, the viewer has the whole film in two
+   seconds.
 2. **The alone test:** a stranger reads only the on-screen text, with no voice and no picture. Do they know exactly what
-   it's about, and that it's about them? If they could ask "what?" or "of what?", it fails.
+   it's about, and that it's about them? If they could ask "what?" or "of what?", it fails. It also fails
+   if it needs a word or an idea that a stranger doesn't know.
 3. **The zero-interest test:** would someone who doesn't care about this category stop here, and why? If the honest
-   answer needs them to care about the brand's topic already ("because they want to know about roast dates"), it fails.
-   A line they already agree with, with no turn, also fails: "Coffee at home never tastes like café coffee".
+   answer needs them to care about the brand's topic already ("because they want to know how it's made"), it fails.
+   A line they already agree with, with no turn, also fails.
 4. **The setup is their belief.** The turn has to break something the viewer believes or does, not a fact they had no
    stake in. If the people most likely to care already know the answer, the turn won't land for them; pick another.
-5. **Name the real thing.** No stand-ins: "another spoon" read as sugar; "it", "this", "fresh coffee" and "waiting period"
-   fail the same way. A familiar named thing plus a number you can see beats a category ("a food pack").
-6. **No wordplay, puns, metaphors or slang with a second meaning** ("peaked", "flat"). Clear beats clever.
+5. **Name the real thing.** No stand-ins: "it", "this" or any phrase the viewer has to decode. A familiar named thing
+   plus a number you can see beats a category ("a food pack").
+6. **No wordplay, puns, metaphors or slang with a second meaning.** Clear beats clever.
 7. **Never at the viewer's expense.** No shaming ("you're doing it wrong"), no scare words, nothing gross next to food or
    skin. Breaking their belief is fine; mocking them for it isn't.
 8. **Problem first.** Product-first lines ("This serum has a 10-day...") read as ads. The brand is the answer, later.
@@ -80,20 +84,8 @@ The full answer comes after that. The rhythm is fragment, fragment, one longer l
 Write 8 to 10 hooks, cut them to the 2 or 3 that pass every test, and show only those, each as its first frame, its
 on-screen text and its four beats.
 
-**Hooks that failed with this user, and why:**
-- "Another spoon won't fix it": vague, the spoon could be sugar.
-- "Your fresh coffee isn't ready yet": vague, sounds like a delivery delay.
-- "TOO FRESH TO BREW": needs knowledge a stranger doesn't have.
-- "Coffee at home never tastes like café coffee": clear, but nothing new, so no reason to stay.
-- A story that opened on two cups with wavy "smell" lines: a symbol the viewer has to decode.
-- "In 70% dark chocolate, the other 30% is sugar." and "Coffee in the fridge soaks up the smell of your food.": clear,
-  but they state the answer, so nothing pulls the viewer on. ("doesnt intrigue audience to stop")
-
-**A hook of the right kind** (TWT, approved 2026-10-06):
-- First frame: a hand holds a dark chocolate bar; a red marker circles "70%".
-- On screen, held: "What's the other 30%?"
-- Voice: "Seventy percent dark chocolate. You buy it because it's the healthy one. But nobody checks the other thirty
-  percent." Then the rehook: the end of the bar breaks off and pours out as white grains: "In most bars, it's this."
+**The bar:** before you write, pick 1 or 2 entries in [benchmarks.md](benchmarks.md) that fit the topic. Write in
+`research.md` what to learn from them and what not to take. Never reuse their words or their subject.
 
 ## Story shapes
 A framework is the shape of the story, never the idea: the hidden fact is the idea. Name the shape you used when you show
@@ -124,10 +116,10 @@ fact.
 - **Show it as a table** with a **beat note** per line: what the viewer must understand on screen while it's said.
   `# | voice | on screen | beat note`. The beat note is what the picture teaches, not a description of a poster.
 - **A facts list** under the table: every number and claim the film puts on screen, with its source. Only these facts
-  go on screen, and an illustration is labelled as one ("a typical 70% bar").
+  go on screen, and an illustration is labelled as one ("a typical brand").
 - **Rehooks:** after the hook, open a new question every 6 to 10 s ("So what if...", "But that's not the strange part").
 - **The brand appears only as the answer,** after the problem is clear, usually past the halfway mark.
-- **Written to be heard:** short sentences, contractions, one idea per line, words customers use ("coffee powder").
+- **Written to be heard:** short sentences, contractions, one idea per line, words customers use ("face wash", not "facial cleanser").
 - **In the brand's voice** (the voice card in `research.md`): a warm host and a clinical expert say the same fact differently.
 - **Every claim has a source** in `research.md`. Keep their numbers exactly as they publish them. No health or results
   claims beyond theirs. If unsure, cut the claim.
@@ -140,6 +132,8 @@ fact.
   ninety-nine rupees").
 
 ## Self-check before showing the script
+- [ ] You picked 1 or 2 entries in benchmarks.md, wrote what to learn and what not to take, and reused none of
+      their words or subjects.
 - [ ] The hook passes the alone test and the zero-interest test, and opens on the viewer's own thing with an action.
 - [ ] The hook opens a question and doesn't answer it before about 9 s. The on-screen text adds to the voice, not repeats it.
 - [ ] A rehook (a new question, a reversal, a reveal) every 6 to 10 s after that.

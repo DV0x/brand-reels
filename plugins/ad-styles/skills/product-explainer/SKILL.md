@@ -70,7 +70,8 @@ three of their pages, and find what customers say and the facts they don't know.
 **2. Questions** (one round; AskUserQuestion if available). Ask:
 - **Which product**, if several fit (your pick first).
 - **Which topic**: 2 or 3 options, each a viewer's pain or habit, its hook, and the hidden fact the product answers.
-  Write them by [references/copy.md](references/copy.md); show only hooks that pass its tests.
+  Write them by [references/copy.md](references/copy.md); show only hooks that pass its tests. The bar is
+  [references/benchmarks.md](references/benchmarks.md): pick 1 or 2 entries before you write.
 - **Which style**: recommend 2 or 3 from the menu below, one reason each. The style sets the look, not the story.
 - **The look first:** do they want to see three finished style frames before the film? (Recommend yes for a first film.)
 - **The product photo:** the site's (say its size), or a current one they send.
@@ -160,6 +161,7 @@ offer Dark Tech Keynote or Hologram HUD.
 ## References
 - [references/research.md](references/research.md): what to find, where, and when to stop
 - [references/copy.md](references/copy.md): topics, the hook, story shapes (PAS, BAB, FAB), the script format
+- [references/benchmarks.md](references/benchmarks.md): elite hooks and brand films, checked, with sources: the bar
 - [references/directing.md](references/directing.md): the method: benchmark, story, treatment, style frames, sound, rhythm, camera, the review loop
 - [references/craft.md](references/craft.md): the design rules every style shares, and how to build a style's primitives
 - [references/product.md](references/product.md): getting, cutting out and placing the product photo

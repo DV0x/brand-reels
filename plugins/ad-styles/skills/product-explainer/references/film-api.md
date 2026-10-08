@@ -37,8 +37,8 @@
   "voice": { "provider": "cartesia", "id": "<voice id>", "model": "sonic-3.6", "language": "en", "speed": 1.0 },
   "lead": 0.4, "gap": 0.35, "tail": 2.8, "duration": 35.0,
   "lines": [
-    { "id": "l1", "text": "70% dark chocolate.", "say": "Seventy percent dark chocolate.", "at": 0.5, "anchor": "Seventy" },
-    { "id": "l2", "text": "You buy it because it's the *\"healthy\"* one.", "at": 4.5, "anchor": "healthy" },
+    { "id": "l1", "text": "Your shampoo has 14 ingredients.", "say": "Your shampoo has fourteen ingredients.", "at": 0.5, "anchor": "shampoo" },
+    { "id": "l2", "text": "Most of them are *water*.", "at": 4.5, "anchor": "water" },
     { "id": "l6", "text": "It costs ₹499.", "say": "It costs four hundred and ninety-nine rupees.", "pause": 0.2 }
   ]
 }
