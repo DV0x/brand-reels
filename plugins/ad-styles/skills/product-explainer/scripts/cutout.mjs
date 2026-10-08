@@ -2,6 +2,8 @@
 // cutout.mjs: cuts a product out of a photo shot on a plain background (white, grey or one flat colour), in plain JS.
 //   cutout.mjs <photo> --out <project>/product/main.png [--tol 30] [--crop x0,y0,x1,y1] [--shadows remove] [--box]
 // --box: for a flat, boxy pack shot straight on (a bar, a carton) whose label is close to the background's colour.
+// --uncut: no cut-out; saves the --crop part of the photo as it is (opaque), for a photo whose background can't be
+// removed cleanly (a white pack on light grey). The film then shows it as a framed print or card.
 // Prints a report: the background it found, how tall the product is in pixels, and anything to worry about, and saves
 // <out>-check.jpg (the cut-out on red and on near-black) to look at before using it.
 // A shadow cast on the background is kept by default (removing it can eat light parts of a label that touch the edge).
@@ -16,7 +18,7 @@ import { createCanvas, loadImage } from './lib/canvas.mjs';
 
 const argv = process.argv.slice(2), opts = {}, pos = [];
 for (let i = 0; i < argv.length; i++) { if (argv[i].startsWith('--')) opts[argv[i].slice(2)] = argv[i + 1] && !argv[i + 1].startsWith('--') ? argv[++i] : true; else pos.push(argv[i]); }
-const USAGE = 'usage: cutout.mjs <photo> --out <project>/product/main.png [--tol 30] [--crop x0,y0,x1,y1] [--shadows remove] [--box]';
+const USAGE = 'usage: cutout.mjs <photo> --out <project>/product/main.png [--tol n] [--crop x0,y0,x1,y1] [--shadows remove] [--box] [--uncut]';
 if (opts.help) { console.log(USAGE); process.exit(0); }
 if (!pos[0]) { console.error('[product-explainer] ERROR: no photo given.\n' + USAGE); process.exit(2); }
 if (!fs.existsSync(pos[0])) { console.error(`[product-explainer] ERROR: no file at ${pos[0]}. Download the product's photos first: site.mjs <url> --product <handle> --out <project>/product/raw\n` + USAGE); process.exit(2); }
@@ -27,6 +29,12 @@ const crop = opts.crop ? String(opts.crop).split(',').map(Number) : [0, 0, img.w
 const W = Math.round(crop[2] - crop[0]), H = Math.round(crop[3] - crop[1]), c = createCanvas(W, H), g = c.getContext('2d'); g.drawImage(img, -crop[0], -crop[1]);
 const id = g.getImageData(0, 0, W, H), d = id.data, N = W * H, warnings = [];
 const report = { photo: path.basename(src), size: `${W}x${H}` };
+const closeUps = hPx => hPx >= 1400 ? 'fine: sharp up to full frame height' : hPx >= 900 ? 'fine up to about half the frame height; soft in a tight close-up' : hPx >= 600 ? 'keep it to about a third of the frame height' : 'small photo: keep the product small, or ask the brand for a bigger photo';
+if (opts.uncut) {
+  fs.mkdirSync(path.dirname(outFile), { recursive: true }); fs.writeFileSync(outFile, c.toBuffer('image/png'));
+  Object.assign(report, { mode: 'uncut (the background is kept)', out: outFile, closeUps: closeUps(H) + ' (for the whole crop; the product inside it is smaller)' });
+  console.log(JSON.stringify(report, null, 1)); process.exit(0);
+}
 
 // the border ring tells us the background
 const ring = [];
@@ -120,7 +128,7 @@ if (coverage < 0.04) warnings.push('the product is tiny in this photo: look for 
 if (!transparent && coverage > 0.9) warnings.push('almost nothing was removed: the background may be too close in colour to the product, try --tol 12 or another photo');
 const hPx = y1 - y0 + 1;
 report.out = outFile; report.productPx = `${x1 - x0 + 1}x${hPx}`; report.coverage = +(coverage * 100).toFixed(1) + '%';
-report.closeUps = hPx >= 1400 ? 'fine: sharp up to full frame height' : hPx >= 900 ? 'fine up to about half the frame height; soft in a tight close-up' : hPx >= 600 ? 'keep it to about a third of the frame height' : 'small photo: keep the product small, or ask the brand for a bigger photo';
+report.closeUps = closeUps(hPx);
 report.warnings = warnings;
 // the check image: the cut-out on red and on near-black, side by side
 { const s = Math.min(1, 900 / ch), cw2 = Math.round(cw * s) + 60, ch2 = Math.round(ch * s) + 60, k = createCanvas(cw2 * 2, ch2), kg = k.getContext('2d');

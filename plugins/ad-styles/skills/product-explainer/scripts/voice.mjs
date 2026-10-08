@@ -36,17 +36,21 @@ const headers = () => ({ Authorization: `Bearer ${key()}`, 'Cartesia-Version': V
 if (opts.voices) {
   const q = typeof opts.voices === 'string' ? opts.voices.toLowerCase().split(/\s+/) : [];
   let all = [], after = null;
-  for (let page = 0; page < 10; page++) {
+  let cut = false;
+  for (let page = 0; page < 40; page++) {
     const r = await fetch(`${API}/voices?limit=100${after ? '&starting_after=' + after : ''}`, { headers: headers() });
     if (!r.ok) { console.error(`[product-explainer] ERROR: Cartesia ${r.status}: ${(await r.text()).slice(0, 200)} (401 or 403: check the API key)`); process.exit(1); }
     const j = await r.json(), list = Array.isArray(j) ? j : j.data || [];
     all = all.concat(list);
     if (Array.isArray(j) || !j.has_more || !list.length) break;
-    after = list[list.length - 1].id;
+    after = list[list.length - 1].id; if (page === 39) cut = true;
   }
-  const hit = all.filter(v => q.every(w => `${v.name} ${v.description || ''} ${v.language || ''}`.toLowerCase().includes(w)));
+  // words a user says that the voice list writes differently: "english" is the language code "en", and so on
+  const SAME = { english: ['english', ' en '], hindi: ['hindi', ' hi '], female: ['female', 'woman', 'girl', 'lady'], male: ['male', ' man ', 'guy', 'boy'], woman: ['woman', 'female'], man: [' man ', 'male'] };
+  const has = (text, w) => (SAME[w] || [w]).some(x => text.includes(x));
+  const hit = all.filter(v => { const text = ` ${v.name} ${v.description || ''} ${v.language || ''} `.toLowerCase(); return q.every(w => has(text, w)); });
   for (const v of hit.slice(0, 60)) console.log(`${v.id}  ${v.language || '?'}  ${v.name}${v.description ? '  ·  ' + v.description.slice(0, 110) : ''}`);
-  console.log(`${hit.length} of ${all.length} voices`);
+  console.log(`${hit.length} of ${all.length} voices${cut ? ' (the list was cut at 4,000 voices: add words to narrow the search)' : ''}${!hit.length ? '. No match: try fewer words, e.g. "indian" alone' : ''}`);
   process.exit(0);
 }
 const USAGE = 'usage: voice.mjs <project> [--words] [--only id] [--key-file .env]   |   voice.mjs --voices [words]';

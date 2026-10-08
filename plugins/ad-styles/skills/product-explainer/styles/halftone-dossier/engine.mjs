@@ -489,7 +489,9 @@ export default function dossier(K) {
   // ---------------------------------------------------------------- the camera: keys + shakes + an optional beat pulse
   // keys: K.camera keys [{ t, x, y, z, e }]. shakes: [[t0, amp px, dur s]] with quadratic decay (5 to 26 px).
   // pulse: a beat grid (K.grid) for the style's ~0.6% zoom pulse on every beat, and when(t) to switch it off.
-  const camera = (keys, { shakes = [], pulse = null, when = () => true, amount = 0.006 } = {}) => {
+  const camera = (keys, { shakes: shakes0 = [], pulse = null, when = () => true, amount = 0.006 } = {}) => {
+    // shakes: [[t0, amp, dur]] or [{ at, amp, dur }] (the kit's form); both work
+    const shakes = shakes0.map(s => (Array.isArray(s) ? s : [s.at, s.amp, s.dur ?? 0.3])); shakes.forEach(s => ev(s[0]));
     const base = K.camera(keys && keys.length ? keys : [{ t: 0, x: W / 2, y: H / 2, z: 1 }]);
     return {
       at(t) {

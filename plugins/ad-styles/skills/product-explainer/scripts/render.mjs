@@ -122,7 +122,7 @@ function qaOf(S) {
   return { duration: timing.duration, style: S.style || null, shots: shots.length, hardCuts: cuts, styleTransitions: wipes, cues: cues.length, statements, eventGaps: gaps, warnings };
 }
 
-// a pass over the whole film (no medium, no finish): it finds every animation start and records every text on screen
+// a pass over the whole film (every layer but the medium and the finish): it finds every animation start and records every text on screen
 // with its size, box and the times it shows (for the safe zone, size and reading-time checks)
 function probe(S, fps = 8) {
   const g = S.canvas.getContext('2d'), at = t => {
@@ -130,6 +130,7 @@ function probe(S, fps = 8) {
     guard('draw', t, () => S.F.draw(g, t)); g.restore();
     g.save(); reset(g); S.K._captions(g, t); g.restore();
     if (S.F.over) { g.save(); reset(g); guard('over', t, () => S.F.over(g, t)); g.restore(); }
+    if (S.F.top) { g.save(); reset(g); guard('top', t, () => S.F.top(g, t)); g.restore(); }   // texts drawn on top are checked too
   };
   const seen = new Set();
   for (let t = 0; t < S.timing.duration; t += 1 / fps) { at(t); seen.add(Math.round(t * 30)); }
@@ -251,6 +252,15 @@ async function check(S) {
     }
   }
   for (const x of K.qa.text) issues.push({ check: 'safe zone', t: x.t, text: x.what, msg: `outside the safe box: ${x.box.join(', ')}` });
+  // touching: two different headlines, labels or notes whose boxes overlap or come within 6 px, on 3 or more sampled
+  // frames (a label's pill touching a line of type reads as a collision on a phone)
+  const pairs = new Map();
+  for (const [f, list] of K._frameTexts) for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) {
+    const a = list[i], b = list[j]; if (a.id === b.id) continue;
+    const ix = Math.min(a.box[2], b.box[2]) - Math.max(a.box[0], b.box[0]), iy = Math.min(a.box[3], b.box[3]) - Math.max(a.box[1], b.box[1]);
+    if (ix > -6 && iy > -6) { const k = [a.id, b.id].sort().join('|'), r = pairs.get(k) || { n: 0, t: f / 30, a, b }; r.n++; r.t = Math.min(r.t, f / 30); pairs.set(k, r); }
+  }
+  for (const r of pairs.values()) if (r.n >= 3) issues.push({ check: 'touching', t: r.t, text: r.a.text, msg: `touches or overlaps "${r.b.text}" (${r.n} sampled frames): keep at least 6 px between them, or show them at different times` });
   for (const x of K.qa.upscale) issues.push({ check: 'product size', t: x.t, text: x.product, msg: `drawn at ${x.drawnPx} px from a ${x.photoPx} px photo (${x.x}x): it goes soft` });
   // 4. contrast: one finished frame per text, in the middle of its time on screen
   const byTime = new Map();

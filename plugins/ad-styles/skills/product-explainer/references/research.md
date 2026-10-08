@@ -1,6 +1,6 @@
 # Research: what to find, where, and when to stop
 
-Budget: about 20 tool calls for the research (SKILL.md, step 1), and up to 5 more after the topic is chosen. Research is for finding a topic a
+Budget: about 25 tool calls for the research (SKILL.md, step 1), and up to 5 more after the topic is chosen. Research is for finding a topic a
 stranger cares about and the true facts to answer it. It is not a report. Stop when `research.md` has what's below.
 
 ## 1. The brand and its products
@@ -9,6 +9,13 @@ stranger cares about and the true facts to answer it. It is not a report. Stop w
 - Good products to explain: one with a mechanism, a habit, a misunderstanding, a number, or a "how do I use it" question
   behind it. Skip gifts, bundles, merch and variants of the same thing.
 - Note each candidate's best photo (size, plain background or not).
+- **For the likely product:** `RUN site.mjs <url> --product <handle> --out <brand>/products/<handle>` saves its photos
+  (the film folder comes later, after the topic). Then WebFetch the product page itself: `site.mjs` often misses the
+  ingredients, the claims and the FAQ, and the reviews it prints may be titles only.
+- **Look at the product's other photos** (the infographics, with the Read tool): many brands print their claims
+  (pH, actives, "no tight feel") only inside them.
+- **Sold out or unavailable** on the brand's own site: say so in the questions. The film still works as an explainer,
+  but it never says "buy now", and `DELIVERY.md` notes the date you saw it.
 
 ## 2. Their voice (WebFetch 2 or 3 of their own pages: About, FAQ, one product page)
 Write a voice card:
@@ -29,7 +36,8 @@ Collect 10 to 20 lines in customers' own words, each with where it came from. Lo
 Where:
 - `site.mjs --product` prints reviews if the page has them.
 - WebSearch: `"<brand> <product>" reviews`, `<product type> mistakes`, `<product type> reddit`, `<problem> why`.
-- Marketplace pages (Amazon, Flipkart, Nykaa) often block fetches; search results still show snippets.
+- Marketplace pages (Amazon, Flipkart, Nykaa) hold most real reviews; they often block fetches, but search results
+  still show snippets. The brand site's own review widget is often titles only.
 - Ask the user: "What do customers ask you or complain about most?"
 
 ## 4. Facts we can use

@@ -7,8 +7,8 @@ never redrawn and never generated (generated labels come out as gibberish).
 - **Best:** the brand sends a current front photo on a plain background. A phone photo against a plain wall in daylight
   is enough; the label's print file is better still, because close-ups stay sharp. Ask for the back too if the story
   needs it.
-- **Fallback:** `RUN site.mjs <url> --product <handle|n|url> --out <film>/product/raw` downloads every photo of the
-  product at full size, with its size listed. Look at them and pick the plain-background front packshot. Infographics,
+- **Fallback:** the site's photos, saved during the research in `<brand>/products/<handle>/` (or `RUN site.mjs <url>
+  --product <handle|n|url> --out <film>/product/raw`), at full size, with their sizes listed. Look at them and pick the plain-background front packshot. Infographics,
   lifestyle shots and model shots don't cut out cleanly.
 
 ## 2. Cut it out
@@ -17,8 +17,10 @@ Read the report, then **look at the check image** (`main-check.jpg`, the cut-out
 - **"a shadow on the floor is probably attached":** crop it away with `--crop x0,y0,x1,y1` (pixels of the original
   photo), keeping the whole product. Only if the shadow is under the product, try `--shadows remove`, and check that the
   label survived: it can eat light parts of a label that touch the edge.
-- **"the background is not plain":** the cut-out will be rough. Ask for a plain-background photo, or use the photo
-  uncut inside a framed card.
+- **"the background is not plain", or no tolerance works** (a white pack on light grey: the label goes before the
+  floor does): don't fight it. `--uncut --crop x0,y0,x1,y1` saves the photo uncut, cropped around the product, and the
+  film shows it as a framed print or card (the Halftone Dossier's evidence print suits it). Or ask for a
+  plain-background photo.
 - **Bits of a light label eaten at the edge:** lower `--tol` (e.g. 12). Small nicks are hidden by the card's paper border.
 - **"almost nothing was removed":** the product and background are too close in colour. Try `--tol 10`, or use a
   different photo.

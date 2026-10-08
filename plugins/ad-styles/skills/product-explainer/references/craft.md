@@ -54,7 +54,9 @@ stuff. The style's `STYLE.md` holds its own numbers; this file holds what is tru
   hold no words, but the picture continues through them. Don't add filler there (props, dot fields, texture). Empty
   ground around a subject is design; a third of the frame left empty is not.
 - **The subject is big:** at least a third of the frame height (640 px) at key moments; 40 to 60% in its main shot.
-  Centre the composition on the safe box, not on the top of the frame.
+  Centre the composition on the safe box, not on the top of the frame. **A chart, a scale or a ruler is a subject
+  too:** when it carries the fact, draw it big, filling the page (not a thin band in empty paper), with the two values
+  that matter far enough apart that the gap reads at a glance.
 - **The subject reads against its ground:** a value step between them. Never a colour on the same colour.
 
 ## 4. The product inside the style
@@ -103,7 +105,8 @@ them: gradients, blur and fake 3D light fight print.
       top to bottom? Does the picture use the whole frame, with no empty band at the bottom? Nothing the treatment
       didn't ask for?
 - [ ] At most one texture field, with a job? No filler in the bands? Nothing touching or crowding?
-- [ ] Words inside the safe box, three text sizes at most, nothing important under the caption?
+- [ ] Words inside the safe box, three text sizes at most, nothing important under the caption, no two texts
+      touching (at least 6 px apart; `check` flags it)?
 - [ ] Does every shape read as what it is at phone size, and not as some other object?
 - [ ] Does every arrow, ring, bracket or pointer carry a short label (1 to 3 words) that says why it points, without
       repeating the words it points at?

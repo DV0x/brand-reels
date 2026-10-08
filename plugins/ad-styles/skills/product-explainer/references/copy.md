@@ -117,8 +117,10 @@ file's charge, exhibits and verdict): that is the style's cliché, and the treat
 fact.
 
 ## The script
-- **Length: about 30 seconds** (25 to 35), **about 70 words.** Never pad with pauses, and never speed the voice up to
-  fit: cut or add words instead. `render.mjs check` warns outside 25 to 35 s.
+- **Length: about 30 seconds** (25 to 35), **about 70 words in 8 to 10 lines.** Never pad with pauses, and never speed
+  the voice up to fit: cut or add words instead. `render.mjs check` warns outside 25 to 35 s. Estimate it before you
+  show the script: seconds ≈ words ÷ 2.6 + lines × `gap` (0.35) + `tail` (2.6) + `lead` (0.4). 70 words in 9 lines is
+  about 33 s; over 35, cut words (a test script of 77 words in 10 lines came to 36 s).
 - **The time map** (PAS by default; BAB and FAB use the same four parts):
 
   | Time | Part | What happens |
@@ -141,7 +143,8 @@ fact.
 - **On screen:**
   - 3 or 4 statements: big type built into the scene. The hook is usually one, the end line another.
   - Captions carry everything else, phrase by phrase.
-  - Never show the same words twice: a line that is a statement has no caption (`"show": "statement"`).
+  - Never show the same words twice: a line that is a statement has no caption (`"show": "statement"`), and a label
+    on a drawing never repeats the words of the caption on screen with it: it names something the caption doesn't.
 - **Emphasis:** mark one word or short phrase in about one caption in three with `*asterisks*`.
 - **Pronunciation:** use `"say"` for prices, numbers, units and brand names the voice may misread ("₹499" -> "four
   ninety-nine rupees").

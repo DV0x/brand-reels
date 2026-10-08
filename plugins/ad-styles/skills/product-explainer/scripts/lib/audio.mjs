@@ -6,7 +6,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { FFMPEG } from './canvas.mjs';
 
-export const SFX_NAMES = ['pop', 'click', 'tick', 'whoosh', 'swish', 'thud', 'stamp', 'stampbig', 'paper', 'tape', 'marker', 'flip', 'crinkle', 'chime', 'ding', 'steam', 'door', 'pour', 'sparkle', 'rise', 'snap', 'shutter', 'type', 'boing', 'plop'];
+export const SFX_NAMES = ['pop', 'click', 'tick', 'whoosh', 'swish', 'thud', 'stamp', 'stampbig', 'paper', 'tape', 'marker', 'flip', 'crinkle', 'chime', 'ding', 'steam', 'door', 'pour', 'sparkle', 'rise', 'snap', 'shutter', 'type', 'boing', 'plop', 'squeak', 'drip'];
 export const MUSIC_NAMES = ['warm', 'bright', 'calm', 'dossier', 'none'];
 // Effects that sat 30 to 40 dB under the voice's peaks at gain 1, lifted by what a test film measured each one needed
 // to be heard under the voice, so a film's cue gain of 1 is a normal level for every effect.
@@ -178,6 +178,10 @@ export function buildAudio({ dir, duration, voiceWav = null, cues = [], music = 
     boing: (t0, g, pan) => sine(SFX, t0, 0.5, t => 160 + 240 * Math.exp(-t * 5) * (1 + 0.35 * Math.sin(TAU * 14 * t)), 0.07 * g, t => Math.exp(-t * 6), pan),
     // a drop: a short pitch rise
     plop: (t0, g, pan) => sine(SFX, t0, 0.12, t => 300 + 1800 * (t / 0.12) ** 1.5, 0.08 * g, t => Math.sin(Math.PI * seg(t, 0, 0.12)), pan),
+    // a squeak: skin or rubber rubbed clean, a short high chirp that rises and falls with a fast flutter
+    squeak: (t0, g, pan, dur = 0.18) => { let ph = 0; add(SFX, t0, dur, t => { ph += (1500 + 700 * Math.sin(Math.PI * t / dur) + 90 * Math.sin(TAU * 38 * t)) / SR; return 0.05 * g * Math.sin(TAU * ph) * Math.sin(Math.PI * seg(t, 0, dur)); }, pan); },
+    // a water drop: a quick rising plip and a tiny splash
+    drip: (t0, g, pan) => { sine(SFX, t0, 0.09, t => 500 + 1600 * (t / 0.09) ** 0.7, 0.08 * g, t => Math.exp(-t * 45), pan); band(SFX, t0, 0.012, 0.3, 0.9, () => 0.03 * g, pan); },
   };
   for (const c of cues) {
     const fn = FX[c.sfx]; if (!fn) { warnings.push(`unknown sfx "${c.sfx}" at ${(+c.t).toFixed(2)} s (use: ${SFX_NAMES.join(', ')})`); continue; }

@@ -242,9 +242,10 @@ export async function makeKit({ project, script, timing }) {
   let M = MOTION.warm;
   // Every text that reaches the screen, for the checks (render.mjs check): its role sets the minimum size, and the
   // first and last time it was seen give its reading time. Roles: headline, caption, label, note, stamp, texture.
-  const texts = new Map();
+  const texts = new Map(), frameTexts = new Map();   // frameTexts: frame (30 fps) -> the meaningful texts on it, for the overlap check
   const noteText = (id, o) => {
     if (!id || !o || !Number.isFinite(o.t)) return;
+    if (o.box && ['headline', 'label', 'note'].includes(o.role || 'label')) { const f = Math.round(o.t * 30); if (!frameTexts.has(f)) frameTexts.set(f, []); frameTexts.get(f).push({ id, text: String(o.text ?? id).slice(0, 40), box: o.box }); }
     let it = texts.get(id);
     if (!it) { it = { id, text: String(o.text ?? id).slice(0, 80), role: o.role || 'label', size: o.size || 0, first: o.t, last: o.t, boxes: [], spoken: o.spoken ?? null }; texts.set(id, it); }
     it.first = Math.min(it.first, o.t); it.last = Math.max(it.last, o.t); it.size = Math.max(it.size || 0, o.size || 0);   // settled size: texts pop in from 0
@@ -292,7 +293,9 @@ export async function makeKit({ project, script, timing }) {
   const fade = (t, a, b, fin = 0.25, fout = 0.25) => Math.min(ss(seg(t, a, a + fin)), 1 - ss(seg(t, b - fout, b)));
 
   // ---------- camera: keys [{ t, x, y, z, r, e }] (x, y = the world point at the frame centre; z = zoom; r = roll)
-  const camera = (keys, { shakes = [] } = {}) => {
+  // shakes: [{ at, amp, dur }] or [[at, amp, dur]] (the style kits' form); both work
+  const camera = (keys, { shakes: shakes0 = [] } = {}) => {
+    const shakes = shakes0.map(s => (Array.isArray(s) ? { at: s[0], amp: s[1], dur: s[2] } : s)); shakes.forEach(s => ev(s.at));
     const K2 = keys.map(k => ({ x: W / 2, y: H / 2, z: 1, r: 0, ...k })).sort((a, b) => a.t - b.t);
     return {
       keys: K2,
@@ -699,7 +702,7 @@ export async function makeKit({ project, script, timing }) {
     // used by render.mjs
     _setMotion(name) { M = MOTION[name] || MOTION.warm; },
     _setCaptions(o = {}) { Object.assign(capStyle, o); if (o.emph) capStyle.emph = { ...capStyle.emph, ...o.emph }; F.base.family = o.font || F.base.family; if (o.emph) F.emph = { ...F.emph, ...o.emph }; },
-    get _captionLayer() { return capStyle.layer; }, _texts: texts,
+    get _captionLayer() { return capStyle.layer; }, _texts: texts, _frameTexts: frameTexts,
     medium, _setMedia(m) { MEDIA_IMPL = m; },
     _captions: drawCaptions, _captionList: captions, _debug: debugOverlay, _events: events,
   };

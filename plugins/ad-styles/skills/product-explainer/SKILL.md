@@ -55,7 +55,8 @@ Explainer progress:
 ```
 
 1. **Brand folder and research.** If `<brand>/BRAND.md` exists, read it and `LEARNINGS.md` first; a new brand starts
-   both from the templates. `RUN site.mjs <url> --out <brand>`, then customers' words and facts (research.md).
+   both from the templates. `RUN site.mjs <url> --out <brand>`, the likely product's page and photos, then customers'
+   words and facts (research.md). The film folder is made after the topic is chosen, named after it.
 2. **One round of questions** (AskUserQuestion if available; skip what the brand folder or the request answers):
    - **Which product**, if several fit (your pick first).
    - **Which topic:** 2 or 3, each a viewer's pain or habit, its hook and the hidden fact (copy.md; pick 1 or 2
@@ -63,7 +64,8 @@ Explainer progress:
    - **Which style:** recommend from the menu below, with one reason.
    - **See the look first?** Three finished style frames before the film (recommend yes for a first film).
    - **The product photo:** the site's (say its size), or a current one they send.
-   - **The voice:** a Cartesia voice you'll suggest, or their recording. **A post or an ad** (post by default).
+   - **The voice:** their Cartesia API key (or a `.env` path), so you can list voices and suggest one; or their own
+     recording. **A post or an ad** (post by default). **Are they the brand?** If not, the film is a concept film.
    - In one line: "What do customers ask you or complain about most?" Then decide every other gap yourself.
 3. **The script, as text (APPROVAL).** Write it by copy.md: about 30 s and 70 words on the time map, the hook's four
    beats, the table `# | voice | on screen | beat note`, the facts list with sources, the shape (PAS by default). Run

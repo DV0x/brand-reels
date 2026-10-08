@@ -48,7 +48,7 @@ Shopify stores are read from `/products.json`; other sites from the page's produ
 | the summary lists no products | not a Shopify store: open the likely product pages with WebFetch |
 
 ## 3. cutout.mjs: the product photo
-`RUN cutout.mjs <photo> --out <film>/product/main.png [--tol 30] [--crop x0,y0,x1,y1] [--shadows remove] [--box]`
+`RUN cutout.mjs <photo> --out <film>/product/main.png [--tol n] [--crop x0,y0,x1,y1] [--shadows remove] [--box] [--uncut]`
 
 Cuts the product out of a plain background. Prints a report (the background, the product's height in pixels, the
 `closeUps` line: how big it can be drawn) and saves `<out>-check.jpg` (the cut-out on red and on near-black). Look at the
@@ -57,13 +57,15 @@ check image every time. What each report line means and what to do: [product.md]
 | Option | Use |
 |---|---|
 | `--crop x0,y0,x1,y1` | keep only that part of the photo (pixels of the original): to drop an attached shadow |
-| `--tol n` | how different from the background a pixel must be to stay (default 30; lower keeps light label edges) |
+| `--tol n` | how different from the background a pixel must be to stay. Without it, the tool picks one from how even the background is (16 to 60) and prints it as `tolerance`; lower keeps light label edges |
 | `--box` | a flat, boxy pack shot straight on, whose label is close to the background's colour: keeps the whole rectangle |
 | `--shadows remove` | last resort for a shadow under the product; check that the label survived |
+| `--uncut` | no cut-out: saves the `--crop` part of the photo as it is, background and all. Use it when no tolerance keeps the label whole and the floor out (a white pack on light grey); the film shows it as a framed print or card |
 
 | Error | Fix |
 |---|---|
 | `nothing left after cutting out the background` (exit 1) | try `--tol 12`, or a photo on a plain background |
+| the check image shows the label eaten, or the floor kept, at every `--tol` | `--uncut` with `--crop` around the product (product.md, section 2) |
 | `no file at <path>` (exit 2) | download the photos first with `site.mjs --product` |
 
 ## 4. fonts.mjs: a style's fonts
@@ -79,7 +81,7 @@ with a drawing kit bundles its own fonts: no need to run it.
 ## 5. voice.mjs: the voiceover and the film's clock
 | Command | What it does |
 |---|---|
-| `RUN voice.mjs --voices "<words>"` | lists Cartesia voices matching the words ("indian english", "hindi", "warm female") |
+| `RUN voice.mjs --voices "<words>"` | lists Cartesia voices whose name, description and language hold every word ("indian", "indian female", "hindi"); "english" also matches the code `en`, "female" also matches "woman". Needs the API key |
 | `RUN voice.mjs <film> [--words] [--key-file <.env>]` | voices every line of `script.json` into `vo/voice.wav` and `vo/timing.json`, each line placed on the grid by its `at` and `anchor`; `--words` prints every word's time |
 | `RUN voice.mjs <film> --only l3` | remakes one line |
 
@@ -113,16 +115,18 @@ exists, and `--debug` to draw the safe box and the caption lane.
 |---|---|
 | Size | a caption under 56 px, a headline under 72, a label or stamp under 40, a note under 36 (texture is exempt) |
 | Safe zone | a word outside the placement's safe box (craft.md, section 3) |
-| Reading time | a headline, label or note leaves before letters ÷ 15 + 1.5 s, or its spoken line + 0.6 s |
+| Reading time | a headline, label or note tied to a spoken line leaves before that line's end + 0.6 s (at least 1.8 s on screen); any other one leaves before letters ÷ 15 + 1.5 s (at most 4.5 s needed). Text still on screen at the film's end is exempt |
+| Touching | two different headlines, labels or notes overlap, or come within 6 px, on 3 or more sampled frames |
 | Contrast | under 4.5:1 for text under 72 px, under 3:1 for larger |
 | Still moments | two frames 0.3 s apart in the middle of a line or the end card are the same |
 | Product size | the photo drawn bigger than it was taken |
 | Hits on the beat | a declared hit more than half a frame off the music grid |
 | Warnings | the film is under 25 s or over 35 s; more than 5 hard cuts; nothing new for more than 4 s; more than 4 statements; timing estimated |
 
-The check samples the film at 6 frames a second, and at every frame (30 fps) from 0.1 s before to 0.5 s after each hit,
-cue, shot change and animation start, so a word that leaves the safe box during a fast move is caught here and not
-after the video.
+The check draws every layer except the medium and the finish (`draw`, captions, `over`, `top`). It samples the film
+at 6 frames a second, and at every frame (30 fps) from 0.1 s before to 0.5 s after each hit, cue, shot change, camera
+shake and animation start, so a word that leaves the safe box during a fast move is caught here and not after the
+video.
 
 **The video report** (`out/report.json`): the length, the checks above, `decodeErrors` (must be 0), `frozen` (stretches
 of 0.4 s or more with no change; must be 0), `lufs` (target −14, within 1) and `truePeak`, `audioLevels` (the music and

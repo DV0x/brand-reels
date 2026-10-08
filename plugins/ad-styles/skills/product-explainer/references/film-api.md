@@ -140,7 +140,8 @@ K.view(g, cam, t, 1, () => drawRoom(g, t));       // depth < 1 is far (moves les
 const s = K.toScreen(cam, t, [worldX, worldY]);   // where a world point is on screen, for labels and rings
 ```
 A key is `{ t, x, y, z, r, e }`: the world point at the frame's centre, the zoom, the roll in radians, and the ease into
-the key. Draw far layers bigger than the frame, so a move never shows an edge. Anything that follows a subject goes
+the key. Shakes are `{ at, amp, dur }` or `[at, amp, dur]` (both work, here and in `D.camera`). **A hard cut** to a
+new framing: give the new shot its own camera, so no frame interpolates between the two. Draw far layers bigger than the frame, so a move never shows an edge. Anything that follows a subject goes
 through `K.toScreen`, never hand-typed screen positions. A style kit may wrap the camera (`D.camera`, section 12).
 
 ## 7. The product photo
@@ -188,7 +189,7 @@ SVG filter or WebGL.
 |---|---|
 | `K.statement(g, t, id, { x, y, size, font, weight, italic, emph, maxW, lineH, align, color, shadow, all, until, lead })` | the line `id` as big type, word by word as it is spoken. Mark the line `"show": "statement"` |
 | `K.text(g, str, x, y, { font, weight, italic, size, emph, maxW, lineH, align, color, alpha, t, id, role })` | static text with `*emphasis*`, wrapped at `maxW`; returns its box |
-| `K.label(g, str, { x, y, t, at, until, to, bend, size, font, weight, pad, color, bg, border, radius, shadow, rot, lineW, lineColor, role })` | a label that pops in, with a line to the point `to` it names |
+| `K.label(g, str, { x, y, t, at, until, to, bend, size, font, weight, pad, color, bg, border, radius, shadow, rot, lineW, lineColor, role })` | a label that pops in, with a line to the point `to` it names. `x`, `y` are the label's **centre**: for a left edge at `L`, measure the width (`g.measureText`) and use `x: L + width / 2 + pad` |
 | `K.stamp(g, str, x, y, t, at, { size, color, font, weight, border, from, rot, alpha, blend, until })` | a stamp that slams in |
 | `K.noteText(id, { text, role, size, box: [x0, y0, x1, y1], t, spoken })` | registers your own drawn text for the checks |
 | `K.font({ family, size, weight, italic }, size?)` | a canvas font string |
@@ -226,9 +227,9 @@ for the 4-second check; the motion calls do it already), `K.qa` (what the frame 
 ## 11. Sound: cues and the score
 **Cues** (`cues: [{ t, sfx, gain, pan, dur }]`): `gain` 1 is a normal level for every effect (the levels are already
 balanced under the voice), 0.3 to 1.5; `pan` −1 to 1; `dur` for the effects that have a length (whoosh, swish, marker,
-crinkle, steam, pour, rise). Effects: `pop`, `click`, `tick`, `whoosh`, `swish`, `thud`, `stamp`, `stampbig`, `paper`,
+crinkle, steam, pour, rise, squeak). Effects: `pop`, `click`, `tick`, `whoosh`, `swish`, `thud`, `stamp`, `stampbig`, `paper`,
 `tape`, `marker`, `flip`, `crinkle`, `chime`, `ding`, `steam`, `door`, `pour`, `sparkle`, `rise`, `snap`, `shutter`,
-`type`, `boing`, `plop`.
+`type`, `boing`, `plop`, `squeak` (skin or rubber rubbed clean; has a length), `drip` (a water drop).
 
 **The score** (`music: { bpm, offset, score(S), silences, end, underVoice }`): `score(S)` runs once before the mix and
 writes the film's own music. `underVoice` is how many dB the music's sounding parts sit under the voice (default 10).
@@ -292,7 +293,7 @@ story: it draws nothing unless a scene calls it. Its look and numbers are in `st
 **Type**
 | Call | What it draws |
 |---|---|
-| `D.headline(g, t, text, { x, y, top, size = 120, font, color, shadow, dx, dy, maxW, lineH, align, upper, at, stagger, d, from, line, lead, until, emph, id, role })` | big type, letter by letter with a misregistered shadow. With `line: 'l3'` it follows that line's spoken words; `until` pops it out. Returns its box |
+| `D.headline(g, t, text, { x, y, top, size = 120, font, color, shadow, dx, dy, maxW, lineH, align, upper, at, stagger, d, from, line, lead, until, emph, id, role })` | big type, letter by letter with a misregistered shadow. With `line: 'l3'` it follows that line's spoken words; `until` pops it out. Returns its box. To have it fully printed on the cover (frame 0), set `at` earlier than −(letters × stagger + 0.4) s |
 | `D.text(g, str, x, y, { face, size, weight, align, baseline, color, alpha, shadow, dx, dy, stroke, strokeW, t, id, role })` | static type in a face: `head`, `display`, `sans`, `mono`, `hand` |
 | `D.numeral(g, str, { x, y, size = 820, fill, dot, angle, t, at, rot, alpha })` | a giant halftone-filled numeral that pops in |
 | `D.stamp(g, t, str, { x, y, size = 96, at, until, rot = -8, color, alpha, blend })` | a rough-ink stamp that slams at `at` |
@@ -314,7 +315,7 @@ story: it draws nothing unless a scene calls it. Its look and numbers are in `st
 **The product, the HUD, the camera, transitions**
 | Call | What it does |
 |---|---|
-| `D.evidence(g, t, P, { x, y, h = 760, rot, scale, at, enter: 'drop' \| 'slide', pad, margin, label, strip, note, backdrop, clip })` | the real photo as an evidence print, in `over`. Returns `{ x, y, w, h, rot, point(px, py), photo, strip }` |
+| `D.evidence(g, t, P, { x, y, h = 760, rot, scale, at, enter: 'drop' \| 'slide', pad, margin, label, strip, note, backdrop, clip })` | the real photo as an evidence print, in `over`. It crops the photo to its non-transparent box and lays it on `backdrop` (a light tint of the paper by default). An uncut photo (`cutout.mjs --uncut`) is shown whole, background and all, which suits the print. Returns `{ x, y, w, h, rot, point(px, py), photo, strip }` |
 | `D.hud(g, t, { caseNo, chip: [a, b], chipAt, date, dark, until })` | the HUD in the top band of the safe box; `until` folds it away in 0.15 s |
 | `D.camera(keys, { shakes: [[t0, amp, dur]], pulse: G, when(t), amount = 0.006 })` | the camera with shakes (5 to 26 px) and a small zoom pulse on every beat of `G` |
 | `D.dotWipe(g, t, at, color)` | the style's transition: dots cover the frame by `at` and clear after it (in `top`) |
