@@ -136,7 +136,7 @@ A menu: use the ones your story needs.
 
 > **For 9:16 reels: our drawing kit.** This skill draws on a canvas, not in a web page. `engine.mjs` is loaded for any
 > film whose `script.json` says `"style": "halftone-dossier"`, and the film gets it as `K.style` (`D`). Every call and
-> option is in [film-api.md](../../references/film-api.md), section 12, in two parts. **Techniques**, for everything
+> option is in [KIT.md](KIT.md), in two parts (the shared calls are in film-api.md). **Techniques**, for everything
 > the film draws: the brand's inks and fonts (`D.inks`, `D.fonts`), paper and grain (`D.finish`), halftone and density
 > fields (`D.halftone`, `D.radial`, `D.edge`, `D.ramp`, `D.dotFill`), inked shapes and lines (`D.ink`, `D.line`),
 > per-character headlines (`D.headline`), the camera with shakes and the beat pulse, the dot wipe and flashes.

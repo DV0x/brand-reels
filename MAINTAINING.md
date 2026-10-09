@@ -39,8 +39,10 @@ lemo's: a great example first, then the rules and the tools taken from it.
    marks, type treatment, transitions, camera, motion curves, page zones, ink and font roles that take the brand's
    colours and fonts), with no story, scene list or defaults. Finished objects (a stamp, a frame, a caption design)
    are optional extras, listed apart as "optional objects": the agent draws each film's objects with the techniques. Bundle its fonts in
-   `styles/<slug>/fonts/` with their licence files (OFL or similar). Add every call and option to `film-api.md` in a
-   section of its own: the agent must never need to open `engine.mjs`.
+   `styles/<slug>/fonts/` with their licence files (OFL or similar). List every call and option in
+   `styles/<slug>/KIT.md`, techniques first, then optional objects (the Dossier's `KIT.md` is the model): the agent
+   must never need to open `engine.mjs`, and it reads only the kit of the style it uses. `film-api.md` keeps only the
+   shared calls.
 3. **One test film,** made in a work folder outside this repository, by the skill's own workflow.
    - The user approves a style frame before the film is built, then the finished film (watched with sound).
    - The machine checks pass: `render.mjs check` PASS; `out/report.json` with 0 decode errors, 0 frozen stretches,

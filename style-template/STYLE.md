@@ -23,8 +23,8 @@ section. Add only these, and only where lemo's text needs them:
   - section 6, the phone page: the picture fills 1080 × 1920; words keep to the safe box; the subject is at least a
     third of the frame height at key moments; the zone table (top band, HUD or title, headline, hero, caption, bottom
     band); no filler in the bands.
-  - section 10, the drawing kit: replaces lemo's engine text; names engine.mjs, points to film-api.md (its own
-    section), lists the bundled fonts.
+  - section 10, the drawing kit: replaces lemo's engine text; names engine.mjs, points to the style's KIT.md (every
+    call: techniques, then optional objects), lists the bundled fonts.
   - section 11, the length: 30 to 35 s, and how much of the style fits in it.
 -->
 
@@ -83,7 +83,7 @@ Mistakes that come from the medium itself, each with its fix.
 ## 10. Engine
 
 > **For 9:16 reels: our drawing kit.** `engine.mjs`, loaded as `K.style` when `script.json` names this style. Every call
-> and option: film-api.md, section <n>. Fonts bundled in `fonts/`: …
+> and option: [KIT.md](KIT.md) (techniques, then optional objects). Fonts bundled in `fonts/`: …
 
 ## 11. Variation space
 

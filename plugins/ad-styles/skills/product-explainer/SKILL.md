@@ -20,7 +20,7 @@ on a plain background (the site usually has one); the brand's logo and fonts, if
 | Topic, hook, script, the 30-second time map | [references/copy.md](references/copy.md), the bar in [references/benchmarks.md](references/benchmarks.md) |
 | The product photo | [references/product.md](references/product.md) |
 | Directing: treatment, sound, rhythm, camera, review, delivery, changes | [references/directing.md](references/directing.md), design rules in [references/craft.md](references/craft.md) |
-| Building the film: every call and option | [references/film-api.md](references/film-api.md) |
+| Building the film: every shared call and option | [references/film-api.md](references/film-api.md); the style's own parts in its `KIT.md` (e.g. [styles/halftone-dossier/KIT.md](styles/halftone-dossier/KIT.md)) |
 | Commands, options, exit codes, errors | [references/tools.md](references/tools.md) |
 
 **The film is for the brand's customer**, scrolling with zero interest. Its spine is **a pain the viewer feels → a
@@ -89,10 +89,10 @@ Explainer progress:
    table, the product.
 6. **Style frames.** Copy `templates/film.mjs`, write the timeline, finish three scenes (the signature shot, the
    product's shot, one more), review them in written rounds in `REVIEW.md` (directing.md, section 5). Every shared
-   call is in film-api.md; the style's own tools are in its parts list (film-api.md, section 12, for the Dossier).
+   call is in film-api.md; the style's own tools are in its parts list, `styles/<style>/KIT.md`.
    Show them only if the user asked to see the look, and wait for the OK.
 7. **The film.** Place the lines on the grid, re-run `voice.mjs`, write every scene of the treatment, the score and
-   a sound per action (film-api.md for every call; directing.md sections 6 to 9 for why).
+   a sound per action (film-api.md and the style's `KIT.md` for every call; directing.md sections 6 to 9 for why).
 8. **Review loop** (directing.md, section 11): `check` until PASS, contact sheets and strips in written rounds until a
    round finds nothing, then `video` and its report. You can't hear the film: say so.
 9. **Deliver** (directing.md, section 12): `CREDITS.md`, `DELIVERY.md` (with what you could not do, and why), the
@@ -101,7 +101,7 @@ Explainer progress:
 ## The styles
 | Style | Best for | Status |
 |---|---|---|
-| [Halftone Dossier](styles/halftone-dossier/STYLE.md) | myth-busting, label honesty, hidden facts | **tested**, with a drawing kit |
+| [Halftone Dossier](styles/halftone-dossier/STYLE.md) | myth-busting, label honesty, hidden facts | **tested**, with a drawing kit ([KIT.md](styles/halftone-dossier/KIT.md)) |
 
 **Drafts** (not tested yet): a user may ask for one by name. Say it is not tested yet, then build its primitives from its
 `STYLE.md` (craft.md, section 6) and expect more time. Folders under `styles/`: `midcentury-toon`, `swiss-motion`,

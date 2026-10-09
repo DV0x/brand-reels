@@ -54,7 +54,7 @@ The benchmark lifts quality more than any rule below.
 - **One subject that changes beats a new scene per line.** Let one thing carry the film and change with the story (a
   glass that fills, a label that gets marked up, a map that grows), across most of its lines.
 - **Hook in the first 3 seconds.** Frame 0 is already a finished, composed frame: it is the cover in the feed. Every
-  headline on it is fully printed at frame 0 (film-api.md, `D.headline`).
+  headline on it is fully printed at frame 0 (the style's `KIT.md`, e.g. `D.headline`).
 - **An ending that echoes.** Bookend the opening, reveal the scale, or let the viewer do the thing right the second time.
 - **One native move:** a moment only this medium can do (STYLE.md section 8 lists the style's; pick or invent the one
   your story needs). Put it at the emotional peak.

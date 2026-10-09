@@ -74,11 +74,13 @@ the same, whatever the brand.
 - **The subject reads against its ground:** a value step between them. Never a colour on the same colour.
 
 ## 4. The product inside the style
-- **It is always the real photo,** cut out (`product.md`). Never repainted, redrawn, generated or filtered: a generated
-  label comes out as gibberish, and a customer has to recognise the pack on a shelf.
-- **The style decides how it appears** (STYLE.md section 12): an evidence print pinned to a case file, a clean block on
-  a Swiss grid, a cut-out card on watercolor paper, an item card in a pixel game. It sits above the style's finish, so
-  no texture, dot or paint lands on it.
+- **It is always the real photo,** cut out, or framed as it is when a clean cut-out is not possible (`product.md`).
+  Never repainted, redrawn, generated or filtered: a generated label comes out as gibberish, and a customer has to
+  recognise the pack on a shelf.
+- **The style and the brand decide how it appears** (STYLE.md section 12): a clean block on a Swiss grid, a cut-out
+  card on watercolor paper, an item card in a pixel game, on a ground drawn in the brand's look; a kit's ready-made
+  frame (the Dossier's evidence print) only with a reason. It sits above the style's finish, so no texture, dot or
+  paint lands on it.
 - **Circles, arrows and labels may point at the label, never cover it.** Captions and props stay off it.
 - **Shown big and clear at least once** (the end card), and never drawn bigger than its photo.
 

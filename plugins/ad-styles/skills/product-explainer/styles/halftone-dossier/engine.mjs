@@ -1,7 +1,7 @@
 // engine.mjs: the Halftone Dossier style (STYLE.md). A film gets it as K.style when script.json says
 // "style": "halftone-dossier". There is no film builder: each film writes its own scenes from its treatment
 // (templates/film.mjs) and calls these parts. Nothing is drawn unless the film asks for it.
-// Two kinds of part (KIT.md lists them; film-api.md section 12 until it moves there):
+// Two kinds of part (KIT.md in this folder lists every call and option):
 //   - techniques: how the medium is made: paper and grain, halftone dots and density fields, the inked shape and
 //     line, headlines with a misregistered shadow, the camera with shakes, dot wipes, flashes, the page zones, and
 //     the inks and fonts. The film draws its own objects with these.
