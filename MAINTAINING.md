@@ -19,6 +19,18 @@ their next update.
 A style is "tested" when one film in it has been approved by the user. Only tested styles are in the menu in
 `SKILL.md`; the others stay as drafts. The test film is never shipped: the skill has no example films.
 
+The look comes first, and it is agreed with pictures, not words (agreed with the user 2026-10-09). The order is
+lemo's: a great example first, then the rules and the tools taken from it.
+
+0. **Agree the look, with references.**
+   - Gather 3 to 5 real examples the user likes: films, posters, artists, brand ads. For each, write what to take
+     ("the flat colours", "the grain") and what not to take.
+   - Name the physical medium the style imitates (cut paper, risograph print, watercolour, …).
+   - Decide which brands and messages it suits, and which it does not (a calm wellness brand needs something softer
+     than the Dossier).
+   - Check whether lemo-opuscar has the style (43 styles): if so, its text is the starting point for step 1.
+   - **A quick look test:** 2 or 3 still frames in the style, often two versions side by side; the user picks. This is
+     cheap, and it catches a wrong look before any film is built.
 1. **The style file.** Start from `style-template/STYLE.md`. If lemo-opuscar has the style
    (`~/projects/lemo-test/lemo-opuscar/styles/<slug>/STYLE.md`), copy its text word for word, keep its named
    references ("grammar only, never copy"), and add only notes marked **For 9:16 reels** (the template lists them),
