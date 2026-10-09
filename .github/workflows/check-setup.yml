@@ -128,7 +128,7 @@ jobs:
           bash plugins/ad-styles/runtime/run.sh plugins/ad-styles/skills/product-explainer/scripts/render.mjs "$P" sheet --estimate
           bash plugins/ad-styles/runtime/run.sh plugins/ad-styles/skills/product-explainer/scripts/render.mjs "$P" video --estimate --to 3
           test -s "$P/out/sheet.jpg"
-          test -s "$P/out/example-explainer-0-3.mp4"
+          ls "$P"/out/*-0-3.mp4 >/dev/null   # the clip is named after the template's slug
       - name: product-explainer (template sheet + 3 s video) - PowerShell
         if: matrix.shell != 'bash'
         shell: pwsh
@@ -143,7 +143,7 @@ jobs:
           & $exe -NoProfile -ExecutionPolicy Bypass -File plugins\ad-styles\runtime\run.ps1 plugins\ad-styles\skills\product-explainer\scripts\render.mjs $P video --estimate --to 3 | Out-Host
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           if (-not (Test-Path (Join-Path $P 'out\sheet.jpg'))) { exit 1 }
-          if (-not (Test-Path (Join-Path $P 'out\example-explainer-0-3.mp4'))) { exit 1 }
+          if (-not (Get-ChildItem (Join-Path $P 'out') -Filter '*-0-3.mp4')) { exit 1 }
 
       - name: Require PASS
         shell: bash

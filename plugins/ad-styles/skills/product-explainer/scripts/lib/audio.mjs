@@ -239,7 +239,12 @@ export function buildAudio({ dir, duration, voiceWav = null, cues = [], music = 
   const m = spawnSync(FFMPEG, ['-hide_banner', '-nostats', '-i', pre, '-af', 'loudnorm=I=-14:TP=-1.5:LRA=9:print_format=json', '-f', 'null', '-'], { encoding: 'utf8' });
   const js = (m.stderr || '').match(/\{[\s\S]*?\}/g)?.pop();
   let filter = 'loudnorm=I=-14:TP=-1.5:LRA=9';
-  if (js) { const v = JSON.parse(js); filter = `loudnorm=I=-14:TP=-1.5:LRA=9:measured_I=${v.input_i}:measured_TP=${v.input_tp}:measured_LRA=${v.input_lra}:measured_thresh=${v.input_thresh}:offset=${v.target_offset}:linear=true`; }
+  if (js) {
+    const v = JSON.parse(js);
+    // a silent mix (no voice, music or effects yet) measures as -inf, which the second pass rejects: leave it as it is
+    if ([v.input_i, v.input_tp, v.input_lra, v.input_thresh, v.target_offset].every(x => Number.isFinite(+x))) filter = `loudnorm=I=-14:TP=-1.5:LRA=9:measured_I=${v.input_i}:measured_TP=${v.input_tp}:measured_LRA=${v.input_lra}:measured_thresh=${v.input_thresh}:offset=${v.target_offset}:linear=true`;
+    else { filter = 'anull'; warnings.push('the mix is silent (no voice, music or effects yet): nothing to normalise'); }
+  }
   const r2 = spawnSync(FFMPEG, ['-v', 'error', '-y', '-i', pre, '-af', filter, '-ar', '48000', '-ac', '2', mixed], { encoding: 'utf8' });
   if (r2.status !== 0) throw new Error('loudness pass failed: ' + (r2.stderr || '').trim().split('\n').slice(-3).join(' | '));
   return { mix: mixed, warnings, levels };
