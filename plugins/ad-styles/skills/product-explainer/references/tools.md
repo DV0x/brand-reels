@@ -124,7 +124,7 @@ exists, and `--debug` to draw the safe box and the caption lane.
 | Size | a caption under 56 px, a headline under 72, a label or stamp under 40, a note under 36 (texture is exempt) |
 | Safe zone | a word outside the placement's safe box (craft.md, section 3) |
 | Reading time | a text tied to a spoken line (a statement, or a headline drawn with `line`) leaves before that line's end + 0.6 s (at least 1.8 s on screen); any other headline, label or note leaves before letters ÷ 15 + 1.5 s (at most 4.5 s needed). Text still on screen at the film's end is exempt |
-| Touching | two different headlines, labels or notes overlap, or come within 6 px, on 3 or more sampled frames (a label's pointer line is not checked: look at it on a strip) |
+| Touching | two different headlines, labels or notes overlap, or come within 6 px, on 3 or more sampled frames; or a label's pointer line (`K.label`, or a kit's tag) crosses or comes within 6 px of another text (its own label, and a text it points into, are left out) |
 | Contrast | under 4.5:1 for text under 72 px, under 3:1 for larger |
 | Still moments | two frames 0.3 s apart in the middle of a line or the end card are the same |
 | Product size | the photo drawn bigger than it was taken |

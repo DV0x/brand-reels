@@ -267,6 +267,20 @@ async function check(S) {
     if (ix > -6 && iy > -6) { const k = [a.id, b.id].sort().join('|'), r = pairs.get(k) || { n: 0, t: f / 30, a, b }; r.n++; r.t = Math.min(r.t, f / 30); pairs.set(k, r); }
   }
   for (const r of pairs.values()) if (r.n >= 3) issues.push({ check: 'touching', t: r.t, text: r.a.text, msg: `touches or overlaps "${r.b.text}" (${r.n} sampled frames): keep at least 6 px between them, or show them at different times` });
+  // a label's pointer line that crosses or comes within 6 px of another text, on 3 or more sampled frames (its own label
+  // and a text it points into are left out)
+  const crossing = new Map();
+  for (const [f, list] of K._framePointers || []) {
+    const here = K._frameTexts.get(f) || [];
+    for (const pl of list) for (const tx of here) {
+      if (tx.id === pl.owner) continue;
+      const [x0, y0, x1, y1] = tx.box, mg = 6 + pl.w / 2;
+      if (pl.to[0] > x0 - 6 && pl.to[0] < x1 + 6 && pl.to[1] > y0 - 6 && pl.to[1] < y1 + 6) continue;
+      if (!pl.pts.some(([x, y]) => x > x0 - mg && x < x1 + mg && y > y0 - mg && y < y1 + mg)) continue;
+      const k = pl.id + '|' + tx.id, r = crossing.get(k) || { n: 0, t: f / 30, pl, tx }; r.n++; r.t = Math.min(r.t, f / 30); crossing.set(k, r);
+    }
+  }
+  for (const r of crossing.values()) if (r.n >= 3) issues.push({ check: 'touching', t: r.t, text: r.pl.text, msg: `its pointer line crosses or touches "${r.tx.text}" (${r.n} sampled frames): move the label, bend the line (bend), or show them at different times` });
   for (const x of K.qa.upscale) issues.push({ check: 'product size', t: x.t, text: x.product, msg: `drawn at ${x.drawnPx} px from a ${x.photoPx} px photo (${x.x}x): it goes soft` });
   // 4. contrast: one finished frame per text, in the middle of its time on screen
   const byTime = new Map();

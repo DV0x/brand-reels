@@ -87,12 +87,19 @@ async function productMode() {
   if (html) {
     for (const m of html.matchAll(/class=["'][^"']*(?:jdgm-rev__body|spr-review-content-body|review-content|stamped-review-content-body|loox-review-content)[^"']*["'][^>]*>([\s\S]*?)<\/(?:div|p|span)>/gi)) { const t = strip(m[1]); if (t.length > 12) reviews.push(t.slice(0, 400)); }
     for (const x of jsonld(html)) for (const r of [].concat(x.review || [])) { const t = strip(r.reviewBody || r.description || ''); if (t.length > 12) reviews.push(t.slice(0, 400)); }
+    // review apps that keep every review as JSON inside the page (Judge.me: "title" then "body_html"), often more than
+    // the widget shows; the review's title goes before its text
+    const blob = html.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&'), un = x => { try { return JSON.parse(`"${x}"`); } catch { return x; } };
+    for (const m of blob.matchAll(/"title"\s*:\s*"((?:[^"\\]|\\.)*)"\s*,\s*"body(?:_html)?"\s*:\s*"((?:[^"\\]|\\.)*)"/g)) {
+      const title = strip(un(m[1])).replace(/\s+/g, ' '), body = strip(un(m[2])).replace(/\s+/g, ' ');
+      if (body.length > 12) reviews.push(((title ? title + ': ' : '') + body).slice(0, 400));
+    }
   }
   prod.images = files; prod.reviewsOnPage = [...new Set(reviews)].slice(0, 40);
   fs.writeFileSync(path.join(out, 'product.json'), JSON.stringify(prod, null, 2));
   console.log(`${prod.title}\n${prod.url}\nprice ${prod.price ?? '?'}${prod.currency ? ' ' + prod.currency : ''}`);
   console.log(`photos (${files.length}) in ${out}:`); for (const f of files) console.log(`  ${f.file}  ${f.w ?? '?'}x${f.h ?? '?'}${f.alt ? '  "' + f.alt + '"' : ''}`);
-  console.log(`reviews found on the page: ${prod.reviewsOnPage.length}`); prod.reviewsOnPage.slice(0, 8).forEach(r => console.log('  - ' + r.slice(0, 160)));
+  console.log(`reviews found on the page: ${prod.reviewsOnPage.length}${prod.reviewsOnPage.length ? ' (title: text)' : ' (many load later with JavaScript: search for reviews instead)'}`); prod.reviewsOnPage.slice(0, 12).forEach(r => console.log('  - ' + r.slice(0, 240)));
   console.log(`description: ${prod.description.slice(0, 600)}`);
 }
 
@@ -105,7 +112,15 @@ async function siteMode() {
     description: meta(home, 'description') || meta(home, 'og:description'), ogImage: meta(home, 'og:image'), themeColor: meta(home, 'theme-color'), shopify: false };
   // their own words: headings, short paragraphs, product descriptions
   const copy = [], body = html.replace(/<(nav|header|footer)[\s\S]*?<\/\1>/gi, ' ');
-  for (const m of body.matchAll(/<(h1|h2|h3|p|blockquote)[^>]*>([\s\S]*?)<\/\1>/gi)) { const t = strip(m[2]).replace(/\n/g, ' '); if (t.length >= 14 && t.length <= 260 && (t.match(/[₹$€£]/g) || []).length < 2 && !/\[\[|\$\{|\{\{|\}\}/.test(t) && !/cookie|©|copyright|subscribe|newsletter|log ?in|sign ?up|add to cart|checkout|privacy|terms|javascript/i.test(t)) copy.push(t); }
+  // page junk left out: shop and account text, review-widget counts, carousel numbers, lines of code, menu labels
+  const JUNK = /cookie|©|copyright|subscribe|newsletter|log ?in|sign ?up|add to cart|checkout|privacy|terms|javascript|your cart|cart is empty|continue shopping|have an account|my account|order history|track (?:your )?order|wishlist|quantity\s*:|(?:in|de)crease quantity|shop by|view all|sold out|regular price|sale price|unit price|write a review|based on \d+ reviews|customer reviews/i;
+  const CODE = /`|\/\/\s|=>|[{}]|\b(?:const|let|var|function)\s|\b(?:document|window)\./;
+  for (const m of body.matchAll(/<(h1|h2|h3|p|blockquote)[^>]*>([\s\S]*?)<\/\1>/gi)) {
+    const t = strip(m[2]).replace(/[\u200b-\u200d\ufeff]/g, '').replace(/\s+/g, ' ').trim(), words = (t.match(/[A-Za-z]{2,}/g) || []).length;
+    if (t.length < 14 || t.length > 260 || (t.match(/[₹$€£]/g) || []).length >= 2 || /\[\[|\$\{|\{\{|\}\}/.test(t) || JUNK.test(t) || CODE.test(t)) continue;
+    if (/\b\d+\s*\/\s*(?:of\s*)?\d+\b/.test(t) || (words < 4 && !/[.!?]$/.test(t))) continue;   // "1 / of 3", a menu label
+    copy.push(t);
+  }
   site.copy = [...new Set(copy)].slice(0, 40);
   // fonts and colours from the page and its stylesheets
   const css = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi)].map(m => m[1]);

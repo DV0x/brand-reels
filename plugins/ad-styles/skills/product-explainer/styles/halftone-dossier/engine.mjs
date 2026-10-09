@@ -347,7 +347,11 @@ export default function dossier(K) {
   const tag = (g, str, o = {}) => {
     const t = o.t ?? 0, s = o.at != null ? pop(t, ev(o.at), 0.32) : 1; if (s <= 0) return;
     const x = o.x ?? 700, y = o.y ?? 900, size = o.size ?? 40, f = font(F.mono, size, FW.mono), w = measure(str, f) + size * 1.6, h = size * 1.9;
-    if (o.to) line(g, [[x - w / 2 + size * 0.5, y], [lerp(x, o.to[0], 0.5), lerp(y, o.to[1], 0.5) + 30], o.to], { t, width: 4, line: C.ink, seed: 33 });
+    if (o.to) {
+      const sp = [[x - w / 2 + size * 0.5, y], [lerp(x, o.to[0], 0.5), lerp(y, o.to[1], 0.5) + 30], o.to];
+      line(g, sp, { t, width: 4, line: C.ink, seed: 33 });
+      if (o.t != null && K.notePointer) K.notePointer(g, 'tag:' + str + ':line', K.sampleSpline(sp, 8), { t, owner: 'text:' + str, text: str, width: 4 });   // for the touching check
+    }
     g.save(); g.translate(x, y); g.rotate(((o.rot ?? 6) * Math.PI) / 180); g.scale(s, s);
     ink(g, [[-w / 2 + h * 0.4, -h / 2], [w / 2, -h / 2], [w / 2, h / 2], [-w / 2 + h * 0.4, h / 2], [-w / 2, 0]], { fill: o.fill ?? '#E9CF8E', t, seed: 23, width: 5 });
     g.fillStyle = C.paper; g.fill(circle(-w / 2 + h * 0.42, 0, h * 0.13)); g.strokeStyle = C.ink; g.lineWidth = 4; g.stroke(circle(-w / 2 + h * 0.42, 0, h * 0.13));

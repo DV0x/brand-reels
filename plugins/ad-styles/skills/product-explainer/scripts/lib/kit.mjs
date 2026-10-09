@@ -257,6 +257,24 @@ export async function makeKit({ project, script, timing }) {
     }
   };
 
+  // A label's pointer line, for the touching check: frame -> [{ id, owner, text, pts (screen, every 6 px), to, w }].
+  // The line's first 10 px (at its label) and, once drawn in full, its last 26 px (at its target) are left out.
+  const framePointers = new Map();
+  const notePointer = (g, id, pts, o = {}) => {
+    if (!Number.isFinite(o.t) || !pts || pts.length < 2) return;
+    const m = g.getTransform(), sp = pts.map(([x, y]) => [m.a * x + m.c * y + m.e, m.b * x + m.d * y + m.f]);
+    let total = 0; for (let i = 1; i < sp.length; i++) total += Math.hypot(sp[i][0] - sp[i - 1][0], sp[i][1] - sp[i - 1][1]);
+    const prog = clamp(o.prog ?? 1), stop = prog >= 1 ? total - 26 : total * prog, dense = [];
+    for (let i = 1, acc = 0; i < sp.length; i++) {
+      const [ax, ay] = sp[i - 1], [bx, by] = sp[i], L = Math.hypot(bx - ax, by - ay), n = Math.max(1, Math.ceil(L / 6));
+      for (let k = 0; k < n; k++) { const d = acc + (L * k) / n; if (d > 10 && d < stop) dense.push([ax + ((bx - ax) * k) / n, ay + ((by - ay) * k) / n]); }
+      acc += L;
+    }
+    if (!dense.length) return;
+    const f = Math.round(o.t * 30); if (!framePointers.has(f)) framePointers.set(f, []);
+    framePointers.get(f).push({ id, owner: o.owner, text: String(o.text ?? id).slice(0, 40), pts: dense, to: sp[sp.length - 1], w: o.width ?? 4 });
+  };
+
   // ---------- time: line and word lookups from the voice
   const byId = new Map(timing.lines.map(l => [l.id, l]));
   const scriptById = new Map(script.lines.map(l => [l.id, l]));
@@ -474,8 +492,9 @@ export async function makeKit({ project, script, timing }) {
     g.globalAlpha *= 1 - ss(seg(t, until - 0.18, until));
     if (o.to) {
       const ang = Math.atan2(o.to[1] - cy, o.to[0] - cx), ex = cx + Math.cos(ang) * Math.min(bw / 2, Math.abs((bh / 2) / (Math.sin(ang) || 1e-6))), ey = cy + Math.sin(ang) * Math.min(bh / 2, Math.abs((bw / 2) / (Math.cos(ang) || 1e-6)));
-      const lp = p(t, at + 0.1, 0.32, 'out');
-      drawOn(g, [[ex, ey], [lerp(ex, o.to[0], 0.5) + (o.bend ?? 0) * 40, lerp(ey, o.to[1], 0.5)], o.to], lp, { width: o.lineW || 4, color: o.lineColor || o.color || '#1d1a16' });
+      const lp = p(t, at + 0.1, 0.32, 'out'), lpts = [[ex, ey], [lerp(ex, o.to[0], 0.5) + (o.bend ?? 0) * 40, lerp(ey, o.to[1], 0.5)], o.to];
+      drawOn(g, lpts, lp, { width: o.lineW || 4, color: o.lineColor || o.color || '#1d1a16' });
+      if (o.check !== false && lp > 0) notePointer(g, 'label:' + str + ':line', sampleSpline(lpts, 8), { t, prog: lp, owner: 'label:' + str, text: str, width: o.lineW || 4 });
       if (lp >= 1) { g.fillStyle = o.lineColor || o.color || '#1d1a16'; g.fill(circle(o.to[0], o.to[1], (o.lineW || 4) * 1.6 * ease.outBack(p(t, at + 0.42, 0.18, 'linear')))); }
     }
     g.translate(cx, cy); g.scale(k, k); g.rotate(o.rot ?? 0);
@@ -705,7 +724,7 @@ export async function makeKit({ project, script, timing }) {
     _setCaptions(o = {}) { Object.assign(capStyle, o); if (o.emph) capStyle.emph = { ...capStyle.emph, ...o.emph }; F.base.family = o.font || F.base.family; if (o.emph) F.emph = { ...F.emph, ...o.emph }; },
     get _captionLayer() { return capStyle.layer; }, _texts: texts, _frameTexts: frameTexts,
     medium, _setMedia(m) { MEDIA_IMPL = m; },
-    _captions: drawCaptions, _captionList: captions, _debug: debugOverlay, _events: events,
+    _captions: drawCaptions, _captionList: captions, _debug: debugOverlay, _events: events, _framePointers: framePointers, notePointer,
   };
   return K;
 }
