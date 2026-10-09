@@ -50,7 +50,7 @@ Not Risograph (no grainy two-ink riso texture as the whole look, no zine collage
 
 > **For 9:16 reels: the captions.** The voice drives the caption bar (`D.captions`): Archivo Black 56 px (the minimum
 > on a phone), paper-coloured, the keyword in the highlight ink, words lighting up as they are spoken (unspoken words
-> at 45%). The pill's bottom sits on the caption lane, just above the app's own text (organic: y 1560, from x 120, at
+> at 45%). The brand's text face and colours replace these defaults (`D.captionBar`, section 12). The pill's bottom sits on the caption lane, just above the app's own text (organic: y 1560, from x 120, at
 > most 660 px wide; ad: y 1236). Headlines are 96 to 150 px here (the frame is 1080 wide), 2 to 5 words; a
 > `"show": "statement"` line is the card's headline and has no caption.
 

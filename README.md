@@ -65,9 +65,11 @@ More about it:
 
 | Skill | What it makes | Status |
 |---|---|---|
-| `product-explainer` | An explainer reel of 30 to 35 s for a D2C product, from the brand's website: research, a script you approve, then the video with voice, captions, music and sound | New |
+| `product-explainer` | An explainer reel of 30 to 35 s for a D2C product, from the brand's website: research, a script you approve, 2 or 3 voices to hear and choose from, then the video in the brand's own colours, fonts and logo, with the voice recorded in one take, captions, music and sound | New |
 
-Ask for it in plain words: "make an explainer reel for <brand website>".
+Ask for it in plain words: "make an explainer reel for <brand website>". If you have a logo, brand fonts or a style
+guide, share them: the film uses them. **The style gives the techniques; your brand gives the colours, fonts and end
+card.**
 
 | Film style (inside `product-explainer`) | Best for | Status |
 |---|---|---|
@@ -85,7 +87,7 @@ Ask for it in plain words: "make an explainer reel for <brand website>".
   - the one-time setup downloads from the three sources above
   - `product-explainer` reads the brand website you give it (pages, product data and photos)
   - `product-explainer` runs web searches through your Claude app to research the brand and what its customers say
-  - `product-explainer` sends the voiceover script to Cartesia, using your own Cartesia API key, if you choose a voiceover
+  - `product-explainer` sends the voiceover script (and the hook, for the 2 or 3 voices you hear first) to Cartesia, using your own Cartesia API key, if you choose a voiceover
 
 ## Licenses
 

@@ -39,5 +39,6 @@ still moments, reading time) in `skills/product-explainer/scripts/`. The MIT per
 Bundled in `skills/product-explainer/styles/halftone-dossier/fonts/`, each with its licence file: Alfa Slab One,
 Archivo Black, Bagel Fat One, JetBrains Mono. Bundled in `skills/product-explainer/assets/fonts/`: Caveat, Cormorant
 Garamond, DM Serif Display, Fraunces, Inter, Jost; and in `skills/check-setup/assets/fonts/`: Bangers, JetBrains Mono.
-Fonts a film downloads with `fonts.mjs` come from Google Fonts under the same licence; each film's `CREDITS.md` lists
-them.
+Fonts a film downloads with `fonts.mjs` (the brand's fonts, or their closest free match) come from Google Fonts under
+the same licence. A font file a brand supplies for its own film stays under the brand's licence, in that film's folder,
+and is never bundled here. Each film's `CREDITS.md` lists its fonts.
