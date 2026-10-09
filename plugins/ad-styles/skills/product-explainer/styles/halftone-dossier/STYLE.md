@@ -154,7 +154,7 @@ All far from our demo:
 - Openings: **the evidence bag** (one object on a dark ink ground, the file assembles around it); **a fingerprint** in huge dots that resolves into a face as we pull back; **the phone call** (a caption bar alone on paper, the file drops in after).
 - Endings: **the file goes into a drawer** full of identical files; **a redacted final page** (the answer stays blacked out); **the stamp misses** (it lands on the table, the subject walks free out of frame).
 
-> **For 9:16 reels: the length.** Every film is about 30 s (25 to 35; copy.md): one fact, two or three exhibits at
+> **For 9:16 reels: the length.** Every film is 30 to 35 s (copy.md): one fact, two or three exhibits at
 > most, on the time map (hook, fact, product, tip).
 
 ## 12. The product and brand fit

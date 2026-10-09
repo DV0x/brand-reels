@@ -1,11 +1,11 @@
 ---
 name: product-explainer
-description: Makes about-30-second vertical explainer reels (Reels, TikTok, Shorts) for a D2C brand's product, drawn entirely in code, with the real product photo, a timed voiceover, captions, music and sound. It researches the brand, writes a script on a fact the viewer doesn't know, gets it approved, directs the film and renders the MP4 locally. The tested style is Halftone Dossier (a print case file); draft styles can be asked for by name (mid-century cartoon, Swiss motion, data storytelling, isometric infographic, silkscreen poster, risograph, copperplate engraving, hologram HUD, dark keynote, living screencast, rubber hose, sci-fi toon, spy titles, art deco, one-line drawing, watercolor, whiteboard, block print, paper-cut, pictogram motion, pixel RPG). Use it whenever someone wants a reel, an explainer, a short video or a video ad for a product or brand, shares a brand website or product link, or names one of these styles, even if they never say "explainer". Not for editing or converting existing video files.
+description: Makes 30-to-35-second vertical explainer reels (Reels, TikTok, Shorts) for a D2C brand's product, drawn entirely in code, with the real product photo, a timed voiceover, captions, music and sound. It researches the brand, writes a script on a fact the viewer doesn't know, gets it approved, directs the film and renders the MP4 locally. The tested style is Halftone Dossier (a print case file); draft styles can be asked for by name (mid-century cartoon, Swiss motion, data storytelling, isometric infographic, silkscreen poster, risograph, copperplate engraving, hologram HUD, dark keynote, living screencast, rubber hose, sci-fi toon, spy titles, art deco, one-line drawing, watercolor, whiteboard, block print, paper-cut, pictogram motion, pixel RPG). Use it whenever someone wants a reel, an explainer, a short video or a video ad for a product or brand, shares a brand website or product link, or names one of these styles, even if they never say "explainer". Not for editing or converting existing video files.
 ---
 
 # Product explainer
 
-One finished 1080 × 1920 reel of about 30 seconds, with sound, made from a brand's website. Every frame is drawn in
+One finished 1080 × 1920 reel of 30 to 35 seconds, with sound, made from a brand's website. Every frame is drawn in
 code on this computer: no image generation, no stock footage. The real product photo is cut out and placed inside the
 style; its label is never redrawn. **Needed:** the website; a Cartesia API key for the voice (without one the film is
 text-led) or the brand's recording; a product photo on a plain background (the site usually has one).
@@ -67,7 +67,7 @@ Explainer progress:
    - **The voice:** their Cartesia API key (or a `.env` path), so you can list voices and suggest one; or their own
      recording. **A post or an ad** (post by default). **Are they the brand?** If not, the film is a concept film.
    - In one line: "What do customers ask you or complain about most?" Then decide every other gap yourself.
-3. **The script, as text (APPROVAL).** Write it by copy.md: about 30 s and 70 words on the time map, the hook's four
+3. **The script, as text (APPROVAL).** Write it by copy.md: 30 to 35 s and about 70 words on the time map, the hook's four
    beats, the table `# | voice | on screen | beat note`, the facts list with sources, the shape (PAS by default). Run
    copy.md's self-check first. After the OK, save `BRIEF.md` from `templates/BRIEF.md`: from here you work alone.
 4. **Product and voice** (product.md, tools.md). Cut the photo out and look at the check image. Pick a voice, set

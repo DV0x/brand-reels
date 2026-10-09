@@ -162,7 +162,7 @@ anything:
 
 ## 11. The review loop, before delivery
 **By script:** `RUN render.mjs <film> check`, fix every issue, and run it again until it prints PASS (exit 0). What each
-check measures: [tools.md](tools.md), section 6. Treat its warnings as issues too: a film outside 25 to 35 s goes back
+check measures: [tools.md](tools.md), section 6. Treat its warnings as issues too: a film outside 30 to 35 s goes back
 to the script, not to the timing. The video adds: a full decode with no errors, no frozen stretch of 0.4 s or more, and
 loudness within 1 LU of −14.
 

@@ -25,7 +25,7 @@ section. Add only these, and only where lemo's text needs them:
     band); no filler in the bands.
   - section 10, the drawing kit: replaces lemo's engine text; names engine.mjs, points to film-api.md (its own
     section), lists the bundled fonts.
-  - section 11, the length: about 30 s (25 to 35), and how much of the style fits in it.
+  - section 11, the length: 30 to 35 s, and how much of the style fits in it.
 -->
 
 ## 1. Essence, and what it is not

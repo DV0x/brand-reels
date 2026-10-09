@@ -121,7 +121,7 @@ exists, and `--debug` to draw the safe box and the caption lane.
 | Still moments | two frames 0.3 s apart in the middle of a line or the end card are the same |
 | Product size | the photo drawn bigger than it was taken |
 | Hits on the beat | a declared hit more than half a frame off the music grid |
-| Warnings | the film is under 25 s or over 35 s; more than 5 hard cuts; nothing new for more than 4 s; more than 4 statements; timing estimated |
+| Warnings | the film is under 30 s or over 35 s; more than 5 hard cuts; nothing new for more than 4 s; more than 4 statements; timing estimated |
 
 The check draws every layer except the medium and the finish (`draw`, captions, `over`, `top`). It samples the film
 at 6 frames a second, and at every frame (30 fps) from 0.1 s before to 0.5 s after each hit, cue, shot change, camera

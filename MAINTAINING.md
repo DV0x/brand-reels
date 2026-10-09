@@ -30,7 +30,7 @@ A style is "tested" when one film in it has been approved by the user. Only test
 3. **One test film,** made in a work folder outside this repository, by the skill's own workflow.
    - The user approves a style frame before the film is built, then the finished film (watched with sound).
    - The machine checks pass: `render.mjs check` PASS; `out/report.json` with 0 decode errors, 0 frozen stretches,
-     loudness −14 LUFS ±1; length 25 to 35 s.
+     loudness −14 LUFS ±1; length 30 to 35 s.
    - Turn each number that worked into a rule in the style file (in a marked note if lemo's text has a different one).
 4. **The menu,** by hand: move the style from the drafts line to the table in `SKILL.md` ("The styles"), and add it to
    the style table in `README.md`.
@@ -61,7 +61,7 @@ Do this after any change to the guides or the tools, before a release.
    3. the agent's context stays under 400,000 tokens;
    4. its hooks and script reuse no words or subject from `benchmarks.md`;
    5. its problem list has nothing that stops the work;
-   6. the film is 25 to 35 s.
+   6. the film is 30 to 35 s.
 4. Then read its `REVIEW.md`, `DELIVERY.md` and brand folder, measure its tokens, fix the skill, and commit.
 
 ## Release

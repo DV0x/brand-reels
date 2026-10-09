@@ -31,8 +31,8 @@ const readJSON = f => JSON.parse(fs.readFileSync(f, 'utf8'));
 // a wrong call (exit 2), as opposed to a failure while rendering (exit 1)
 class UsageError extends Error {}
 const USAGE = 'usage: render.mjs <project> frame <t...> [--crop x,y,w,h] | sheet | contact [--every 1] | strip <from> <to> [--step 0.2] | check | video [--fps 30] [--from a --to b] [--workers n]   options: --debug (show the safe zone), --estimate (time the lines from the text)';
-// a film's target length (copy.md): about 30 s, never under 25 or over 35
-const LEN_MIN = 25, LEN_MAX = 35;
+// a film's length (copy.md): 30 to 35 s
+const LEN_MIN = 30, LEN_MAX = 35;
 
 // ---------------------------------------------------------------- timing: the voice's, or an estimate from the text
 function loadTiming(project, script, estimate) {
@@ -116,7 +116,7 @@ function qaOf(S) {
   if (cuts > 5) warnings.push(`${cuts} hard cuts: keep it to 5 or fewer; travel the camera, or use the style's own transition`);
   if (gaps.length) warnings.push(`nothing new happens for more than 4 s in: ${gaps.map(g => `${g[0]}-${g[1]} s`).join(', ')} (a breath is fine; a dead stretch is not)`);
   if (statements > 4) warnings.push(`${statements} statements: use 3 or 4 (copy.md)`);
-  if (timing.duration < LEN_MIN || timing.duration > LEN_MAX) warnings.push(`the film is ${timing.duration.toFixed(1)} s: aim for about 30 s (${LEN_MIN} to ${LEN_MAX}). Cut or add words in the script; never pad with pauses or speed up the voice (copy.md)`);
+  if (timing.duration < LEN_MIN || timing.duration > LEN_MAX) warnings.push(`the film is ${timing.duration.toFixed(1)} s: keep it ${LEN_MIN} to ${LEN_MAX} s. Cut or add words in the script; never pad with pauses or speed up the voice (copy.md)`);
   if (timing.estimated) warnings.push('timing is estimated from the text: make the voice before the final render');
   if ([0, timing.duration / 2].some(t => S.lookAt(t) === 'none' || (!S.media[S.lookAt(t)] && S.lookAt(t) !== 'direct'))) warnings.push('look "none": a flat debug render, never for delivery (references/craft.md)');
   return { duration: timing.duration, style: S.style || null, shots: shots.length, hardCuts: cuts, styleTransitions: wipes, cues: cues.length, statements, eventGaps: gaps, warnings };

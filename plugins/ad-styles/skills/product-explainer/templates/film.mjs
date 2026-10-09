@@ -1,8 +1,8 @@
 // film.mjs: the film, written from TREATMENT.md. Copy this file into the film folder as film.mjs.
 // It is an empty skeleton, not a story: there are no scenes, props or words in it, and nothing appears on screen
 // unless one of your scenes draws it. Read references/directing.md (the method) and references/film-api.md (every call).
-// The film is about 30 s (25 to 35), on the time map from copy.md: 0-9 s the hook, 9-18 s the hidden fact and why,
-// 18-25 s the product as the answer, 25-30 s the tip and the end card.
+// The film is 30 to 35 s, on the time map from copy.md: 0-9 s the hook, 9-18 s the hidden fact and why,
+// 18-25 s the product as the answer, 25 s to the end the tip and the end card.
 //
 // The order of work:
 //   1. The timeline, from the treatment's cue map: the music grid, the lines placed on it (script.json "at" and

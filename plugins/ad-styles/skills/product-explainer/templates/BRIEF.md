@@ -10,7 +10,7 @@ write it in `TREATMENT.md`. A new chat that changes this film reads this file fi
 - **Brand:** <who they are, in one line>. <"The user is the brand." or "A spec concept film: the user is not the
   brand; the post must say so.">
 - **Viewer:** <who scrolls past, and the belief or habit the hook breaks>.
-- **Format:** 1080 × 1920, about 30 s (25 to 35), placement `<organic | ad>`.
+- **Format:** 1080 × 1920, 30 to 35 s, placement `<organic | ad>`.
 - **Language:** <language>. Captions with digits.
 - **See the look first:** <yes: stop after the style frames | no: don't stop>.
 - **Benchmark for the hooks:** <entry numbers in benchmarks.md, and the one thing learned from each>.

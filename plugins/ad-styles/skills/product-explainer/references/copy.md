@@ -5,7 +5,7 @@
 - The topic (and the hidden fact)
 - The hook: the first 9 seconds (three layers, four beats, techniques, tests)
 - Story shapes: PAS with a fact (default), BAB, FAB
-- The script: about 30 seconds (the time map, format, beat notes, facts list, on-screen words)
+- The script: 30 to 35 seconds (the time map, format, beat notes, facts list, on-screen words)
 - Self-check before showing the script
 
 ## Who is watching
@@ -117,10 +117,10 @@ file's charge, exhibits and verdict): that is the style's cliché, and the treat
 fact.
 
 ## The script
-- **Length: about 30 seconds** (25 to 35), **about 70 words in 8 to 10 lines.** Never pad with pauses, and never speed
-  the voice up to fit: cut or add words instead. `render.mjs check` warns outside 25 to 35 s. Estimate it before you
+- **Length: 30 to 35 seconds, about 70 words in 8 to 10 lines.** Never pad with pauses, and never speed
+  the voice up to fit: cut or add words instead. `render.mjs check` warns outside 30 to 35 s. Estimate it before you
   show the script: seconds ≈ words ÷ 2.6 + lines × `gap` (0.35) + `tail` (2.6) + `lead` (0.4). 70 words in 9 lines is
-  about 33 s; over 35, cut words (a test script of 77 words in 10 lines came to 36 s).
+  about 33 s; over 35, cut words; under 30, add a line (a test script of 77 words in 10 lines came to 36 s).
 - **The time map** (PAS by default; BAB and FAB use the same four parts):
 
   | Time | Part | What happens |
@@ -128,7 +128,7 @@ fact.
   | 0 to 9 s | **The hook** | subject, setup, turn, rehook (the four beats above). The answer comes after it |
   | 9 to 18 s | **The hidden fact and why** | the fact, and the mechanism behind it, which the picture shows |
   | 18 to 25 s | **The product as the answer** | the brand's fact as the answer, with its proof |
-  | 25 to 30 s | **The tip and the end card** | one simple thing the viewer can do or check, then the product big and clear |
+  | 25 s to the end (30 to 35 s) | **The tip and the end card** | one simple thing the viewer can do or check, then the product big and clear |
 - **Show it as a table** with a **beat note** per line: what the viewer must understand on screen while it's said.
   `# | voice | on screen | beat note`. The beat note is what the picture teaches, not a description of a poster.
 - **A facts list** under the table: every number and claim the film puts on screen, with its source. Only these facts
@@ -161,7 +161,7 @@ fact.
 - [ ] The fact passes the retell test, and the shape is named (PAS, BAB or FAB).
 - [ ] It agitates with a fact, not fear, and ends on a tip the viewer can use.
 - [ ] 3 or 4 statements, and no words shown twice.
-- [ ] About 70 words, read aloud in 25 to 35 s, and each part lands in its slot of the time map.
+- [ ] About 70 words, read aloud in 30 to 35 s, and each part lands in its slot of the time map.
 - [ ] The brand comes in as the answer, not the opener.
 - [ ] It ends with one clear thing to do.
 - [ ] Read aloud, it sounds like a person in the brand's voice, not a brochure.

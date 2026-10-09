@@ -6,7 +6,7 @@ Make scroll-stopping video ads entirely in code, with no image or video generati
 
 - Ask Claude to **"check my ad-styles setup"** first. The `check-setup` skill runs a one-time setup and renders a 3-second test clip.
 - Then ask for a skill by what it does. `product-explainer`: "make an explainer reel for <brand website>". It makes a
-  reel of about 30 s. Its tested style is Halftone Dossier; 22 more styles are drafts you can ask for by name.
+  reel of 30 to 35 s. Its tested style is Halftone Dossier; 22 more styles are drafts you can ask for by name.
 
 ## How it works
 

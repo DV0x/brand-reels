@@ -65,7 +65,7 @@ More about it:
 
 | Skill | What it makes | Status |
 |---|---|---|
-| `product-explainer` | An explainer reel of about 30 s for a D2C product, from the brand's website: research, a script you approve, then the video with voice, captions, music and sound | New |
+| `product-explainer` | An explainer reel of 30 to 35 s for a D2C product, from the brand's website: research, a script you approve, then the video with voice, captions, music and sound | New |
 
 Ask for it in plain words: "make an explainer reel for <brand website>".
 
