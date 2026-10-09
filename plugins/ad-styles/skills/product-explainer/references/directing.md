@@ -55,7 +55,10 @@ The benchmark lifts quality more than any rule below.
   glass that fills, a label that gets marked up, a map that grows), across most of its lines.
 - **Hook in the first 3 seconds.** Frame 0 is already a finished, composed frame: it is the cover in the feed. Every
   headline on it is fully printed at frame 0 (the style's `KIT.md`, e.g. `D.headline`).
-- **An ending that echoes.** Bookend the opening, reveal the scale, or let the viewer do the thing right the second time.
+- **An ending that echoes the opening with the change shown:** the same subject, now changed (the face now calm, the
+  glass now full), from a new angle or framing; or reveal the scale, or let the viewer do the thing right the second
+  time. Never the first shot again: Reels loop, so a repeat of the opening looks like the film restarting
+  (`render.mjs check` warns when the last 3 s look like the first 3 s).
 - **One native move:** a moment only this medium can do (STYLE.md section 8 lists the style's; pick or invent the one
   your story needs). Put it at the emotional peak.
 - **The picture proves the fact:** a number of things is shown as that many things, not as a label with

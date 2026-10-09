@@ -9,7 +9,8 @@
 //   render.mjs <project> contact [--every 1]             the whole film, one frame every N seconds (out/contact.jpg)
 //   render.mjs <project> strip <from> <to> [--step 0.2]  one key action, a frame every step (out/strips/)
 //   render.mjs <project> check                           the machine checks: text size, safe zone, reading time,
-//                                                         contrast, still moments, hits on the beat; out/check.json
+//                                                         contrast, still moments, an end like the start, hits on
+//                                                         the beat; out/check.json
 //   add --estimate to any mode to time the lines from the text when there is no voice yet
 // Exit codes: 0 done (check: PASS), 1 failed (check: issues to fix), 2 wrong call (usage, no script.json, bad mode).
 // Run it through the plugin's launcher: bash <plugin>/runtime/run.sh render.mjs <project> <mode> ...
@@ -293,7 +294,19 @@ async function check(S) {
     still.push({ t: +t.toFixed(2), diff: +d.toFixed(4) });
     if (d < 0.0015) issues.push({ check: 'still', t: +t.toFixed(2), text: '', msg: `nothing moves between ${t.toFixed(2)} and ${(t + 0.3).toFixed(2)} s (mean change ${d.toFixed(4)})` });
   }
-  // 6. hits on the beat: every hit the film declares lands on the music grid (a 16th note), within half a frame
+  // 6. the loop: Reels replay at once, so an end that looks like the start reads as the film restarting. Each of 3
+  // frames in the last 3 s against each of 3 in the first 3 s, on block means; the closest pair counts. Measured on
+  // finished films: an end that repeated shot 1 scored 0.047; ends that showed a change scored 0.088 to 0.19.
+  let loop = null;
+  if (timing.duration > 8) {
+    const starts = [0.5, 1.5, 2.5].map(t => { drawFrame(S, t); return { t, m: blockMeans(S.g) }; });
+    for (const t of [2.5, 1.5, 0.5].map(x => timing.duration - x)) {
+      drawFrame(S, t); const e = blockMeans(S.g);
+      for (const st of starts) { let d = 0; for (let i = 0; i < e.length; i++) d += Math.abs(e[i] - st.m[i]); d /= e.length; if (!loop || d < loop.diff) loop = { end: +t.toFixed(2), start: st.t, diff: +d.toFixed(4) }; }
+    }
+    if (loop.diff < 0.06) q.warnings.push(`the end looks like the start (${loop.end} s and ${loop.start} s differ by only ${loop.diff}): Reels loop, so a repeat of the opening reads as a restart. Echo the opening with the change shown, never the first shot again (directing.md, section 3)`);
+  }
+  // 7. hits on the beat: every hit the film declares lands on the music grid (a 16th note), within half a frame
   const hits = [], bpm = F.music?.bpm, off = F.music?.offset ?? 0;
   if (Array.isArray(F.hits) && bpm) {
     const sixteenth = 60 / bpm / 4;
@@ -306,7 +319,7 @@ async function check(S) {
       if (d > 0.017) issues.push({ check: 'beat', t, text: name, msg: `${(d * 1000).toFixed(0)} ms off the music grid (${bpm} BPM from ${grid} s)` });
     }
   }
-  const report = { ok: !issues.length, ...q, texts: texts.length, denseFrames: dense, issues, contrast, still, hits };
+  const report = { ok: !issues.length, ...q, texts: texts.length, denseFrames: dense, issues, contrast, still, loop, hits };
   fs.writeFileSync(path.join(out, 'check.json'), JSON.stringify(report, null, 1));
   return report;
 }
