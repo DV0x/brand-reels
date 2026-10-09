@@ -42,18 +42,18 @@ Scripts run through the plugin's launcher: `RUN <script> <args>` in the guides (
 anything yourself.
 
 ## The workflow
-Copy this checklist into your reply and tick it off. You stop for the user only for the questions and the script
-approval, and for the look only if they asked to see it.
+Copy this checklist into your reply and tick it off. You stop for the user only for the questions (with a short stop
+to hear 2 or 3 voices), the script approval, and the look if they asked to see it.
 
 ```
 Explainer progress:
 - [ ] 1. Brand folder and research
-- [ ] 2. One round of questions
+- [ ] 2. One round of questions, and 2 or 3 voices to hear
 - [ ] 3. The script as text (APPROVAL), then BRIEF.md
-- [ ] 4. Product cut-out and voice
+- [ ] 4. Product cut-out and the voice in one take
 - [ ] 5. Treatment, before any drawing
 - [ ] 6. Style frames and design review (show them only if asked)
-- [ ] 7. The film: lines on the grid, every scene, the score, a sound per action
+- [ ] 7. The film: the grid from the voice, every scene, the score, a sound per action
 - [ ] 8. Review loop: checks, contact sheets, strips, the video
 - [ ] 9. Deliver, and update the brand's memory
 ```
@@ -74,15 +74,18 @@ Explainer progress:
    - **See the look first?** Three finished style frames before the film. Recommend yes for a new brand; in a test of
      the skill, always yes.
    - **The product photo:** the site's (say its size), or a current one they send.
-   - **The voice:** their Cartesia API key (or a `.env` path), so you can list voices and suggest one; or their own
-     recording. **A post or an ad** (post by default). **Are they the brand?** If not, the film is a concept film.
+   - **The voice:** their Cartesia API key (or a `.env` path), or their own recording. With the key, pick 2 or 3
+     voices that suit the brand's voice, record the recommended hook in each (`RUN voice.mjs --audition "<the hook, as
+     it is said>" --voices <id1>,<id2>,<id3> --out <brand>/audition`), and let the user hear them and choose: a short
+     stop. **A post or an ad** (post by default). **Are they the brand?** If not, the film is a concept film.
    - In one line: "What do customers ask you or complain about most?" Then decide every other gap yourself.
-3. **The script, as text (APPROVAL).** Write it by copy.md: 30 to 35 s and about 70 words on the time map, the hook's four
-   beats, the table `# | voice | on screen | beat note`, the facts list with sources, the shape (PAS by default). Run
-   copy.md's self-check first. After the OK, save `BRIEF.md` from `templates/BRIEF.md`: from here you work alone.
+3. **The script, as text (APPROVAL).** Write it by copy.md: 30 to 35 s and about 70 words on the time map, the hook's
+   four beats, the table `# | voice | how it's said | on screen | beat note`, the facts list with sources, the shape
+   (PAS by default). Run copy.md's self-check first. After the OK, save `BRIEF.md` from `templates/BRIEF.md`: from here you work alone.
 4. **Product and voice** (product.md, tools.md). Cut the photo out and look at the check image. Start `script.json`
-   from `templates/script.json` (the approved lines), pick a voice, set it there, `RUN voice.mjs <film> --words`. No
-   key: ask once; otherwise render with `--estimate`.
+   from `templates/script.json` (the approved lines, with their pause and speed marks), set the chosen voice there,
+   `RUN voice.mjs <film> --words`: the whole script in one take. No key: ask once; otherwise render with
+   `--estimate`.
 5. **Treatment, before any drawing.** Read directing.md and the style's `STYLE.md` in full. Write `TREATMENT.md`:
    benchmark, three structures and the pick, the look (the brand's colours, fonts and end card), the elements (drawn
    new, or an optional object with a reason), how this film differs (five choices), shots, beat sheet, cue map, sound
@@ -91,8 +94,10 @@ Explainer progress:
    product's shot, one more), review them in written rounds in `REVIEW.md` (directing.md, section 5). Every shared
    call is in film-api.md; the style's own tools are in its parts list, `styles/<style>/KIT.md`.
    Show them only if the user asked to see the look, and wait for the OK.
-7. **The film.** Place the lines on the grid, re-run `voice.mjs`, write every scene of the treatment, the score and
-   a sound per action (film-api.md and the style's `KIT.md` for every call; directing.md sections 6 to 9 for why).
+7. **The film.** The voice comes first: the tempo and the grid come from its key words (directing.md, section 7). A
+   line moves onto the grid only by a longer pause (`at`, then `voice.mjs` again: it adds silence and costs nothing).
+   Write every scene of the treatment, the score and a sound per action (film-api.md and the style's `KIT.md` for
+   every call; directing.md sections 6 to 9 for why).
 8. **Review loop** (directing.md, section 11): `check` until PASS, contact sheets and strips in written rounds until a
    round finds nothing, then `video` and its report. You can't hear the film: say so.
 9. **Deliver** (directing.md, section 12): `CREDITS.md`, `DELIVERY.md` (with what you could not do, and why), the
@@ -112,7 +117,9 @@ have: offer Halftone Dossier or a draft instead. Read only the style you use.
 
 ## Rules, with the reason for each
 - **A true fact the viewer doesn't know,** sourced in `research.md`: facts make people stop and share.
-- **About 30 seconds, never padded:** cut words; never speed up the voice or stretch pauses (copy.md).
+- **30 to 35 seconds, never padded:** cut words; never speed up the voice or add pauses to fill time (copy.md).
+- **The voice first, in one take,** with the script's pauses and speeds: lines recorded one by one sound flat, and a
+  voice cut to fit the picture loses its flow. The scenes and the music follow the voice.
 - **The script approved before drawing:** changing words after the art is built wastes most of the work.
 - **The story from the topic, the techniques from the style:** a style's familiar structure is its cliché.
 - **The brand's colours, fonts and end card on every frame** (the design card): in the style's own defaults, every

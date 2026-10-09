@@ -5,7 +5,7 @@
 - The topic (and the hidden fact)
 - The hook: the first 9 seconds (three layers, four beats, techniques, tests)
 - Story shapes: PAS with a fact (default), BAB, FAB
-- The script: 30 to 35 seconds (the time map, format, beat notes, facts list, on-screen words)
+- The script: 30 to 35 seconds (the time map, format, how it's said, beat notes, facts list, on-screen words)
 - Self-check before showing the script
 
 ## Who is watching
@@ -119,8 +119,10 @@ fact.
 ## The script
 - **Length: 30 to 35 seconds, about 70 words in 8 to 10 lines.** Never pad with pauses, and never speed
   the voice up to fit: cut or add words instead. `render.mjs check` warns outside 30 to 35 s. Estimate it before you
-  show the script: seconds ≈ words ÷ 2.6 + lines × `gap` (0.35) + `tail` (2.6) + `lead` (0.4). 70 words in 9 lines is
-  about 33 s; over 35, cut words; under 30, add a line (a test script of 77 words in 10 lines came to 36 s).
+  show the script: seconds ≈ words ÷ 2.7 + 0.25 for each line after the first (the voice's breath between sentences)
+  + the written pauses + `lead` (0.4) + `tail` (2.6). 70 words in 9 lines with two pauses of 0.4 s is about 32 s; over
+  35, cut words; under 30, add a line (a one-take test of 78 words in 10 lines, with pauses of 0.5 and 0.4 s, came to
+  35.3 s). A slower line (`speed` 0.9) adds about a tenth of its own time.
 - **The time map** (PAS by default; BAB and FAB use the same four parts):
 
   | Time | Part | What happens |
@@ -130,7 +132,19 @@ fact.
   | 18 to 25 s | **The product as the answer** | the brand's fact as the answer, with its proof |
   | 25 s to the end (30 to 35 s) | **The tip and the end card** | one simple thing the viewer can do or check, then the product big and clear |
 - **Show it as a table** with a **beat note** per line: what the viewer must understand on screen while it's said.
-  `# | voice | on screen | beat note`. The beat note is what the picture teaches, not a description of a poster.
+  `# | voice | how it's said | on screen | beat note`. The beat note is what the picture teaches, not a description of
+  a poster.
+- **How it's said,** a short note per line where the delivery matters. The whole script is recorded in one take, so
+  the voice flows from line to line; these notes are its direction:
+  - **A pause before the turn** and before a rehook: `"pause": 0.4` (seconds) on that line. One to three pauses in a
+    film; more make it slow.
+  - **Slower on the fact:** `"speed": 0.9` on the line that carries the number or the cause (0.6 to 1.5; 1 is
+    normal). Never faster than 1 to save time: cut words instead.
+  - **The stressed word:** the voice has no stress mark, so put the word last in its sentence, or give it a sentence
+    of its own ("Too clean."), with a short pause before it. Write it in the note: "stress: clean".
+  - **An emotion** (`"emotion": "calm"`) only with a voice tagged Emotive (`voice.mjs --voices` marks them).
+  - In `script.json` the note itself goes in `"how"`; a pause inside a line goes in its `"say"` as `<break
+    time="300ms"/>`.
 - **A facts list** under the table: every number and claim the film puts on screen, with its source. Only these facts
   go on screen, and an illustration is labelled as one ("a typical brand").
 - **Two rehooks after the hook:** one in the fact part (about 12 s) and one just before the product (about 18 s). Each
@@ -162,6 +176,7 @@ fact.
 - [ ] It agitates with a fact, not fear, and ends on a tip the viewer can use.
 - [ ] 3 or 4 statements, and no words shown twice.
 - [ ] About 70 words, read aloud in 30 to 35 s, and each part lands in its slot of the time map.
+- [ ] How it's said: a pause before the turn, the fact a little slower, each stressed word last in its sentence.
 - [ ] The brand comes in as the answer, not the opener.
 - [ ] It ends with one clear thing to do.
 - [ ] Read aloud, it sounds like a person in the brand's voice, not a brochure.

@@ -14,7 +14,7 @@ frame is a phone (1080 × 1920). Licences: `THIRD-PARTY-NOTICES.md` at the plugi
 4. Write the treatment
 5. Prove the look: style frames and design review
 6. Sound is half the film
-7. Rhythm: the music grid comes first
+7. Rhythm: the voice first, then the grid
 8. Camera and the 9:16 frame
 9. Performance
 10. The failures seen most
@@ -88,8 +88,9 @@ anything:
 7. **Shot list:** for every shot, the framing (wide, full, medium, close, insert), angle, camera move, duration, and
    **why** it is shot that way.
 8. **Beat sheet,** second by second: the voice, the picture, the sound.
-9. **Cue map:** the tempo, the bar grid, where each voice line is placed (its anchor word on the grid), the instruments
-   per section, and the beat every cut, key action and caption lands on (section 7).
+9. **Cue map:** the key words' times from the recording, the tempo and first downbeat chosen from them, the bar grid,
+   the instruments per section, the beat nearest each key word where its cut, key action or hit lands, and any line
+   moved onto the grid by a longer pause (section 7).
 10. **Sound design table:** for each section, the ambience bed, the main foley and the music state.
 11. **The product:** where the real photo appears, how big, what sits beside it, and that nothing covers its label.
 
@@ -119,21 +120,29 @@ anything:
   motif that changes, thins out or completes at the turn.
 - **Mastering is automatic:** −14 LUFS, true peak ≤ −1 dB.
 
-## 7. Rhythm: the music grid comes first
-- **Write the cue map before animating.** The picture locks to the grid, and the check verifies every declared hit
-  (`hits`) lands on it.
-- **Pick a tempo whose 16th notes fall on whole frames** at 30 fps: 75, 90 or 150 BPM (6, 5 or 3 frames per 16th).
-- **Place the voice on the grid.** In `script.json`, give each line an `at` (seconds) and an `anchor` word that should
-  land on the grid, then run `voice.mjs` again (cached lines cost nothing; `--words` prints every word's time inside its
-  take, for planning). Leave gaps between lines so each caption can hold its line + 0.6 s.
+## 7. Rhythm: the voice first, then the grid
+- **The voice comes first.** The whole script is recorded in one take (step 4), with the pauses and speeds written in
+  the script, so the delivery flows from line to line. The order is voice → scenes → music: the picture and the score
+  follow the voice; the voice is never cut to fit them.
+- **Write the cue map before animating,** from the recording. List the key words' times (`voice.mjs <film> --words`):
+  the hook's subject, the turn, the fact's number, the product's name, the tip. The picture locks to the grid, and the
+  check verifies every declared hit (`hits`) lands on it.
+- **Choose the tempo from the voice.** Of the tempos whose 16th notes fall on whole frames at 30 fps (75, 90 or 150
+  BPM: 6, 5 or 3 frames per 16th), pick the tempo and the first downbeat (`K.grid(bpm, offset)`) that put most key
+  words close to a beat. Then each hit goes on the beat nearest its word: `G.snap(T.word('l4', 'nine'), 'nearest',
+  G.beat / 4)`.
+- **A line moves only by a longer pause.** To land a key word on a strong beat, give its line an `at` (seconds) and an
+  `anchor` word, and run `voice.mjs` again: it adds silence before the line, and costs nothing (the take is cached).
+  A pause can only grow: a line that would have to start earlier prints a warning; pick a later beat instead. Keep
+  each caption's time: it holds its line + 0.6 s.
 - **Vary the pace:** alternate fast and slow, include one clear acceleration or deceleration, and give the audience one
   breath (a long take or a held pause). A film at one even speed has failed.
 - **One action, one sound, one cut,** but don't cut on every beat. Leave time to see.
 - **Pace for the viewer, not the clock:** a caption holds at least max(1.8 s, its spoken line + 0.6 s); text holds about
   (letters ÷ 15 + 1.5) s after it lands; gags and failures hold long enough to be understood. Make it fast with fewer
   words on screen, not by cutting before people finish reading.
-- **Every action time comes from a word or the grid** (`T.word`, `G.snap`), never a typed guess, so a re-placed line
-  re-times its scene.
+- **Every action time comes from a word or the grid** (`T.word`, `G.snap`), never a typed guess, so a new take or a
+  moved line re-times its scene.
 
 ## 8. Camera and the 9:16 frame
 - **Every shot needs a reason** (the treatment says it). Use at least **four different camera moves** and real changes
@@ -224,7 +233,8 @@ Then tell the user where the film folder is, and ask them to watch the film once
 Changes happen in a **new chat**, so the old film's images and tool output don't fill the new agent's memory. The new
 chat reads, in order: `BRIEF.md`, `TREATMENT.md`, the last round of `REVIEW.md`, `DELIVERY.md`, then the user's notes.
 - Notes about the words go back to the script: show the changed lines for approval, update `BRIEF.md`, run `voice.mjs`
-  again (only changed lines cost anything).
+  again (the whole take is recorded again, a few cents; the scenes re-time through `T.word`). A note about the
+  delivery (a flat line, a rushed fact) changes the line's pause or speed mark, the same way.
 - Notes about the look, the timing or the sound are directing: change `film.mjs`, and write the round in `REVIEW.md`
   (the note, your reading of it, what you changed).
 - A vague note gets your best reading, stated in one line when you show the result; ask only when two readings would

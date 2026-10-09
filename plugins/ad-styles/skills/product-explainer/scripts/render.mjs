@@ -39,12 +39,17 @@ function loadTiming(project, script, estimate) {
   const f = path.join(project, 'vo', 'timing.json');
   if (!estimate && fs.existsSync(f)) return readJSON(f);
   if (!estimate) throw new Error(`no ${f}. Make the voice first (voice.mjs), or add --estimate to time the lines from the text.`);
-  const wps = 2.6, lines = []; let t = script.lead ?? 0.4;
-  for (const L of script.lines) {
-    const words = plain(L.text).split(/\s+/).filter(Boolean), dur = words.length / wps + 0.15, total = words.reduce((s, w) => s + w.length + 1, 0);
+  // one take (the default): 2.7 words a second and the voice's own breath between lines (about 0.25 s), plus the
+  // written pauses (measured on a one-take script, 2026-10-09). Lines mode: 2.6 words a second, then gap and pause.
+  // A line with "at" waits for it (a pause can only grow).
+  const lines = [], oneTake = script.voice?.take !== 'lines', wps = oneTake ? 2.7 : 2.6; let t = script.lead ?? 0.4;
+  for (const [i, L] of script.lines.entries()) {
+    if (i > 0) t += oneTake ? 0.15 + (L.pause ?? 0) : (script.gap ?? 0.35) + (L.pause ?? 0);   // 0.25 s word to word, less the 0.1 s a line's span adds
+    if (Number.isFinite(L.at)) t = oneTake ? Math.max(t, L.at) : L.at;
+    const words = plain(L.text).split(/\s+/).filter(Boolean), dur = words.length / (wps * (L.speed ?? 1)) + (oneTake ? 0.1 : 0.15), total = words.reduce((s, w) => s + w.length + 1, 0);
     let acc = 0; const ws = words.map(w => { const a = t + (acc / total) * dur; acc += w.length + 1; return { w, start: +a.toFixed(3), end: +(t + (acc / total) * dur - 0.04).toFixed(3) }; });
     lines.push({ id: L.id, text: plain(L.text), start: +t.toFixed(3), end: +(t + dur).toFixed(3), words: ws });
-    t += dur + (script.gap ?? 0.35) + (L.pause ?? 0);
+    t += dur;
   }
   const last = lines[lines.length - 1];
   return { duration: +(last.end + (script.tail ?? 2.6)).toFixed(3), lines, estimated: true };

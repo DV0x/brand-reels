@@ -83,12 +83,14 @@ folder, named the same way.
 ## 5. voice.mjs: the voiceover and the film's clock
 | Command | What it does |
 |---|---|
-| `RUN voice.mjs --voices "<words>"` | lists Cartesia voices whose name, description and language hold every word ("indian", "indian female", "hindi"); "english" also matches the code `en`, "female" also matches "woman". Needs the API key |
-| `RUN voice.mjs <film> [--words] [--key-file <.env>]` | voices every line of `script.json` into `vo/voice.wav` and `vo/timing.json`, each line placed on the grid by its `at` and `anchor`; `--words` prints every word's time |
-| `RUN voice.mjs <film> --only l3` | remakes one line |
+| `RUN voice.mjs --voices "<words>"` | lists Cartesia voices whose name, description, accent and language hold every word ("indian", "indian female", "hindi"); "english" also matches the code `en`, "female" also matches "woman". `[emotive]` marks a voice tagged Emotive. Needs the API key |
+| `RUN voice.mjs --audition "<the hook, as it is said>" --voices <id1>,<id2>,<id3> --out <brand>/audition` | one short take per voice (`1-<name>.wav`, `2-…`), for the user to hear in step 2 and pick one. `<break time="400ms"/>` in the text makes a pause |
+| `RUN voice.mjs <film> [--words] [--key-file <.env>]` | records the whole script in one take into `vo/voice.wav` and `vo/timing.json` (every line's start, end and words). The lines' `pause`, `speed` and `emotion` marks become Cartesia tags; a line with `at` waits for the grid (silence added before it). `--words` prints every word's time |
+| `RUN voice.mjs <film> --lines [--only l3]` | the older way, for films made before v0.4: each line recorded alone and placed by `lead`, `gap`, `pause` and `at` (`"take": "lines"` in `script.json` does the same); `--only` remakes one line |
 
-The key comes from `--key-file`, the `CARTESIA_API_KEY` variable, or `<film>/.env`. Each line is cached by its words
-and voice settings, so a re-run pays only for lines that changed. The text goes to Cartesia's servers.
+The key comes from `--key-file`, the `CARTESIA_API_KEY` variable, or `<film>/.env`. The take is cached by its whole
+text and marks: a change to any word or mark records it again (a few cents); a change to `at` or `anchor` costs
+nothing. The text goes to Cartesia's servers.
 
 | Error | Fix |
 |---|---|
@@ -96,6 +98,10 @@ and voice settings, so a re-run pays only for lines that changed. The text goes 
 | `Cartesia 401` or `403` (exit 1) | the key is wrong or expired: ask for a new one |
 | `script.json has no voice.id` (exit 1) | pick one with `--voices` and set `voice.id` |
 | `no script.json in <folder>` (exit 2) | give the film's folder; start from `templates/script.json` |
+| `no spoken words matched line(s) l4` (exit 1) | the voice read the line very differently from its text: check its `say`, run again; if it repeats, use `--lines` |
+| `l3 lands at 6.08 s, 0.25 s after its "at"` (a warning) | a pause can only grow: move `at` to a later beat, or cut words before the line |
+| `--only works with --lines` (exit 2) | in one take, run it without `--only`: an unchanged script costs nothing |
+| `the voice … is not tagged Emotive` (a warning) | the `emotion` marks are left out: drop them, pick an emotive voice, or set `voice.emotive: true` |
 
 ## 6. render.mjs: frames, sheets, the checks and the video
 `RUN render.mjs <film> <mode> [options]`. Add `--estimate` to any mode to time the lines from the text before the voice

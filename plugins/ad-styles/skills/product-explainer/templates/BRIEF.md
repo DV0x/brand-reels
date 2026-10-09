@@ -17,16 +17,18 @@ write it in `TREATMENT.md`. A new chat that changes this film reads this file fi
 
 ## The script (approved and locked)
 The words are fixed. Everything else is directing: staging, shots, timing, labels, sound. You may mark caption
-keywords with `*asterisks*` and place lines on the grid (`at`, `anchor`); both keep the recorded takes.
+keywords with `*asterisks*` and land a line on the grid with a longer pause (`at`, `anchor`): neither records the
+voice again. The "how it's said" marks (pause, speed) were approved with the words: change one only to fix a delivery
+problem you can show (a word cut short, a rushed fact), and write it in `REVIEW.md`.
 
-| # | Time map part | Spoken | On screen (caption, or STATEMENT) |
-|---|---|---|---|
-| 1 | hook | | |
-| 2 | hook | | |
-| 3 | hook (turn) | | |
-| 4 | the fact | | |
-| 5 | the product | | |
-| 6 | the tip | | |
+| # | Time map part | Spoken | How it's said | On screen (caption, or STATEMENT) |
+|---|---|---|---|---|
+| 1 | hook | | | |
+| 2 | hook | | | |
+| 3 | hook (turn) | | a pause before | |
+| 4 | the fact | | slower | |
+| 5 | the product | | | |
+| 6 | the tip | | | |
 
 **The story shape:** <PAS | BAB | FAB>. **Word count:** <about 70>. **Estimated length:** <s>.
 
@@ -52,8 +54,8 @@ The style gives the techniques; the brand gives the colours, the fonts and the e
 - **Do / don't:** <the card's three of each, in short>.
 
 ## Material
-- **Voice:** <Cartesia voice name and id>. All lines voiced in `vo/`; `voice.mjs <film> --words` prints every word's
-  time. New words need the API key at <where it is>.
+- **Voice:** <Cartesia voice name and id>, the user's pick from <2 or 3> audition takes. The whole script is in one
+  take in `vo/`; `voice.mjs <film> --words` prints every word's time. A new take needs the API key at <where it is>.
 - **Product photo:** `product/main.png` (<w × h>, cut from <source>, <date if known>). The cut-out report's `closeUps`
   line: <how big it can be drawn>. Label details the film points at, with their pixels in `main.png`: <detail: x, y>.
   Other views: <back.png, or none>.

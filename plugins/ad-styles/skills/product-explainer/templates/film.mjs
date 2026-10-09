@@ -5,9 +5,10 @@
 // The film is 30 to 35 s, on the time map from copy.md: 0-9 s the hook, 9-18 s the hidden fact and why,
 // 18-25 s the product as the answer, 25 s to the end the tip and the end card.
 //
-// The order of work:
-//   1. The timeline, from the treatment's cue map: the music grid, the lines placed on it (script.json "at" and
-//      "anchor", then voice.mjs), the shots, the hits.
+// The order of work (the voice comes first: it is already recorded, in one take):
+//   1. The timeline, from the treatment's cue map: the tempo and the grid chosen from the voice's key words
+//      (voice.mjs --words), a line moved onto the grid only by a longer pause (script.json "at", then voice.mjs),
+//      the shots, the hits on the beat nearest each word.
 //   2. The style frames: finish the 3 scenes the treatment names first (one is the signature shot) and review them.
 //   3. The other scenes.
 //   4. The score, from the cue map, in the style's sound palette.
@@ -24,9 +25,9 @@ export default function film(K) {
   // D.captionBar({ fill: '#…', color: '#…', emph: '#…' });
 
   // ---------------------------------------------------------------- 1. the timeline: one source of truth
-  // The music grid comes first. Every cut, big hit and caption lands on it; the voice lines are placed on it in
-  // script.json. Times come from words (T.word, T.at, T.end) or the grid (G.barStart), never from typed guesses.
-  const G = K.grid(90, 0.5);          // TODO: the treatment's tempo (75, 90 or 150 BPM: 16ths on whole frames) and first downbeat
+  // The voice is fixed; the grid is fitted to it. Every cut and big hit lands on the beat nearest its word. Times come
+  // from words (T.word, T.at, T.end) or the grid (G.snap, G.barStart), never from typed guesses.
+  const G = K.grid(90, 0.5);          // TODO: the cue map's tempo (75, 90 or 150 BPM: 16ths on whole frames) and first downbeat
   // The four parts of the time map, from the script's lines (TODO: the ids that open each part)
   const PART = { hook: 0, fact: T.at('l4'), answer: T.at('l5'), tip: T.at('l6'), endCard: T.endCard };
   const on16 = t => G.snap(t, 'nearest', G.beat / 4);   // a hit lands on the 16th note nearest its word

@@ -44,12 +44,12 @@ a call is in [directing.md](directing.md).
 {
   "brand": "Brand", "product": "Product name", "slug": "brand-product",
   "style": "halftone-dossier", "placement": "organic",
-  "voice": { "provider": "cartesia", "id": "<voice id>", "model": "sonic-3.6", "language": "en", "speed": 1.0 },
-  "lead": 0.4, "gap": 0.35, "tail": 2.8,
+  "voice": { "provider": "cartesia", "id": "<voice id>", "model": "sonic-3.6", "language": "en", "speed": 1.0, "take": "one" },
+  "lead": 0.4, "tail": 2.6,
   "lines": [
-    { "id": "l1", "text": "Your shampoo has 14 ingredients.", "say": "Your shampoo has fourteen ingredients.", "at": 0.5, "anchor": "shampoo" },
-    { "id": "l2", "text": "Most of them are *water*.", "at": 4.5, "anchor": "water", "show": "statement" },
-    { "id": "l6", "text": "It costs ₹499.", "say": "It costs four hundred and ninety-nine rupees.", "pause": 0.2 }
+    { "id": "l1", "text": "Your shampoo has 14 ingredients.", "say": "Your shampoo has fourteen ingredients." },
+    { "id": "l2", "text": "Most of them are *water*.", "show": "statement", "pause": 0.4, "how": "a breath before; stress: water" },
+    { "id": "l6", "text": "It costs ₹499.", "say": "It costs four hundred and ninety-nine rupees.", "speed": 0.9, "how": "slower: the price", "at": 18.0, "anchor": "costs" }
   ]
 }
 ```
@@ -57,18 +57,23 @@ a call is in [directing.md](directing.md).
 |---|---|
 | `style` | a folder under `styles/`. Its fonts load, and its drawing kit (if it has one) reaches the film as `K.style`; its calls are in that folder's `KIT.md` |
 | `placement` | `organic` (default, a post) or `ad` (a paid ad). Sets the safe box for words and the caption lane (craft.md, section 3) |
-| `voice` | the Cartesia voice (`voice.mjs --voices` lists them); `speed` stays 1.0: never speed the voice up to fit |
-| `lead`, `gap`, `tail` | seconds before the first line, between lines, after the last line |
+| `voice` | the Cartesia voice (`voice.mjs --voices` lists them; the user picks from 2 or 3 with `--audition`); `speed` stays 1.0: never speed the voice up to fit. `take`: `one` (the default: the whole script in one take) or `lines` (each line alone, for films made before v0.4). `emotive: true` sends the `emotion` marks to a voice that is not tagged Emotive |
+| `lead`, `tail` | seconds before the first line, after the last line |
+| `gap` | only with `"take": "lines"`: seconds between lines (in one take, the voice makes its own) |
 | `duration` | optional: fixes the film's length; otherwise the last line's end + `tail` |
 | `lines[].id` | what the film times things to. Keep ids stable once the film is written |
 | `lines[].text` | what is shown; `*asterisks*` mark emphasis (removed before the voice reads it) |
 | `lines[].say` | what the voice reads when it differs (numbers, prices, units, brand names) |
 | `lines[].show` | `caption` (default), `statement` (drawn big by the film; no caption), or `none` |
-| `lines[].at`, `anchor` | place the line on the music grid: it starts at `at`, or its `anchor` word does (`"word#2"` = the second one) |
-| `lines[].pause` | extra seconds before a line that follows the one before it |
+| `lines[].pause` | how it's said: seconds of silence before the line, recorded in the take (a Cartesia `<break>`) |
+| `lines[].speed` | how it's said: 0.6 to 1.5 (1 is normal), e.g. 0.9 on the fact; it holds for this line only |
+| `lines[].emotion` | how it's said: an emotion (`calm`, `excited`, `sad`...) for a voice tagged Emotive; it holds until a later line sets another |
+| `lines[].how` | the script's note on how the line is said (copy.md); for people, not sent to the voice |
+| `lines[].at`, `anchor` | land the line on the music grid: silence is added before it so it starts at `at`, or its `anchor` word does (`"word#2"` = the second one). Never earlier than the take allows (a warning says so) |
 
-Lines without `at` follow the one before. After changing `at`, `anchor`, `text` or `say`, run `voice.mjs` again: lines
-already voiced cost nothing.
+Lines follow one another as the voice says them. After changing `text`, `say`, `pause`, `speed` or `emotion`, run
+`voice.mjs` again: the whole take is recorded again (a few cents). After changing only `at` or `anchor` it costs
+nothing: the take is cached, and only the silence changes.
 
 ## 3. film.mjs: the film object and the frame's layers
 Start from `templates/film.mjs`. It exports one function that gets the kit `K` and returns the film object:

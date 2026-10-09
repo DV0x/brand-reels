@@ -4,16 +4,15 @@
   "slug": "brand-product",
   "style": "halftone-dossier",
   "placement": "organic",
-  "voice": { "provider": "cartesia", "id": "", "model": "sonic-3.6", "language": "en", "speed": 1.0 },
+  "voice": { "provider": "cartesia", "id": "", "model": "sonic-3.6", "language": "en", "speed": 1.0, "take": "one" },
   "lead": 0.4,
-  "gap": 0.35,
   "tail": 2.6,
   "lines": [
-    { "id": "l1", "text": "The hook's subject, in the first two words.", "at": 0.5 },
+    { "id": "l1", "text": "The hook's subject, in the first two words." },
     { "id": "l2", "text": "The viewer's belief, as captions show it.", "say": "The viewer's belief, as the voice reads it." },
-    { "id": "l3", "text": "The turn.", "show": "statement" },
-    { "id": "l4", "text": "The hidden fact starts near nine seconds.", "at": 9.0, "anchor": "hidden" },
-    { "id": "l5", "text": "The product as the answer starts near eighteen seconds.", "at": 18.0, "anchor": "product" },
-    { "id": "l6", "text": "The tip starts near twenty-five seconds.", "at": 25.0, "anchor": "tip" }
+    { "id": "l3", "text": "The turn.", "show": "statement", "pause": 0.4, "how": "a breath before the turn; short and flat" },
+    { "id": "l4", "text": "The hidden fact starts near nine seconds.", "speed": 0.9, "how": "slower: this is the fact" },
+    { "id": "l5", "text": "The product as the answer starts near eighteen seconds.", "pause": 0.3, "how": "a breath before the answer" },
+    { "id": "l6", "text": "The tip starts near twenty-five seconds." }
   ]
 }
