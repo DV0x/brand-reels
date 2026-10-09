@@ -136,13 +136,16 @@ A menu: use the ones your story needs.
 
 > **For 9:16 reels: our drawing kit.** This skill draws on a canvas, not in a web page. `engine.mjs` is loaded for any
 > film whose `script.json` says `"style": "halftone-dossier"`, and the film gets it as `K.style` (`D`). Every call and
-> option is in [film-api.md](../../references/film-api.md), section 12: paper and grain (`D.finish`), halftone and
-> density fields (`D.halftone`, `D.radial`, `D.edge`, `D.ramp`, `D.dotFill`), per-character headlines (`D.headline`),
-> numerals, stamps, redaction, props, the evidence print, the caption bar, the HUD, the camera with shakes and the beat
-> pulse, the dot wipe and flashes. There is no character rig: build characters from `D.ink` shapes. Fonts are bundled in
-> `fonts/` (SIL OFL): Alfa Slab One (headlines), Bagel Fat One (display, numerals), Archivo Black (captions, stamps),
-> JetBrains Mono 800 (HUD, data), and the skill's Caveat (hand interjections). Line boil is `D.ink`'s `boil` option
-> (in px), on props only.
+> option is in [film-api.md](../../references/film-api.md), section 12, in two parts. **Techniques**, for everything
+> the film draws: the brand's inks and fonts (`D.inks`, `D.fonts`), paper and grain (`D.finish`), halftone and density
+> fields (`D.halftone`, `D.radial`, `D.edge`, `D.ramp`, `D.dotFill`), inked shapes and lines (`D.ink`, `D.line`),
+> per-character headlines (`D.headline`), the camera with shakes and the beat pulse, the dot wipe and flashes.
+> **Optional objects**, used only with a reason in the treatment: numerals, stamps, redaction, props, the evidence
+> print, the HUD, the caption bar. There is no character rig: build characters and the film's own objects from `D.ink`
+> shapes. Default fonts are bundled in `fonts/` (SIL OFL): Alfa Slab One (headlines), Bagel Fat One (display,
+> numerals), Archivo Black (captions, stamps), JetBrains Mono 800 (HUD, data), and the skill's Caveat (hand
+> interjections); the brand's fonts replace them (section 12). Line boil is `D.ink`'s `boil` option (in px), on props
+> only.
 
 ## 11. Variation space
 
@@ -159,10 +162,12 @@ All far from our demo:
 
 ## 12. The product and brand fit
 
-- **The product:** the real photo pinned to the file as evidence (`D.evidence`): an instant-print border, a paperclip,
-  an exhibit tag only when the film gives one, a flat offset shadow in ink. It sits in the `over` layer, so it is never
-  dotted, printed over or boiled. A ring or an arrow may point at its label, with a short label of its own, but never
-  covers it. Show it big at least once (the end card), and never bigger than its photo.
+- **The product:** the real photo, in the `over` layer, so it is never dotted, printed over or boiled. How it sits on
+  the page is the film's choice, in the brand's look: on a ground or frame drawn with the techniques (a flat ink
+  shadow, a paper edge), or as an evidence print (`D.evidence`: an instant-print border, a paperclip, a flat offset
+  shadow), an optional object that needs a reason (an uncut photo, a story about evidence). A ring or an arrow may
+  point at its label, with a short label of its own, but never covers it. Show it big at least once (the end card),
+  and never bigger than its photo.
 - **The brand's look:** the style gives the techniques; the brand gives the colours, the fonts and the end card.
   - Colours: `D.inks` puts the brand's colours on the ink roles: their ground on `paper`, their darkest colour on
     `ink`, the pack's main colour on `highlight` or `spot`; `stamp` red only for a warning the story needs. The paper's

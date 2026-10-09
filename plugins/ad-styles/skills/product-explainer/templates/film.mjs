@@ -48,6 +48,8 @@ export default function film(K) {
   // ---------------------------------------------------------------- 3. the scenes: only what the treatment lists
   // One entry per shot name. draw() is the world in the style; over() is the real product and anything in front of it
   // (no medium or texture lands on it); top() is transitions and flashes. Register sounds and hits here, at setup.
+  // Draw the film's own objects with the style's techniques; a kit's optional objects (a stamp, a pin, a print) only
+  // where TREATMENT.md ("The elements") gives a reason. The end card is drawn new, the brand's way.
   const SCENES = {
     // 'shot 1': { draw(g, t) { }, over(g, t) { }, top(g, t) { } },
   };

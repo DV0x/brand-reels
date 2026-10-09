@@ -35,8 +35,10 @@ lemo's: a great example first, then the rules and the tools taken from it.
    (`~/projects/lemo-test/lemo-opuscar/styles/<slug>/STYLE.md`), copy its text word for word, keep its named
    references ("grammar only, never copy"), and add only notes marked **For 9:16 reels** (the template lists them),
    plus our section 12. Check that every line and number of its sections 1 to 9 and 11 survives. No story in the file.
-2. **The drawing kit.** `styles/<slug>/engine.mjs`: the style's parts as pure functions of t (paper or ground, marks,
-   type, captions, transitions, the product treatment), with no story, scene list or defaults. Bundle its fonts in
+2. **The drawing kit.** `styles/<slug>/engine.mjs`: the style's **techniques** as pure functions of t (paper or ground,
+   marks, type treatment, transitions, camera, motion curves, page zones, ink and font roles that take the brand's
+   colours and fonts), with no story, scene list or defaults. Finished objects (a stamp, a frame, a caption design)
+   are optional extras, listed apart as "optional objects": the agent draws each film's objects with the techniques. Bundle its fonts in
    `styles/<slug>/fonts/` with their licence files (OFL or similar). Add every call and option to `film-api.md` in a
    section of its own: the agent must never need to open `engine.mjs`.
 3. **One test film,** made in a work folder outside this repository, by the skill's own workflow.

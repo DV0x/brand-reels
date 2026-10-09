@@ -31,7 +31,9 @@ frame is a phone (1080 × 1920). Licences: `THIRD-PARTY-NOTICES.md` at the plugi
   fonts could be any brand's film (craft.md, section 2).
 - **The approved script's words are fixed.**
 - **Everything else is yours to direct from the topic:** the staging, structure, subjects, settings, shots, timings,
-  references, and how a number or a fact is shown.
+  references, how a number or a fact is shown, and the film's objects, drawn new for this film with the style's
+  techniques. A style kit's finished objects (a stamp, a pin, a print) are optional: used only with a reason (section
+  4), because the same objects in every film make every film look alike.
 - **There is no ready-made film.** Each film's scenes are written from its own treatment, into `templates/film.mjs`.
 - **Never bend the topic toward a style's cliché.** The first idea a style suggests (a mugshot, three exhibits and a
   verdict in a case file; a recipe card in a cartoon) is usually its cliché. Start from the topic's fact and ask what
@@ -74,13 +76,22 @@ anything:
    style's type roles (headline, caption, numbers), the caption bar and the titles in those fonts and colours, and the
    end card designed the brand's way: the real pack big, their logo file if they have one, their layout habits (space,
    case, alignment). Name any stand-in font. Say which of the design card's do's and don'ts each choice follows.
-5. **Shot list:** for every shot, the framing (wide, full, medium, close, insert), angle, camera move, duration, and
+5. **The elements:** every element the film draws (the subjects, props, marks, frames, tags, the caption design), each
+   marked **drawn new for this film** or **optional object** (a finished part of the style's kit, such as a stamp, a
+   pin, the evidence print, the HUD, the caption bar). An optional object needs a reason from this film's story ("the
+   stamp: the fact is a verdict, and the viewer sees it land"); "it is in the kit" is not a reason. Say how each
+   element takes the brand's look. The end card is drawn new for every film.
+6. **How this film differs:** five choices: the colours, the fonts, the product shot, the end card and the signature
+   move (one sentence each). For each, how it differs from the kit's defaults and from this brand's last film (the
+   "Films made" table in `BRAND.md`; for a first film, from the kit only). A choice that matches either one needs a
+   reason.
+7. **Shot list:** for every shot, the framing (wide, full, medium, close, insert), angle, camera move, duration, and
    **why** it is shot that way.
-6. **Beat sheet,** second by second: the voice, the picture, the sound.
-7. **Cue map:** the tempo, the bar grid, where each voice line is placed (its anchor word on the grid), the instruments
+8. **Beat sheet,** second by second: the voice, the picture, the sound.
+9. **Cue map:** the tempo, the bar grid, where each voice line is placed (its anchor word on the grid), the instruments
    per section, and the beat every cut, key action and caption lands on (section 7).
-8. **Sound design table:** for each section, the ambience bed, the main foley and the music state.
-9. **The product:** where the real photo appears, how big, what sits beside it, and that nothing covers its label.
+10. **Sound design table:** for each section, the ambience bed, the main foley and the music state.
+11. **The product:** where the real photo appears, how big, what sits beside it, and that nothing covers its label.
 
 ## 5. Prove the look: style frames and design review
 - **Three style frames from the film,** drawn with the film's real code, not a mock-up: one is the signature shot, one
@@ -164,6 +175,8 @@ anything:
   or bracket says, in a word or three, what it shows.
 - **The style's apparatus with no job:** a case number or a file tag on every frame reads as decoration. Keep a tag
   only when it tells the viewer something (A TYPICAL BRAND: this is not a real one).
+- **The kit's objects instead of this film's own:** the same stamp, pin, evidence print and caption bar as the last
+  film, in the style's default colours and fonts: the film reads as a template, and no one can tell whose brand it is.
 - **The style's cliché instead of the topic's idea:** a film that replays the style's familiar structure (a case
   file's mugshot, exhibits and verdict) loses to a film that starts from the fact.
 
@@ -202,7 +215,7 @@ Write these in the film folder from the templates (`templates/CREDITS.md`, `temp
   film. Don't post anything yourself.
 - **The brand's memory** (in the brand folder, one level up): add this film's lessons to `LEARNINGS.md` (what worked,
   what the user changed, what to avoid next time; dated, short). Update `BRAND.md`: the facts used and their sources,
-  the film made, its style and topic, and the user's verdict when you have it. The next film for this brand reads both
+  the film made, its style and topic, its five choices (treatment part 6), and the user's verdict when you have it. The next film for this brand reads both
   first and skips the questions they answer.
 
 Then tell the user where the film folder is, and ask them to watch the film once with sound before it goes out.

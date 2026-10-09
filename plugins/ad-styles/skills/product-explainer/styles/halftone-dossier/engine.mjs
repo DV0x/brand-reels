@@ -1,8 +1,12 @@
 // engine.mjs: the Halftone Dossier style (STYLE.md). A film gets it as K.style when script.json says
-// "style": "halftone-dossier". It draws every element in the style: paper, halftone dots, inked props, headlines with
-// misregistered shadows, rough-ink stamps, the caption bar, the HUD, dot wipes, flashes, and the evidence print that
-// carries the real product photo. There is no film builder: each film writes its own scenes from its treatment
+// "style": "halftone-dossier". There is no film builder: each film writes its own scenes from its treatment
 // (templates/film.mjs) and calls these parts. Nothing is drawn unless the film asks for it.
+// Two kinds of part (KIT.md lists them; film-api.md section 12 until it moves there):
+//   - techniques: how the medium is made: paper and grain, halftone dots and density fields, the inked shape and
+//     line, headlines with a misregistered shadow, the camera with shakes, dot wipes, flashes, the page zones, and
+//     the inks and fonts. The film draws its own objects with these.
+//   - optional objects: finished designs (numeral, stamp, redaction, props, the evidence print, the HUD, the caption
+//     bar). A film uses one only with a reason in its treatment, in the brand's look; never as the default end card.
 // The style gives the techniques; the brand gives the colours (D.inks), the fonts (D.fonts) and the caption bar's look
 // (D.captionBar).
 // Adapted from lemo-opuscar styles/halftone-dossier (MIT, (c) 2026 LemoLab), rewritten for Canvas 2D in Node at 9:16.
@@ -147,7 +151,7 @@ export default function dossier(K) {
     if (o.dot) { g.save(); g.clip(path); halftone(g, { ...(o.box || {}), step: o.step ?? 20, angle: o.angle ?? 25, color: o.dot, field: o.field || (() => 0.6), k: o.k ?? 0.7, blend: o.blend ?? null }); g.restore(); }
   };
 
-  // ---------------------------------------------------------------- inked props
+  // ---------------------------------------------------------------- inked shapes: the film's own objects are drawn with these
   const speckTiles = [];
   const speckTile = i => {
     if (!speckTiles[i]) { const s = 160, c = K.canvas(s, s), cg = c.getContext('2d'), r = rng(31 + i * 7); cg.fillStyle = C.paper; for (let k = 0; k < 70; k++) { cg.beginPath(); cg.arc(r() * s, r() * s, 0.5 + r() * 1.4, 0, TAU); cg.fill(); } speckTiles[i] = c; }
@@ -244,7 +248,7 @@ export default function dossier(K) {
     if (o.t != null && o.role !== 'texture') K.noteText(o.id || 'text:' + str, { text: str, role: o.role || (size >= 72 ? 'headline' : 'label'), size, box: screenBox(g, [x0, y - size * 0.8, x0 + w, y + size * 0.25]), t: o.t });
     return { w, x0, x1: x0 + w };
   };
-  // a giant halftone-filled numeral that bleeds off the right edge (right edge at o.x, baseline o.y); cached
+  // an optional object: a giant halftone-filled numeral that bleeds off the right edge (right edge at o.x, baseline o.y); cached
   const numCache = new Map();
   const numeral = (g, str, o = {}) => {
     const size = o.size ?? 820, fill = o.fill ?? C.highlight, dot = o.dot ?? mix(C.highlight, C.stamp, 0.42), angle = o.angle ?? 25, key = [str, size, fill, dot, angle, F.display, FW.display].join('|');
@@ -263,6 +267,8 @@ export default function dossier(K) {
     return { w: c.width, h: c.height };
   };
 
+  // ================================================================ optional objects (finished designs) from here on,
+  // except the camera and the transitions further down, which are techniques.
   // ---------------------------------------------------------------- stamps (rough ink, cached), redaction
   const stampCache = new Map();
   const stampArt = (str, size, color) => {
@@ -526,18 +532,21 @@ export default function dossier(K) {
   };
 
   const D = {
+    // techniques: the brand's inks and fonts, motion, paper, dots, ink, type, the page, the camera, transitions
     C, F, FW, E, INKS, FONTS, WEIGHTS, font, measure,
     inks(o = {}) { Object.assign(C, o); return C; },
-    fonts: setFonts, captionBar,
+    fonts: setFonts,
     pop, rise, slam, squash,
     paperTex, grain, finish,
     halftone, radial, edge, ramp, max, scaled, dotFill,
     ink, line, rectPts, ellipsePts, bbox,
-    headline, text, numeral,
-    stamp, redact,
-    burst, bubble, note, tag, folder, chart, plate, pin, string, ring, paperclip, ZONE,
-    evidence, captionRender, hud, dotWipe, flashAt, camera,
-    // the style's caption bar for the film object: return { captions: D.captions, ... }
+    headline, text, ZONE,
+    camera, dotWipe, flashAt,
+    // optional objects: used only with a reason in the treatment
+    numeral, stamp, redact,
+    burst, bubble, note, tag, folder, chart, plate, pin, string, ring, paperclip,
+    evidence, hud, captionRender, captionBar,
+    // the caption bar for the film object: return { captions: D.captions, ... }
     captions: { render: captionRender, layer: 'over', get size() { return CAP.size; } },   // above the product, so a print never hides them
   };
   return D;

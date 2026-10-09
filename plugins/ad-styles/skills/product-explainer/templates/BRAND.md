@@ -40,6 +40,8 @@ Every film wears this look: the style gives the techniques, the brand gives the 
 | | | |
 
 ## Films made
-| Date | Film folder | Product | Topic | Style | Length | The user's verdict |
-|---|---|---|---|---|---|---|
-| | | | | | | |
+The five choices of each film (its treatment, part 6), so the next film can differ from it.
+
+| Date | Film folder | Product | Topic | Style | Length | Colours | Fonts | Product shot | End card | Signature move | The user's verdict |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| | | | | | | | | | | | |

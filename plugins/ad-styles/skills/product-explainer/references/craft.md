@@ -20,8 +20,11 @@ stuff. The style's `STYLE.md` holds its own numbers; this file holds what is tru
 - **Don't draw what a style looks like; rebuild how the medium is made.** In a print style every shape goes through the
   style's own drawing calls (ink plates, dots, overprint); in a cartoon, through its line and fill; in paper-cut,
   through cut paper. Nothing is drawn plainly and filtered afterwards.
-- **The style's materials frame the film** (case-file paper and its HUD, a spec sheet's grid, a printed board), but the
-  story comes from the topic: find one picture that makes the fact obvious, and don't act out every line.
+- **The style's materials frame the film** (case-file paper, a spec sheet's grid, a printed board), but the story comes
+  from the topic: find one picture that makes the fact obvious, and don't act out every line.
+- **The style gives techniques, not objects.** Its kit's finished objects (a stamp, a pin, an evidence print, a HUD)
+  are optional, used only with a reason in the treatment (directing.md, section 4). Everything else the film shows is
+  drawn new for this film with the style's techniques, in the brand's look.
 - **The medium makes the reveals and transitions:** a stamp slams, a squeegee pulls an ink, a dot wipe covers the cut.
 - **Copy the grammar of a style, never the likeness** of a character, a title design or a brand's art.
 
@@ -98,7 +101,8 @@ Draft styles (SKILL.md, "The styles") have a full `STYLE.md` but no drawing code
 3. Test each primitive on a 100% crop, then compose one style frame (the hardest card) and check it against the style's
    sections 1 to 6. Only then build the film from `templates/film.mjs`.
 4. Keep what worked: the primitives become the style's drawing kit later (see `styles/halftone-dossier/engine.mjs` for
-   the shape a kit takes: drawing calls, a caption renderer, a finish and transitions, with no story and no defaults).
+   the shape a kit takes: techniques, such as drawing calls, a finish and transitions, with no story and no defaults;
+   finished objects only as optional extras).
 
 ## 7. Painterly styles: the paint-over pass
 A few media really are made by painting over a drawing (oil, gouache, watercolor washes over a block-in). For those, the

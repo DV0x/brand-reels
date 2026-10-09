@@ -27,9 +27,9 @@ on a plain background (the site usually has one); the brand's logo and fonts, if
 hidden fact behind it → the product as the answer**, and the fact fits in one sentence they would send a friend.
 
 **You write the script; the user approves it. Then you are the director.** The style gives the techniques (its
-`STYLE.md`); the brand gives the colours, the fonts and the end card (its design card). The story, shots, timing,
-music and sound are made fresh for each film from a written treatment, before anything is drawn. A film is judged on
-sound, rhythm, camera and directing, in that order.
+`STYLE.md`); the brand gives the colours, the fonts and the end card (its design card). The story, shots, objects,
+timing, music and sound are made fresh for each film from a written treatment, before anything is drawn. A film is
+judged on sound, rhythm, camera and directing, in that order.
 
 ## Where files go
 In the folder the user started from (ask once if they want another place):
@@ -84,8 +84,9 @@ Explainer progress:
    from `templates/script.json` (the approved lines), pick a voice, set it there, `RUN voice.mjs <film> --words`. No
    key: ask once; otherwise render with `--estimate`.
 5. **Treatment, before any drawing.** Read directing.md and the style's `STYLE.md` in full. Write `TREATMENT.md`:
-   benchmark, three structures and the pick, the look (the brand's colours, fonts and end card), shots, beat sheet,
-   cue map, sound table, the product.
+   benchmark, three structures and the pick, the look (the brand's colours, fonts and end card), the elements (drawn
+   new, or an optional object with a reason), how this film differs (five choices), shots, beat sheet, cue map, sound
+   table, the product.
 6. **Style frames.** Copy `templates/film.mjs`, write the timeline, finish three scenes (the signature shot, the
    product's shot, one more), review them in written rounds in `REVIEW.md` (directing.md, section 5). Every shared
    call is in film-api.md; the style's own tools are in its parts list (film-api.md, section 12, for the Dossier).
@@ -116,6 +117,8 @@ have: offer Halftone Dossier or a draft instead. Read only the style you use.
 - **The story from the topic, the techniques from the style:** a style's familiar structure is its cliché.
 - **The brand's colours, fonts and end card on every frame** (the design card): in the style's own defaults, every
   brand's film looks the same.
+- **Objects drawn new for each film,** with the style's techniques: a kit's finished objects (a stamp, a pin, a print)
+  only with a reason in the treatment, and never as the end card. The same objects in every film make a template.
 - **The real product photo,** never redrawn: generated labels come out garbled.
 - **Every action on a word or a beat;** nothing on screen the treatment didn't ask for (filler is clutter on a phone).
 - **Tools fail loudly:** read the error, fix the cause, run again (tools.md, section 7).
