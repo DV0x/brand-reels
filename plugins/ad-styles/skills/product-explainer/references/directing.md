@@ -23,8 +23,12 @@ frame is a phone (1080 × 1920). Licences: `THIRD-PARTY-NOTICES.md` at the plugi
 13. Changes after delivery
 
 ## 1. What is fixed and what is yours
-- **The style's `STYLE.md` is fixed:** its look, colour, type, motion, camera grammar, sound palette, native moves and
-  pitfalls. Keep all of it.
+- **The style's techniques are fixed** (`STYLE.md`): its materials and how they are drawn, its colour logic (the jobs
+  its inks do), its type roles and treatment, motion, camera grammar, sound palette, native moves and pitfalls. Keep
+  all of it.
+- **The brand's look is fixed** (the design card, in `BRIEF.md`): its colours go on the style's ink roles, its fonts on
+  the style's type roles, and the end card is designed the brand's way. A film in the style's default colours and
+  fonts could be any brand's film (craft.md, section 2).
 - **The approved script's words are fixed.**
 - **Everything else is yours to direct from the topic:** the staging, structure, subjects, settings, shots, timings,
   references, and how a number or a fact is shown.
@@ -66,13 +70,16 @@ anything:
    the score from the topic too. Say why you rejected the other two.
 2. **Logline and arc:** one sentence, then setup → turn → ending.
 3. **Benchmark:** learn / don't take (section 2).
-4. **Shot list:** for every shot, the framing (wide, full, medium, close, insert), angle, camera move, duration, and
+4. **The look:** the brand's colours on the style's ink roles (each with its hex and its job), the brand's fonts on the
+   style's type roles (headline, caption, numbers), the caption bar and the titles in those fonts and colours, and the
+   end card designed the brand's way: the real pack big, their logo file if they have one, their layout habits (space,
+   case, alignment). Name any stand-in font. Say which of the design card's do's and don'ts each choice follows.
+5. **Shot list:** for every shot, the framing (wide, full, medium, close, insert), angle, camera move, duration, and
    **why** it is shot that way.
-5. **Beat sheet,** second by second: the voice, the picture, the sound.
-6. **Cue map:** the tempo, the bar grid, where each voice line is placed (its anchor word on the grid), the instruments
+6. **Beat sheet,** second by second: the voice, the picture, the sound.
+7. **Cue map:** the tempo, the bar grid, where each voice line is placed (its anchor word on the grid), the instruments
    per section, and the beat every cut, key action and caption lands on (section 7).
-7. **Sound design table:** for each section, the ambience bed, the main foley and the music state.
-8. **Caption and title design:** the type is part of the style.
+8. **Sound design table:** for each section, the ambience bed, the main foley and the music state.
 9. **The product:** where the real photo appears, how big, what sits beside it, and that nothing covers its label.
 
 ## 5. Prove the look: style frames and design review
@@ -81,8 +88,8 @@ anything:
 - **Review them in rounds, and write each round in `REVIEW.md`:** what you saw, what you changed. Look at full size and
   at phone size. Fix and render again until a round finds nothing. Expect several rounds: labels touching, a stamp
   too pale, a prop that reads as something else.
-- **Check every frame against the design checklist** (craft.md section 8) **and the STYLE.md** (materials, inks, type,
-  pitfalls): one subject with empty ground around it, a clear order from top to bottom, colours with jobs, three text
+- **Check every frame against the design checklist** (craft.md section 8), **the STYLE.md** (materials, inks, type,
+  pitfalls) **and the brand's design card** (its colours, fonts, do's and don'ts): one subject with empty ground around it, a clear order from top to bottom, colours with jobs, three text
   sizes at most, one texture field at most and only with a job, nothing the treatment didn't ask for, nothing touching
   or crowding, every shape reading as what it is.
 - **If the user asked to see the look first,** show the frames with their lines and wait for the OK.

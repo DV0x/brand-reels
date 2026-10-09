@@ -23,3 +23,4 @@
 
 ## What I was not sure of
 - <a claim, the photo's age, a pronunciation, a font licence, ...>
+- <the brand's font, if a stand-in was used: "<their font> is not free; the film uses <Google font>">

@@ -1,6 +1,6 @@
 ---
 name: product-explainer
-description: Makes 30-to-35-second vertical explainer reels (Reels, TikTok, Shorts) for a D2C brand's product, drawn entirely in code, with the real product photo, a timed voiceover, captions, music and sound. It researches the brand, writes a script on a fact the viewer doesn't know, gets it approved, directs the film and renders the MP4 locally. The tested style is Halftone Dossier (a print case file); draft styles can be asked for by name (mid-century cartoon, Swiss motion, data storytelling, isometric infographic, silkscreen poster, risograph, copperplate engraving, hologram HUD, dark keynote, living screencast, rubber hose, sci-fi toon, spy titles, art deco, one-line drawing, watercolor, whiteboard, block print, paper-cut, pictogram motion, pixel RPG). Use it whenever someone wants a reel, an explainer, a short video or a video ad for a product or brand, shares a brand website or product link, or names one of these styles, even if they never say "explainer". Not for editing or converting existing video files.
+description: Makes 30-to-35-second vertical explainer reels (Reels, TikTok, Shorts) for a D2C brand's product, drawn entirely in code, with the real product photo, a timed voiceover, captions, music and sound. It researches the brand, writes a script on a fact the viewer doesn't know, gets it approved, directs the film in the brand's own colours, fonts and logo, and renders the MP4 locally. The tested style is Halftone Dossier (a print case file); draft styles can be asked for by name (mid-century cartoon, Swiss motion, data storytelling, isometric infographic, silkscreen poster, risograph, engraving, hologram HUD, dark keynote, screencast, rubber hose, spy titles, art deco, one-line drawing, watercolor, whiteboard, block print, paper-cut, pixel RPG). Use it whenever someone wants a reel, an explainer, a short video or a video ad for a product or brand, shares a brand website or product link, or names one of these styles, even if they never say "explainer". Not for editing or converting existing video files.
 ---
 
 # Product explainer
@@ -9,13 +9,14 @@ One finished 1080 × 1920 reel of 30 to 35 seconds, with sound, made from a bran
 code on this computer: no image generation, no stock footage. The real product photo is cut out (or framed as it is
 when a clean cut-out is not possible) and placed inside the style; its label is never redrawn. **Needed:** the
 website; a Cartesia API key for the voice (without one the film is text-led) or the brand's recording; a product photo
-on a plain background (the site usually has one).
+on a plain background (the site usually has one); the brand's logo and fonts, if they have them.
 
 | The request | Go to |
 |---|---|
 | A reel for a brand or product (the normal case) | **The workflow** below |
 | "Which styles are there?" | **The styles** below |
 | Research, customer words, facts | [references/research.md](references/research.md) |
+| The brand's look: fonts, colours, logo, end card | the design card in [references/research.md](references/research.md) (section 3); how a style wears it: [references/craft.md](references/craft.md) (section 2) |
 | Topic, hook, script, the 30-second time map | [references/copy.md](references/copy.md), the bar in [references/benchmarks.md](references/benchmarks.md) |
 | The product photo | [references/product.md](references/product.md) |
 | Directing: treatment, sound, rhythm, camera, review, delivery, changes | [references/directing.md](references/directing.md), design rules in [references/craft.md](references/craft.md) |
@@ -25,14 +26,15 @@ on a plain background (the site usually has one).
 **The film is for the brand's customer**, scrolling with zero interest. Its spine is **a pain the viewer feels → a
 hidden fact behind it → the product as the answer**, and the fact fits in one sentence they would send a friend.
 
-**You write the script; the user approves it. Then you are the director.** The style's `STYLE.md` fixes the look;
-the story, shots, timing, music and sound are made fresh for each film from a written treatment, before anything is
-drawn. A film is judged on sound, rhythm, camera and directing, in that order.
+**You write the script; the user approves it. Then you are the director.** The style gives the techniques (its
+`STYLE.md`); the brand gives the colours, the fonts and the end card (its design card). The story, shots, timing,
+music and sound are made fresh for each film from a written treatment, before anything is drawn. A film is judged on
+sound, rhythm, camera and directing, in that order.
 
 ## Where files go
 In the folder the user started from (ask once if they want another place):
 - `<brand>/`: `BRAND.md` and `LEARNINGS.md` (the brand's memory, from `templates/`), `research.md`, `site.json`,
-  `products/` (each likely product's photos, saved during the research).
+  `products/` (each likely product's photos, saved during the research), `logo.png` (if there is a clean file).
 - `<brand>/<film>/`: one folder per film: `script.json`, `BRIEF.md`, `TREATMENT.md`, `film.mjs`, `REVIEW.md`,
   `CREDITS.md`, `DELIVERY.md`, `product/`, `vo/`, `out/` (film-api.md, section 1).
 
@@ -57,13 +59,18 @@ Explainer progress:
 ```
 
 1. **Brand folder and research.** If `<brand>/BRAND.md` exists, read it and `LEARNINGS.md` first; a new brand starts
-   both from the templates. `RUN site.mjs <url> --out <brand>`, the likely product's page and photos, then customers'
-   words and facts (research.md). The film folder is made after the topic is chosen, named after it.
+   both from the templates. `RUN site.mjs <url> --out <brand>`, the likely product's page and photos, their voice and
+   their look (the design card), then customers' words and facts (research.md). The film folder is made after the
+   topic is chosen, named after it.
 2. **One round of questions** (AskUserQuestion if available; skip what the brand folder or the request answers):
    - **Which product**, if several fit (your pick first).
    - **Which topic:** 2 or 3, each a viewer's pain or habit, its hook and the hidden fact (copy.md; pick 1 or 2
      benchmark entries before you write hooks). Show only hooks that pass copy.md's tests.
-   - **Which style:** recommend from the menu below, with one reason.
+   - **Which style:** recommend from the menu below, with one reason: it must suit the brand (its `STYLE.md` section
+     12, "brand fit"). If no tested style suits the brand, say so, and offer the closest draft as well (it takes
+     longer).
+   - **Their look:** "Do you have a logo, brand fonts or a style guide?" (what they send replaces the design card's
+     guesses).
    - **See the look first?** Three finished style frames before the film. Recommend yes for a new brand; in a test of
      the skill, always yes.
    - **The product photo:** the site's (say its size), or a current one they send.
@@ -77,7 +84,8 @@ Explainer progress:
    from `templates/script.json` (the approved lines), pick a voice, set it there, `RUN voice.mjs <film> --words`. No
    key: ask once; otherwise render with `--estimate`.
 5. **Treatment, before any drawing.** Read directing.md and the style's `STYLE.md` in full. Write `TREATMENT.md`:
-   benchmark, three structures and the pick, shots, beat sheet, cue map, sound table, captions, the product.
+   benchmark, three structures and the pick, the look (the brand's colours, fonts and end card), shots, beat sheet,
+   cue map, sound table, the product.
 6. **Style frames.** Copy `templates/film.mjs`, write the timeline, finish three scenes (the signature shot, the
    product's shot, one more), review them in written rounds in `REVIEW.md` (directing.md, section 5). Every shared
    call is in film-api.md; the style's own tools are in its parts list (film-api.md, section 12, for the Dossier).
@@ -105,7 +113,9 @@ have: offer Halftone Dossier or a draft instead. Read only the style you use.
 - **A true fact the viewer doesn't know,** sourced in `research.md`: facts make people stop and share.
 - **About 30 seconds, never padded:** cut words; never speed up the voice or stretch pauses (copy.md).
 - **The script approved before drawing:** changing words after the art is built wastes most of the work.
-- **The story from the topic, the look from the style:** a style's familiar structure is its cliché.
+- **The story from the topic, the techniques from the style:** a style's familiar structure is its cliché.
+- **The brand's colours, fonts and end card on every frame** (the design card): in the style's own defaults, every
+  brand's film looks the same.
 - **The real product photo,** never redrawn: generated labels come out garbled.
 - **Every action on a word or a beat;** nothing on screen the treatment didn't ask for (filler is clutter on a phone).
 - **Tools fail loudly:** read the error, fix the cause, run again (tools.md, section 7).

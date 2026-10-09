@@ -43,7 +43,13 @@ from the brand's never-say list>.
 ## Brand voice
 - Three words for how they sound, and one they never do: <...>.
 - Lines in their own words: <two or three, from research.md>.
-- Fonts and colours from the brand: <or "none: the style decides">.
+
+## Brand look (from the design card in BRAND.md)
+The style gives the techniques; the brand gives the colours, the fonts and the end card.
+- **Fonts:** <headline family and weight; caption family and weight; "stand-in for <their font>" if theirs is not free>.
+- **Colours, with jobs:** <ground, text, accent (what it marks)>.
+- **Logo:** <`images/logo.png` from `<brand>/logo.png` | "only as printed on the pack">.
+- **Do / don't:** <the card's three of each, in short>.
 
 ## Material
 - **Voice:** <Cartesia voice name and id>. All lines voiced in `vo/`; `voice.mjs <film> --words` prints every word's
@@ -51,7 +57,8 @@ from the brand's never-say list>.
 - **Product photo:** `product/main.png` (<w × h>, cut from <source>, <date if known>). The cut-out report's `closeUps`
   line: <how big it can be drawn>. Label details the film points at, with their pixels in `main.png`: <detail: x, y>.
   Other views: <back.png, or none>.
-- **Fonts, music, logos:** <supplied, or "none: by the STYLE.md">. Logos appear only as printed on the pack.
+- **Fonts, music, logos:** <supplied by the brand, or from the design card>. A logo is the brand's own file, used as
+  it is (never redrawn or recoloured), or only as printed on the pack.
 
 ## What you decide alone
 Staging, structure, shots, camera, timing on the beat, the score, the sounds, the labels (from the facts table), the

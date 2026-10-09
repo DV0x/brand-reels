@@ -163,6 +163,14 @@ All far from our demo:
   an exhibit tag only when the film gives one, a flat offset shadow in ink. It sits in the `over` layer, so it is never
   dotted, printed over or boiled. A ring or an arrow may point at its label, with a short label of its own, but never
   covers it. Show it big at least once (the end card), and never bigger than its photo.
+- **The brand's look:** the style gives the techniques; the brand gives the colours, the fonts and the end card.
+  - Colours: `D.inks` puts the brand's colours on the ink roles: their ground on `paper`, their darkest colour on
+    `ink`, the pack's main colour on `highlight` or `spot`; `stamp` red only for a warning the story needs. The paper's
+    grain, the dots and the misregistered shadow stay. A white, quiet brand gets white paper, fewer dots, one accent.
+  - Fonts: `D.fonts` puts their headline face on `head` and their text face on `sans` (the caption bar and stamps);
+    the letter-by-letter pop and the offset shadow stay. `D.captionBar` gives the caption bar their font and colours.
+  - The end card: their pack big, their logo file if they have one, their line, on a page laid out their way. The
+    evidence print, the pin and the stamp are not an end card: use one only when the treatment gives a reason.
 - **Brand fit:** label-honest, cheeky or myth-busting brands; facts that look like evidence the viewer can inspect.
   Avoid it for calm luxury or wellness rituals, where the loud print fights the brand.
 

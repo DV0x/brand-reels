@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // site.mjs: reads a brand's website so Claude can pick a product and hear the brand's voice.
-//   site.mjs <url> --out <dir>                       -> <dir>/site.json and a short summary: products, fonts, colours, copy
+//   site.mjs <url> --out <dir>                       -> <dir>/site.json and a short summary: products, fonts, colours, logo, copy
 //   site.mjs <url> --product <handle|number|url> --out <project>/product/raw
 //                                                    -> that product's photos at full size, product.json, and any reviews on the page
 // Shopify stores are read from /products.json; other sites from the page's own product data (JSON-LD) and og:image.
@@ -138,6 +138,7 @@ async function siteMode() {
   console.log(`${site.name || origin}  (${site.shopify ? 'Shopify' : 'not Shopify'})\n${site.description || ''}`);
   console.log(`fonts: ${site.fonts.map(f => f.family).join(', ') || 'none found'}`);
   console.log(`colours: ${site.colors.slice(0, 10).map(c => c.color).join(' ')}`);
+  console.log(`logo: ${site.logo.join('  ') || 'none found in the page (look at the header, or ask the brand)'}`);
   console.log(`their words (${site.copy.length}):`); site.copy.slice(0, 14).forEach(c => console.log('  - ' + c.slice(0, 150)));
   console.log(`products (${site.products.length}):`);
   for (const p of site.products.slice(0, 40)) console.log(`  ${String(p.n).padStart(2)}. ${p.title}${p.type ? ' [' + p.type + ']' : ''}${p.price ? ' ' + p.price : ''}${p.photos != null ? ` · ${p.photos} photos${p.biggestPhoto ? ` up to ${p.biggestPhoto.w}x${p.biggestPhoto.h}` : ''}` : ''}${p.handle ? '  (' + p.handle + ')' : ''}`);

@@ -4,7 +4,7 @@
 // Units are screen pixels of the 1080 x 1920 frame.
 import fs from 'node:fs';
 import path from 'node:path';
-import { createCanvas, loadImage, Path2D, DOMMatrix, DOMPoint } from './canvas.mjs';
+import { createCanvas, loadImage, Path2D, DOMMatrix, DOMPoint, GlobalFonts } from './canvas.mjs';
 
 export const W = 1080, H = 1920;
 // The picture always fills the whole 1080 x 1920 frame. Only words (and the product's label) keep to the safe box: the
@@ -699,6 +699,7 @@ export async function makeKit({ project, script, timing }) {
     cache, boil, shape, contact, drawOn, arrow, mark, strike, tick, text, statement, stamp, label, counter, wisps, sparkle, hand, wipe, product,
     canvas: (w, h) => createCanvas(Math.ceil(w), Math.ceil(h)),
     font: fontStr,
+    hasFont: family => GlobalFonts.has(family),   // is this family loaded (bundled, the style's, or the film's fonts/)?
     // used by render.mjs
     _setMotion(name) { M = MOTION[name] || MOTION.warm; },
     _setCaptions(o = {}) { Object.assign(capStyle, o); if (o.emph) capStyle.emph = { ...capStyle.emph, ...o.emph }; F.base.family = o.font || F.base.family; if (o.emph) F.emph = { ...F.emph, ...o.emph }; },

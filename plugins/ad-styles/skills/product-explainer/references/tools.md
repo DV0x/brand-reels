@@ -36,7 +36,7 @@ Env: `CODE_VIDEO_HOME` (the cache folder), `CODE_VIDEO_FORCE_PORTABLE=1` (ignore
 ## 2. site.mjs: the brand's website
 | Command | What it does |
 |---|---|
-| `RUN site.mjs <url> --out <brand>` | writes `<brand>/site.json` and prints a summary: products, prices, photo sizes, fonts, colours, some of the brand's own copy |
+| `RUN site.mjs <url> --out <brand>` | writes `<brand>/site.json` and prints a summary: products, prices, photo sizes, fonts, colours, the logo's address, some of the brand's own copy |
 | `RUN site.mjs <url> --product <handle \| n \| url> --out <film>/product/raw` | that product's photos at full size, `product.json`, and any reviews on the page |
 
 Shopify stores are read from `/products.json`; other sites from the page's product data (JSON-LD) and `og:image`.
@@ -68,10 +68,12 @@ check image every time. What each report line means and what to do: [product.md]
 | the check image shows the label eaten, or the floor kept, at every `--tol` | `--uncut` with `--crop` around the product (product.md, section 2) |
 | `no file at <path>` (exit 2) | download the photos first with `site.mjs --product` |
 
-## 4. fonts.mjs: a style's fonts
+## 4. fonts.mjs: the brand's fonts
 `RUN fonts.mjs "<Family>:<weights>" ... --out <film>/fonts`, e.g. `"Archivo:400,800,400i"` (an `i` is the italic).
-Downloads Google Fonts (SIL OFL) as static TrueType files with their licences, named `Family_Name-700.ttf`. A style
-with a drawing kit bundles its own fonts: no need to run it.
+Downloads Google Fonts (SIL OFL) as static TrueType files with their licences, named `Family_Name-700.ttf`. Use it for
+the brand's fonts, or their Google stand-ins (the design card); a style kit then puts them on its type roles
+(`D.fonts`). A style with a drawing kit bundles its own default fonts. A font file the brand sends goes in the same
+folder, named the same way.
 
 | Error | Fix |
 |---|---|

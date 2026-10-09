@@ -3,6 +3,8 @@
 // misregistered shadows, rough-ink stamps, the caption bar, the HUD, dot wipes, flashes, and the evidence print that
 // carries the real product photo. There is no film builder: each film writes its own scenes from its treatment
 // (templates/film.mjs) and calls these parts. Nothing is drawn unless the film asks for it.
+// The style gives the techniques; the brand gives the colours (D.inks), the fonts (D.fonts) and the caption bar's look
+// (D.captionBar).
 // Adapted from lemo-opuscar styles/halftone-dossier (MIT, (c) 2026 LemoLab), rewritten for Canvas 2D in Node at 9:16.
 // Every function is a pure function of t. Units are pixels of the 1080 x 1920 frame.
 
@@ -17,14 +19,27 @@ export const INKS = {
   night: '#18203F', night2: '#2A3568',   // secret scenes: a dark-ink ground and its dots
   cream: '#FFF4E2',     // text on dark, bellies, light faces
   card: '#FFFDF7',      // evidence prints and index cards
+  tone: '#786450',      // the paper's vignette and fold (warm by default; a grey for a cool or white brand)
 };
 export const FONTS = { head: 'Alfa Slab One', display: 'Bagel Fat One', sans: 'Archivo Black', mono: 'JetBrains Mono', hand: 'Caveat' };
+export const WEIGHTS = { head: 400, display: 400, sans: 400, mono: 800, hand: 700 };
 
 export default function dossier(K) {
   const { W, H, SAFE, LANE, T, clamp, lerp, seg, rng, hash2, fbm, rgba, mix, spline, poly, roundRect, circle, Path2D, DOMMatrix } = K;
   const TAU = Math.PI * 2;
   const C = { ...INKS };
-  const F = FONTS;
+  // the five type roles: a family and a weight each. D.fonts() puts the brand's families on them for this film.
+  const F = { ...FONTS }, FW = { ...WEIGHTS };
+  const setFonts = (o = {}) => {
+    for (const [role, v] of Object.entries(o)) {
+      if (!(role in F)) throw new Error(`D.fonts: "${role}" is not a type role. The roles: ${Object.keys(F).join(', ')}`);
+      const fam = typeof v === 'string' ? v : v?.family, w = typeof v === 'object' ? v?.weight : undefined;
+      if (fam && K.hasFont && !K.hasFont(fam)) throw new Error(`D.fonts: the font "${fam}" is not loaded. Download it into the film's fonts/ folder (fonts.mjs, files named Family_Name-700.ttf), or check the family's exact name.`);
+      if (fam) F[role] = fam;
+      if (w) FW[role] = w;
+    }
+    return Object.fromEntries(Object.keys(F).map(r => [r, { family: F[r], weight: FW[r] }]));
+  };
   const font = (fam, size, w = 400) => `${w} ${Math.round(size)}px "${fam}"`;
   // The 9:16 page (STYLE.md, section 6), from the placement's safe box (K.SAFE) and caption lane (K.LANE). Words keep to
   // the safe box; the picture fills the frame. Organic: HUD 262-370, headline from 406, hero 620-1420, caption to 1560.
@@ -60,9 +75,9 @@ export default function dossier(K) {
     const im = g.getImageData(0, 0, W, H), d = im.data;
     for (let i = 0; i < d.length; i += 4) { const n = (r() - 0.5) * 26; d[i] = clamp(d[i] + n, 0, 255); d[i + 1] = clamp(d[i + 1] + n, 0, 255); d[i + 2] = clamp(d[i + 2] + n - 4, 0, 255); }
     g.putImageData(im, 0, 0);
-    const gr = g.createRadialGradient(W / 2, H / 2, 560, W / 2, H / 2, 1260); gr.addColorStop(0, 'rgba(255,255,255,0)'); gr.addColorStop(1, 'rgba(120,100,80,0.35)');
+    const gr = g.createRadialGradient(W / 2, H / 2, 560, W / 2, H / 2, 1260); gr.addColorStop(0, 'rgba(255,255,255,0)'); gr.addColorStop(1, rgba(C.tone, 0.35));
     g.fillStyle = gr; g.fillRect(0, 0, W, H);
-    g.strokeStyle = 'rgba(140,120,100,0.18)'; g.lineWidth = 3; g.beginPath(); g.moveTo(0, H * 0.5); g.lineTo(W, H * 0.5 + 2); g.stroke();
+    g.strokeStyle = rgba(mix(C.tone, '#FFFFFF', 0.15), 0.18); g.lineWidth = 3; g.beginPath(); g.moveTo(0, H * 0.5); g.lineTo(W, H * 0.5 + 2); g.stroke();
     paperCanvas = c; return c;
   };
   // dust on the print: paper-coloured and ink specks, reseeded every 2 frames
@@ -174,7 +189,7 @@ export default function dossier(K) {
     return { lines, space };
   };
   const headline = (g, t, text, o = {}) => {
-    const size = o.size ?? 120, f = font(o.font ?? F.head, size), color = o.color ?? C.ink, sh = o.shadow === undefined ? C.overprint : o.shadow;
+    const size = o.size ?? 120, f = font(o.font ?? F.head, size, o.weight ?? (o.font ? 400 : FW.head)), color = o.color ?? C.ink, sh = o.shadow === undefined ? C.overprint : o.shadow;
     const dx = o.dx ?? 8, dy = o.dy ?? 8, x = o.x ?? SAFE.x0, y = o.y ?? (o.top ?? ZONE.headTop) + size * 0.8, maxW = o.maxW ?? (SAFE.x1 - SAFE.x0), lh = size * (o.lineH ?? 1.04);
     const toks = K.parseMarkup(o.upper ? String(text).toUpperCase() : text), { lines, space } = layoutWords(toks, f, maxW);
     let times = null;
@@ -218,8 +233,8 @@ export default function dossier(K) {
   };
   // static text in one of the style's faces: role head | display | sans | mono | hand
   const text = (g, str, x, y, o = {}) => {
-    const fam = { head: F.head, display: F.display, sans: F.sans, mono: F.mono, hand: F.hand }[o.face || 'sans'] || o.face;
-    const size = o.size ?? 44, f = font(fam, size, o.weight ?? (o.face === 'mono' ? 800 : o.face === 'hand' ? 700 : 400));
+    const role = o.face || 'sans', fam = F[role] || role;
+    const size = o.size ?? 44, f = font(fam, size, o.weight ?? FW[role] ?? 400);
     g.save(); g.font = f; g.textAlign = o.align || 'left'; g.textBaseline = o.baseline || 'alphabetic'; g.globalAlpha *= o.alpha ?? 1;
     if (o.shadow) { g.save(); g.globalCompositeOperation = 'multiply'; g.fillStyle = o.shadow; g.fillText(str, x + (o.dx ?? 5), y + (o.dy ?? 5)); g.restore(); }
     if (o.stroke) { g.strokeStyle = o.stroke; g.lineWidth = o.strokeW ?? size * 0.14; g.lineJoin = 'round'; g.strokeText(str, x, y); }
@@ -232,10 +247,10 @@ export default function dossier(K) {
   // a giant halftone-filled numeral that bleeds off the right edge (right edge at o.x, baseline o.y); cached
   const numCache = new Map();
   const numeral = (g, str, o = {}) => {
-    const size = o.size ?? 820, fill = o.fill ?? C.highlight, dot = o.dot ?? mix(C.highlight, C.stamp, 0.42), angle = o.angle ?? 25, key = [str, size, fill, dot, angle].join('|');
+    const size = o.size ?? 820, fill = o.fill ?? C.highlight, dot = o.dot ?? mix(C.highlight, C.stamp, 0.42), angle = o.angle ?? 25, key = [str, size, fill, dot, angle, F.display, FW.display].join('|');
     let c = numCache.get(key);
     if (!c) {
-      const f = font(F.display, size), tw = measure(str, f);
+      const f = font(F.display, size, FW.display), tw = measure(str, f);
       c = K.canvas(tw + 60, size * 1.3); const cg = c.getContext('2d');
       cg.font = f; cg.textBaseline = 'alphabetic'; cg.fillStyle = fill; cg.fillText(str, 30, size * 1.05);
       cg.globalCompositeOperation = 'source-atop';
@@ -251,9 +266,9 @@ export default function dossier(K) {
   // ---------------------------------------------------------------- stamps (rough ink, cached), redaction
   const stampCache = new Map();
   const stampArt = (str, size, color) => {
-    const key = [str, size, color].join('|');
+    const key = [str, size, color, F.sans, FW.sans].join('|');
     if (stampCache.has(key)) return stampCache.get(key);
-    const rows = String(str).split('\n'), f = font(F.sans, size), tw = Math.max(...rows.map(r => measure(r, f)));
+    const rows = String(str).split('\n'), f = font(F.sans, size, FW.sans), tw = Math.max(...rows.map(r => measure(r, f)));
     const padX = size * 0.42, padY = size * 0.26, border = Math.max(6, size * 0.065), w = tw + padX * 2, h = rows.length * size * 1.02 + padY * 2, M = 24;
     const src = K.canvas(w + M * 2, h + M * 2), sg = src.getContext('2d');
     sg.strokeStyle = color; sg.lineWidth = border; sg.stroke(roundRect(M, M, w, h, size * 0.14));
@@ -304,7 +319,7 @@ export default function dossier(K) {
   };
   const bubble = (g, str, o = {}) => {
     const t = o.t ?? 0, s = o.at != null ? pop(t, ev(o.at), 0.3) : 1; if (s <= 0) return;
-    const size = o.size ?? 54, f = font(F[o.face || 'hand'] || o.face, size, 700), w = (o.w ?? measure(str, f) + size * 1.2), h = o.h ?? size * 1.9, x = o.x ?? W / 2, y = o.y ?? 700, tail = o.tail ?? [-w * 0.2, h * 0.9];
+    const size = o.size ?? 54, f = font(F[o.face || 'hand'] || o.face, size, FW[o.face || 'hand'] ?? 400), w = (o.w ?? measure(str, f) + size * 1.2), h = o.h ?? size * 1.9, x = o.x ?? W / 2, y = o.y ?? 700, tail = o.tail ?? [-w * 0.2, h * 0.9];
     g.save(); g.translate(x, y); g.scale(s, s);
     ink(g, [[-w * 0.12, h * 0.3], [tail[0], tail[1]], [w * 0.08, h * 0.32]], { fill: C.cream, t, seed: 4, width: 6 });
     ink(g, rectPts(-w / 2, -h / 2, w, h, h * 0.3), { fill: C.cream, t, seed: 5, width: 6 });
@@ -325,7 +340,7 @@ export default function dossier(K) {
   // a manila exhibit tag; o.to = where its string goes
   const tag = (g, str, o = {}) => {
     const t = o.t ?? 0, s = o.at != null ? pop(t, ev(o.at), 0.32) : 1; if (s <= 0) return;
-    const x = o.x ?? 700, y = o.y ?? 900, size = o.size ?? 40, f = font(F.mono, size, 800), w = measure(str, f) + size * 1.6, h = size * 1.9;
+    const x = o.x ?? 700, y = o.y ?? 900, size = o.size ?? 40, f = font(F.mono, size, FW.mono), w = measure(str, f) + size * 1.6, h = size * 1.9;
     if (o.to) line(g, [[x - w / 2 + size * 0.5, y], [lerp(x, o.to[0], 0.5), lerp(y, o.to[1], 0.5) + 30], o.to], { t, width: 4, line: C.ink, seed: 33 });
     g.save(); g.translate(x, y); g.rotate(((o.rot ?? 6) * Math.PI) / 180); g.scale(s, s);
     ink(g, [[-w / 2 + h * 0.4, -h / 2], [w / 2, -h / 2], [w / 2, h / 2], [-w / 2 + h * 0.4, h / 2], [-w / 2, 0]], { fill: o.fill ?? '#E9CF8E', t, seed: 23, width: 5 });
@@ -412,29 +427,36 @@ export default function dossier(K) {
   };
 
   // ---------------------------------------------------------------- captions: the caption bar
-  // A dark-ink pill with an overprint-ink offset shadow; Archivo Black 56 px in paper colour; the keyword in the
-  // highlight ink; words light up as they are spoken. It pops in when a new phrase starts after a pause.
-  const CAP = { size: 56, padX: 30, padY: 20 };
+  // A pill with an offset shadow; words light up as they are spoken; it pops in when a new phrase starts after a
+  // pause. By default: a dark-ink pill, an overprint-ink shadow, the sans face at 56 px in paper colour, the keyword in
+  // the highlight ink. D.captionBar({...}) gives it the brand's font and colours.
+  const CAP = { size: 56, padX: 30, padY: 20, font: null, weight: null, fill: null, color: null, emph: null, shadow: undefined, radius: 14, tilt: 0.6, unsaid: 0.45 };
+  const captionBar = (o = {}) => {
+    if (o.size != null && o.size < 56) throw new Error('D.captionBar: captions are at least 56 px (a phone at arm\'s length)');
+    if (o.font && K.hasFont && !K.hasFont(o.font)) throw new Error(`D.captionBar: the font "${o.font}" is not loaded (fonts.mjs into the film's fonts/ folder)`);
+    Object.assign(CAP, o); return { ...CAP };
+  };
   const captionRender = (g, cap, t, { prev, next }) => {
     if (next && next.a - cap.b < 0.25 && t >= next.a - 0.12) return;   // the next phrase has taken over the bar
-    const size = CAP.size, f = font(F.sans, size), maxW = LANE.maxW - CAP.padX * 2, { lines, space } = layoutWords(cap.toks, f, maxW);
+    const size = CAP.size, f = font(CAP.font ?? F.sans, size, CAP.weight ?? (CAP.font ? 400 : FW.sans)), maxW = LANE.maxW - CAP.padX * 2, { lines, space } = layoutWords(cap.toks, f, maxW);
     const rows = lines.slice(0, 2), lh = size * 1.18, w = Math.max(...rows.map(r => r.w)) + CAP.padX * 2, h = rows.length * lh + CAP.padY * 2 - (lh - size) * 0.6;
     const cont = prev && cap.a - prev.b < 0.25, leaving = !(next && next.a - cap.b < 0.25);
-    const p = seg(t, cap.a - 0.12, cap.a + 0.3), q = leaving ? seg(t, cap.b - 0.1, cap.b) : 0;
-    const ty = cont ? 8 * (1 - E.out(seg(t, cap.a - 0.06, cap.a + 0.12))) : 40 * (1 - E.out(p)), sc = cont ? 1 : lerp(0.8, 1, E.back(p)), rot = cont ? -0.6 : -1.2 * (1 - p) - 0.6;
+    const p = seg(t, cap.a - 0.12, cap.a + 0.3), q = leaving ? seg(t, cap.b - 0.1, cap.b) : 0, tilt = CAP.tilt;
+    const ty = cont ? 8 * (1 - E.out(seg(t, cap.a - 0.06, cap.a + 0.12))) : 40 * (1 - E.out(p)), sc = cont ? 1 : lerp(0.8, 1, E.back(p)), rot = cont ? -tilt : -2 * tilt * (1 - p) - tilt;
     const alpha = (cont ? 1 : clamp((t - (cap.a - 0.12)) / 0.08)) * (1 - q);
     if (alpha <= 0) return;
     const x0 = LANE.x, y1 = LANE.y1 + 10;
     g.save(); g.globalAlpha *= alpha; g.translate(x0 + w / 2, y1 - h / 2 + ty + 30 * E.in(q)); g.rotate((rot * Math.PI) / 180); g.scale(sc, sc);
-    g.save(); g.globalCompositeOperation = 'multiply'; g.fillStyle = C.overprint; g.fill(roundRect(-w / 2 + 8, -h / 2 + 8, w, h, 14)); g.restore();
-    g.fillStyle = C.ink; g.fill(roundRect(-w / 2, -h / 2, w, h, 14));
+    const shadow = CAP.shadow === undefined ? C.overprint : CAP.shadow;
+    if (shadow) { g.save(); g.globalCompositeOperation = 'multiply'; g.fillStyle = shadow; g.fill(roundRect(-w / 2 + 8, -h / 2 + 8, w, h, CAP.radius)); g.restore(); }
+    g.fillStyle = CAP.fill ?? C.ink; g.fill(roundRect(-w / 2, -h / 2, w, h, CAP.radius));
     g.font = f; g.textBaseline = 'alphabetic'; g.textAlign = 'left';
     let i = 0;
     rows.forEach((ln, li) => {
       let x = -w / 2 + CAP.padX; const y = -h / 2 + CAP.padY + size * 0.82 + li * lh;
       for (const tk of ln.toks) {
         const tm = cap.times?.[i++], said = !tm || t >= tm.a - 0.04;
-        g.globalAlpha = alpha * (said ? 1 : 0.45); g.fillStyle = tk.emph ? C.highlight : C.cream; g.fillText(tk.w, x, y); x += tk.tw + space;
+        g.globalAlpha = alpha * (said ? 1 : CAP.unsaid); g.fillStyle = tk.emph ? (CAP.emph ?? C.highlight) : (CAP.color ?? C.cream); g.fillText(tk.w, x, y); x += tk.tw + space;
       }
     });
     g.restore();
@@ -504,8 +526,9 @@ export default function dossier(K) {
   };
 
   const D = {
-    C, F, E, INKS, FONTS, font, measure,
+    C, F, FW, E, INKS, FONTS, WEIGHTS, font, measure,
     inks(o = {}) { Object.assign(C, o); return C; },
+    fonts: setFonts, captionBar,
     pop, rise, slam, squash,
     paperTex, grain, finish,
     halftone, radial, edge, ramp, max, scaled, dotFill,
@@ -515,7 +538,7 @@ export default function dossier(K) {
     burst, bubble, note, tag, folder, chart, plate, pin, string, ring, paperclip, ZONE,
     evidence, captionRender, hud, dotWipe, flashAt, camera,
     // the style's caption bar for the film object: return { captions: D.captions, ... }
-    captions: { render: captionRender, layer: 'over', size: CAP.size },   // above the product, so a print never hides them
+    captions: { render: captionRender, layer: 'over', get size() { return CAP.size; } },   // above the product, so a print never hides them
   };
   return D;
 }

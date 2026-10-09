@@ -8,7 +8,7 @@ stuff. The style's `STYLE.md` holds its own numbers; this file holds what is tru
 
 ## Contents
 1. The style draws every element
-2. A design system per style
+2. A design system: the style's techniques in the brand's look
 3. The 9:16 frame
 4. The product inside the style
 5. Detail, variation and the closest shot
@@ -25,16 +25,27 @@ stuff. The style's `STYLE.md` holds its own numbers; this file holds what is tru
 - **The medium makes the reveals and transitions:** a stamp slams, a squeegee pulls an ink, a dot wipe covers the cut.
 - **Copy the grammar of a style, never the likeness** of a character, a title design or a brand's art.
 
-## 2. A design system per style
-- **Colours with jobs:** a ground, one dark ink for lines and text, **one accent with one meaning** (the new, the
-  changed, the important thing), one warning colour (cost, waste, the alarm), five inks at most. Take the accent from
-  the product's pack.
-- **Fonts with jobs:** at most 3 sizes and 2 families on screen at once, plus a mono for data. Fonts are part of the
-  style (STYLE.md section 4); get them with `fonts.mjs`, never fall back to a default face.
+## 2. A design system: the style's techniques in the brand's look
+**The style gives the techniques; the brand gives the colours, the fonts and the end card.** The techniques are how
+the medium is made: its marks (dots, ink line, paper, grain, print shadow), its transitions, camera, motion curves and
+page layout. The brand's look is its design card (research.md, section 3). Without it, every film in a style looks
+the same, whatever the brand.
+- **Colours with jobs, from the brand:** a ground, one dark ink for lines and text, **one accent with one meaning** (the
+  new, the changed, the important thing), one warning colour (cost, waste, the alarm), five inks at most. Put the
+  brand's colours on the style's ink roles (`D.inks` in a kit): their ground on the paper, their darkest colour on the
+  ink, the pack's main colour on the accent. When the brand has fewer colours than the style has roles, use lighter
+  and darker versions of theirs, not new hues (a warning colour the story needs is the one exception). The material
+  stays: a white brand gets a white paper with the style's grain, not the style's cream.
+- **Fonts with jobs, from the brand:** at most 3 sizes and 2 families on screen at once, plus a mono for data. The
+  brand's headline face goes on the style's headline role, its text face on the caption role (`D.fonts` in a kit); the
+  style's type treatment stays (a misregistered shadow, a letter-by-letter pop). A font that is not free gets the
+  closest Google font, named on the design card. Get fonts with `fonts.mjs`; never fall back to a default face.
+- **The end card, the brand's way:** the real pack big, their logo file if they have one (never redrawn), their line,
+  laid out the way they lay out a page (space, case, alignment). Never a style's ready-made end card.
 - **Minimum sizes** at 1080 × 1920: captions 56 px, headlines 72 px, labels and stamps 40 px, notes 36 px. Smaller only
   as texture with no meaning (a case number, a ruler).
-- **Captions belong to the style** (a dark ink pill, a pulled strip of ink, a chalk line, a dialog box) and light up
-  word by word as they are spoken.
+- **Captions belong to the style's medium and wear the brand's look** (a pill, a pulled strip of ink, a chalk line, a
+  dialog box, in the brand's font and colours) and light up word by word as they are spoken.
 - **A fixed layout per style** inside the safe zones (STYLE.md section 6, "the 9:16 page"), so every frame of every
   film sits on the same grid.
 - **Texture is one element with a job,** never a background filler: at most one dot, grain or hatch field per frame,
@@ -100,7 +111,9 @@ them: gradients, blur and fake 3D light fight print.
 ## 8. Checklist before anyone sees a frame
 - [ ] Is every element drawn by the style's own calls, and does the frame read as the style in one glance (STYLE.md
       section 1)?
-- [ ] Colours with jobs, one accent with one meaning, the style's fonts, nothing under the minimum sizes?
+- [ ] Colours with jobs, one accent with one meaning, nothing under the minimum sizes?
+- [ ] Does this frame carry the brand's colours, fonts and feel (the design card's do's and don'ts), or could it be
+      another brand's film?
 - [ ] One subject, at least a third of the frame's height at key moments, with ground around it and a clear order from
       top to bottom? Does the picture use the whole frame, with no empty band at the bottom? Nothing the treatment
       didn't ask for?

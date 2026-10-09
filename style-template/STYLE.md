@@ -95,4 +95,8 @@ What the agent decides for each film (structure, characters, opening, ending, ca
 
 - **The product:** how the real product photo appears in this style (cut out, never redrawn or filtered, in the `over`
   layer, label uncovered, shown big at least once, never bigger than its photo).
+- **The brand's look:** the style gives the techniques; the brand gives the colours, the fonts and the end card. Say
+  which ink roles take the brand's colours and what stays the style's (the grain, the marks); which type roles take
+  the brand's fonts and which treatment stays (a shadow, a pop); how the captions take their font and colours; and how
+  an end card is laid out in this medium with their pack, their logo file and their layout habits.
 - **Brand fit:** the brands and messages it suits, and the ones where it fights the brand.

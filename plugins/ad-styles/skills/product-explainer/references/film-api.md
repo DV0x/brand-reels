@@ -261,14 +261,16 @@ story: it draws nothing unless a scene calls it. Its look and numbers are in `st
 **Setup and constants**
 | Name | Meaning |
 |---|---|
-| `D.inks({...})` | sets the ink roles (returns them): `paper`, `ink`, `spot`, `spot2`, `overprint`, `highlight`, `stamp`, `night`, `night2`, `cream`, `card` |
+| `D.inks({...})` | sets the ink roles (returns them): `paper`, `ink`, `spot`, `spot2`, `overprint`, `highlight`, `stamp`, `night`, `night2`, `cream`, `card`, `tone` (the paper's vignette and fold: warm by default, a grey for a cool or white brand). Put the brand's colours on them (the design card in `research.md`), before the first frame is drawn |
 | `D.C`, `D.INKS` | the current inks; the defaults |
-| `D.F`, `D.FONTS` | faces: `head` Alfa Slab One, `display` Bagel Fat One, `sans` Archivo Black, `mono` JetBrains Mono, `hand` Caveat |
+| `D.fonts({...})` | puts families on the five type roles (returns them): `head`, `display`, `sans`, `mono`, `hand`; each a family name or `{ family, weight }`, e.g. `D.fonts({ head: { family: 'Jost', weight: 700 }, sans: { family: 'Jost', weight: 600 } })`. The font must be loaded (bundled, or in the film's `fonts/` from `fonts.mjs`), or it stops with an error. Every kit call that draws text then uses them |
+| `D.F`, `D.FW`, `D.FONTS`, `D.WEIGHTS` | the current families and weights; the defaults: `head` Alfa Slab One, `display` Bagel Fat One, `sans` Archivo Black, `mono` JetBrains Mono 800, `hand` Caveat 700 |
 | `D.font(family, size, weight = 400)`, `D.measure(str, font)` | a font string; a text width |
 | `D.ZONE` | the 9:16 page: `hudTop`, `hudBottom`, `headTop`, `heroTop`, `heroBottom`, `captionTop`, `captionBottom` (from the placement) |
 | `D.finish` | the paper (multiplied) and the dust: use it as the film's `finish` |
 | `D.paperTex()`, `D.grain(g, t)` | the paper canvas; the dust alone |
 | `D.captions` | the caption bar: use it as the film's `captions` (`D.captionRender` is its renderer) |
+| `D.captionBar({ font, weight, size, fill, color, emph, shadow, radius, tilt, unsaid })` | the caption bar in the brand's look: its font (default the `sans` role), the pill's colour (`fill`, default `ink`), the words' colour (`color`, default `cream`), the keyword's (`emph`, default `highlight`), the offset shadow's (`shadow`; `null` for none), the corner radius (14), the tilt in degrees (0.6), the unspoken words' opacity (0.45). `size` is at least 56 |
 
 **Motion**: `D.E` = eases `out`, `in`, `io`, `back` (0..1). `D.pop(t, at, d = 0.35)`: 0, then a pop with overshoot.
 `D.rise(t, at, from, to, d = 0.4)`: a value that rises with overshoot. `D.slam(t, at)`: a stamp's scale, 2.6 → 1 in

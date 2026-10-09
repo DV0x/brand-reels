@@ -16,6 +16,12 @@ export default function film(K) {
   const D = K.style;                  // the style's drawing kit, if it has one (STYLE.md section 10); else your style.mjs
   const P = K.product('main');        // the real product photo (product/main.png); draw it in a scene's over()
 
+  // ---------------------------------------------------------------- 0. the brand's look (TREATMENT.md, "The look")
+  // The style gives the techniques; the brand gives the colours, the fonts and the end card (the design card in
+  // BRIEF.md). With a style kit, set them here, before anything is drawn (TODO: the treatment's values):
+  // D.inks({ paper: '#…', ink: '#…', highlight: '#…' }); D.fonts({ head: { family: '…', weight: 700 }, sans: '…' });
+  // D.captionBar({ fill: '#…', color: '#…', emph: '#…' });
+
   // ---------------------------------------------------------------- 1. the timeline: one source of truth
   // The music grid comes first. Every cut, big hit and caption lands on it; the voice lines are placed on it in
   // script.json. Times come from words (T.word, T.at, T.end) or the grid (G.barStart), never from typed guesses.
