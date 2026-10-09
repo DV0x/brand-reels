@@ -91,9 +91,10 @@ Explainer progress:
    new, or an optional object with a reason), how this film differs (five choices), shots, beat sheet, cue map, sound
    table, the product.
 6. **Style frames.** Copy `templates/film.mjs`, write the timeline, finish three scenes (the signature shot, the
-   product's shot, one more), review them in written rounds in `REVIEW.md` (directing.md, section 5). Every shared
-   call is in film-api.md; the style's own tools are in its parts list, `styles/<style>/KIT.md`.
-   Show them only if the user asked to see the look, and wait for the OK.
+   product's shot, one more), each new object after its design step (craft.md, section 5), and review them in
+   written rounds in `REVIEW.md` (directing.md, section 5). Every shared call is in film-api.md; the style's own tools
+   are in its parts list, `styles/<style>/KIT.md`. Show them only if the user asked to see the look, and wait for the
+   OK.
 7. **The film.** The voice comes first: the tempo and the grid come from its key words (directing.md, section 7). A
    line moves onto the grid only by a longer pause (`at`, then `voice.mjs` again: it adds silence and costs nothing).
    Write every scene of the treatment, the score and a sound per action (film-api.md and the style's `KIT.md` for

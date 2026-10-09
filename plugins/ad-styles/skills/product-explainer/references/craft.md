@@ -11,7 +11,7 @@ stuff. The style's `STYLE.md` holds its own numbers; this file holds what is tru
 2. A design system: the style's techniques in the brand's look
 3. The 9:16 frame
 4. The product inside the style
-5. Detail, variation and the closest shot
+5. Detail, variation, the closest shot, and a design step per object
 6. Building a style that has no engine yet
 7. Painterly styles: the paint-over pass
 8. Checklist before anyone sees a frame
@@ -84,7 +84,7 @@ the same, whatever the brand.
 - **Circles, arrows and labels may point at the label, never cover it.** Captions and props stay off it.
 - **Shown big and clear at least once** (the end card), and never drawn bigger than its photo.
 
-## 5. Detail, variation and the closest shot
+## 5. Detail, variation, the closest shot, and a design step per object
 - **Richness comes from variation, not more colours:** jitter every repeated element by 4 to 13% in value, size and
   angle (`K.jitter`, seeded noise). Never stamp identical copies.
 - **Detail where the camera gets closest.** Plan each subject's closest shot and build its detail for that size; check
@@ -93,6 +93,22 @@ the same, whatever the brand.
   routine, the real ingredient), researched before drawn.
 - **Material goes on last and stays put:** the medium's texture (paper, screen, weave, pixel grid) is fixed to the
   frame or the page, so subjects move under it; an object's own texture rides with the object.
+
+**A design step for each new object.** You type shapes as points and can't see them until they render, so an object
+drawn from memory alone often reads as something else. Every object drawn new for this film (treatment part 5) goes
+through these steps before its scene is finished; write each one in `REVIEW.md`:
+1. **References:** look at 1 or 2: a photo of the real object (find one with WebSearch, download the image into
+   `<film>/refs/` and open it with the Read tool) and how the style's reference art draws such a thing (STYLE.md's
+   references). Write what you take from each. If you find none, say so and work from what you know.
+2. **Its 3 to 5 defining shapes:** the shapes that make it this object and not another (a mug: a straight-sided
+   cylinder, a rim ellipse, a handle loop; a padlock: a rounded body, a U-shaped shackle, a keyhole). Draw those; leave
+   out the rest.
+3. **Its closest size:** draw it at the biggest size the camera shows it (the shot list), and look at that size on a
+   100% crop (`render.mjs <film> frame <t> --crop x,y,w,h`).
+4. **The outline test:** fill its outline alone in one flat ink (in a kit, `D.ink` with no line and no dots), and look
+   at it at phone size (a contact-sheet frame, 270 × 480). Does it still read as the object? If it reads as something
+   else, change the shapes, not the details.
+5. **Fix in written rounds** until a round finds nothing.
 
 ## 6. Building a style that has no engine yet
 Draft styles (SKILL.md, "The styles") have a full `STYLE.md` but no drawing code. Build it before the film:
@@ -133,6 +149,7 @@ them: gradients, blur and fake 3D light fight print.
       a stamp) stays only when it tells the viewer something; otherwise it goes.
 - [ ] Is the product the real photo, crisp, uncovered, readable, never upscaled, placed the style's way?
 - [ ] Has the closest shot of each subject been checked on a 100% crop?
+- [ ] Has each new object had its design step (references, its 3 to 5 shapes, its closest size, the outline test)?
 - [ ] Does `render.mjs check` pass?
 - [ ] Would this frame sit next to the style's best work without looking cheaper or busier? If not, fix it, and write
       the round in `REVIEW.md`.

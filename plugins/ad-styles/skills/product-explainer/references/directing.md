@@ -100,6 +100,8 @@ anything:
 ## 5. Prove the look: style frames and design review
 - **Three style frames from the film,** drawn with the film's real code, not a mock-up: one is the signature shot, one
   shows the product. Finish those scenes first, then render them (`render.mjs <film> frame <t>`).
+- **Each new object gets its design step first** (craft.md, section 5): 1 or 2 references, its 3 to 5 defining shapes,
+  its closest size, and the outline test at phone size.
 - **Review them in rounds, and write each round in `REVIEW.md`:** what you saw, what you changed. Look at full size and
   at phone size. Fix and render again until a round finds nothing. Expect several rounds: labels touching, a stamp
   too pale, a prop that reads as something else.
