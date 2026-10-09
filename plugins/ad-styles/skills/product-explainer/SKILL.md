@@ -58,7 +58,9 @@ Explainer progress:
 - [ ] 9. Deliver, and update the brand's memory
 ```
 
-1. **Brand folder and research.** If `<brand>/BRAND.md` exists, read it and `LEARNINGS.md` first; a new brand starts
+1. **Brand folder and research.** If no work folder is connected (in Cowork: the **+** button in the message box), ask
+   the user to connect one first, and to reuse it for every film: without one, files can land in a temporary place and
+   the brand's memory is lost. If `<brand>/BRAND.md` exists, read it and `LEARNINGS.md` first; a new brand starts
    both from the templates. `RUN site.mjs <url> --out <brand>`, the likely product's page and photos, their voice and
    their look (the design card), then customers' words and facts (research.md). The film folder is made after the
    topic is chosen, named after it.
