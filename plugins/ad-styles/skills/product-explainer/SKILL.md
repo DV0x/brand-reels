@@ -74,7 +74,8 @@ Explainer progress:
    - **See the look first?** Three finished style frames before the film. Recommend yes for a new brand; in a test of
      the skill, always yes.
    - **The product photo:** the site's (say its size), or a current one they send.
-   - **The voice:** their Cartesia API key (or a `.env` path), or their own recording. With the key, pick 2 or 3
+   - **The voice:** their Cartesia API key (or a `.env` path; ask for it, never search their files for keys), or their
+     own recording. With the key, pick 2 or 3
      voices that suit the brand's voice, record the recommended hook in each (`RUN voice.mjs --audition "<the hook, as
      it is said>" --voices <id1>,<id2>,<id3> --out <brand>/audition`), and let the user hear them and choose: a short
      stop. **A post or an ad** (post by default). **Are they the brand?** If not, the film is a concept film.

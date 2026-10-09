@@ -88,7 +88,8 @@ folder, named the same way.
 | `RUN voice.mjs <film> [--words] [--key-file <.env>]` | records the whole script in one take into `vo/voice.wav` and `vo/timing.json` (every line's start, end and words). The lines' `pause`, `speed` and `emotion` marks become Cartesia tags; a line with `at` waits for the grid (silence added before it). `--words` prints every word's time |
 | `RUN voice.mjs <film> --lines [--only l3]` | the older way, for films made before v0.4: each line recorded alone and placed by `lead`, `gap`, `pause` and `at` (`"take": "lines"` in `script.json` does the same); `--only` remakes one line |
 
-The key comes from `--key-file`, the `CARTESIA_API_KEY` variable, or `<film>/.env`. The take is cached by its whole
+The key comes from `--key-file`, the `CARTESIA_API_KEY` variable, or `<film>/.env`. Ask the user for it (SKILL.md, step
+2); never search their disk or other projects for keys or `.env` files. The take is cached by its whole
 text and marks: a change to any word or mark records it again (a few cents); a change to `at` or `anchor` costs
 nothing. The text goes to Cartesia's servers.
 

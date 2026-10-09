@@ -155,7 +155,8 @@ through `K.toScreen`, never hand-typed screen positions. A style kit may wrap th
 placeholder bottle. `P.w`, `P.h`, `P.aspect` and `P.srcH` give the photo's size.
 
 `P.draw(g, o)` draws it as a cut-out paper card and returns `rect = { x, y, w, h, rot, point(px, py) }`;
-`rect.point(px, py)` is where a pixel of `product/main.png` landed, for rings and arrows.
+`rect.point(px, py)` is where a pixel of `product/main.png` landed, for rings and arrows. With an `enter`, it draws
+nothing before `at` and returns `null`: guard what uses it (`rect?.point(...)`).
 
 | Option | Meaning |
 |---|---|
