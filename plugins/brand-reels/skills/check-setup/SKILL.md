@@ -1,11 +1,11 @@
 ---
 name: check-setup
-description: Checks that Ad Styles can render video on this computer, and runs the one-time setup if needed. Use when the user asks to check their ad-styles setup, test that ad-styles works, set up ad-styles, or when a style skill fails to render.
+description: Checks that Brand Reels can render video on this computer, and runs the one-time setup if needed. Use when the user asks to check their brand-reels setup, test that brand-reels works, set up brand-reels, or when a reel fails to render.
 ---
 
-# Check ad-styles setup
+# Check brand-reels setup
 
-This skill renders a 3-second, 1080×1920 test clip with sound, in the comic-print style. It proves that this computer can run every Ad Styles skill. It uses Node.js, a canvas engine (Skia) and ffmpeg. It needs no browser and no image generation.
+This skill renders a 3-second, 1080×1920 test clip with sound, in the comic-print style. It proves that this computer can run every Brand Reels skill. It uses Node.js, a canvas engine (Skia) and ffmpeg. It needs no browser and no image generation.
 
 ## Steps
 

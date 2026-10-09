@@ -35,7 +35,7 @@ jobs:
       - name: claude plugin validate (best effort)
         continue-on-error: true
         run: |
-          npx -y @anthropic-ai/claude-code@latest plugin validate plugins/ad-styles
+          npx -y @anthropic-ai/claude-code@latest plugin validate plugins/brand-reels
           npx -y @anthropic-ai/claude-code@latest plugin validate .
 
   render:
@@ -63,7 +63,7 @@ jobs:
         run: |
           export CODE_VIDEO_HOME="$RUNNER_TEMP/code-video"
           start=$(date +%s)
-          bash plugins/ad-styles/runtime/run.sh plugins/ad-styles/skills/check-setup/scripts/render.mjs --out out
+          bash plugins/brand-reels/runtime/run.sh plugins/brand-reels/skills/check-setup/scripts/render.mjs --out out
           echo "first run: $(( $(date +%s) - start ))s"
       - name: Second run (cached)
         if: matrix.shell == 'bash'
@@ -71,9 +71,9 @@ jobs:
         run: |
           export CODE_VIDEO_HOME="$RUNNER_TEMP/code-video"
           start=$(date +%s)
-          bash plugins/ad-styles/runtime/run.sh plugins/ad-styles/skills/check-setup/scripts/render.mjs --out out-cached
+          bash plugins/brand-reels/runtime/run.sh plugins/brand-reels/skills/check-setup/scripts/render.mjs --out out-cached
           echo "cached run: $(( $(date +%s) - start ))s"
-          bash plugins/ad-styles/runtime/run.sh --setup-only
+          bash plugins/brand-reels/runtime/run.sh --setup-only
 
       # ---- Windows PowerShell 5.1: the command the skill tells Claude to run ----
       - name: First run (setup + render) - PowerShell 5.1
@@ -82,7 +82,7 @@ jobs:
         run: |
           $ErrorActionPreference = 'Continue'   # native stderr (setup logs) must not abort the step
           $env:CODE_VIDEO_HOME = Join-Path $env:RUNNER_TEMP 'code-video'
-          $t = Measure-Command { powershell -NoProfile -ExecutionPolicy Bypass -File plugins\ad-styles\runtime\run.ps1 plugins\ad-styles\skills\check-setup\scripts\render.mjs --out out | Out-Host }
+          $t = Measure-Command { powershell -NoProfile -ExecutionPolicy Bypass -File plugins\brand-reels\runtime\run.ps1 plugins\brand-reels\skills\check-setup\scripts\render.mjs --out out | Out-Host }
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           "first run: {0:N0}s" -f $t.TotalSeconds
       - name: Second run (cached) - PowerShell 5.1
@@ -91,10 +91,10 @@ jobs:
         run: |
           $ErrorActionPreference = 'Continue'   # native stderr (setup logs) must not abort the step
           $env:CODE_VIDEO_HOME = Join-Path $env:RUNNER_TEMP 'code-video'
-          $t = Measure-Command { powershell -NoProfile -ExecutionPolicy Bypass -File plugins\ad-styles\runtime\run.ps1 plugins\ad-styles\skills\check-setup\scripts\render.mjs --out out-cached | Out-Host }
+          $t = Measure-Command { powershell -NoProfile -ExecutionPolicy Bypass -File plugins\brand-reels\runtime\run.ps1 plugins\brand-reels\skills\check-setup\scripts\render.mjs --out out-cached | Out-Host }
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           "cached run: {0:N0}s" -f $t.TotalSeconds
-          powershell -NoProfile -ExecutionPolicy Bypass -File plugins\ad-styles\runtime\run.ps1 --setup-only
+          powershell -NoProfile -ExecutionPolicy Bypass -File plugins\brand-reels\runtime\run.ps1 --setup-only
 
       # ---- Windows PowerShell 7 ----
       - name: First run (setup + render) - pwsh 7
@@ -103,7 +103,7 @@ jobs:
         run: |
           $ErrorActionPreference = 'Continue'   # native stderr (setup logs) must not abort the step
           $env:CODE_VIDEO_HOME = Join-Path $env:RUNNER_TEMP 'code-video'
-          $t = Measure-Command { pwsh -NoProfile -ExecutionPolicy Bypass -File plugins/ad-styles/runtime/run.ps1 plugins/ad-styles/skills/check-setup/scripts/render.mjs --out out | Out-Host }
+          $t = Measure-Command { pwsh -NoProfile -ExecutionPolicy Bypass -File plugins/brand-reels/runtime/run.ps1 plugins/brand-reels/skills/check-setup/scripts/render.mjs --out out | Out-Host }
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           "first run: {0:N0}s" -f $t.TotalSeconds
       - name: Second run (cached) - pwsh 7
@@ -112,10 +112,10 @@ jobs:
         run: |
           $ErrorActionPreference = 'Continue'   # native stderr (setup logs) must not abort the step
           $env:CODE_VIDEO_HOME = Join-Path $env:RUNNER_TEMP 'code-video'
-          $t = Measure-Command { pwsh -NoProfile -ExecutionPolicy Bypass -File plugins/ad-styles/runtime/run.ps1 plugins/ad-styles/skills/check-setup/scripts/render.mjs --out out-cached | Out-Host }
+          $t = Measure-Command { pwsh -NoProfile -ExecutionPolicy Bypass -File plugins/brand-reels/runtime/run.ps1 plugins/brand-reels/skills/check-setup/scripts/render.mjs --out out-cached | Out-Host }
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           "cached run: {0:N0}s" -f $t.TotalSeconds
-          pwsh -NoProfile -ExecutionPolicy Bypass -File plugins/ad-styles/runtime/run.ps1 --setup-only
+          pwsh -NoProfile -ExecutionPolicy Bypass -File plugins/brand-reels/runtime/run.ps1 --setup-only
 
       # ---- product-explainer: the template film, timed from its text (no network, no voice) ----
       - name: product-explainer (template sheet + 3 s video)
@@ -124,9 +124,9 @@ jobs:
         run: |
           export CODE_VIDEO_HOME="$RUNNER_TEMP/code-video"
           P="$RUNNER_TEMP/pe-test"; mkdir -p "$P"
-          cp plugins/ad-styles/skills/product-explainer/templates/film.mjs plugins/ad-styles/skills/product-explainer/templates/script.json "$P/"
-          bash plugins/ad-styles/runtime/run.sh plugins/ad-styles/skills/product-explainer/scripts/render.mjs "$P" sheet --estimate
-          bash plugins/ad-styles/runtime/run.sh plugins/ad-styles/skills/product-explainer/scripts/render.mjs "$P" video --estimate --to 3
+          cp plugins/brand-reels/skills/product-explainer/templates/film.mjs plugins/brand-reels/skills/product-explainer/templates/script.json "$P/"
+          bash plugins/brand-reels/runtime/run.sh plugins/brand-reels/skills/product-explainer/scripts/render.mjs "$P" sheet --estimate
+          bash plugins/brand-reels/runtime/run.sh plugins/brand-reels/skills/product-explainer/scripts/render.mjs "$P" video --estimate --to 3
           test -s "$P/out/sheet.jpg"
           ls "$P"/out/*-0-3.mp4 >/dev/null   # the clip is named after the template's slug
       - name: product-explainer (template sheet + 3 s video) - PowerShell
@@ -137,10 +137,10 @@ jobs:
           $env:CODE_VIDEO_HOME = Join-Path $env:RUNNER_TEMP 'code-video'
           $exe = if ('${{ matrix.shell }}' -eq 'powershell') { 'powershell' } else { 'pwsh' }
           $P = Join-Path $env:RUNNER_TEMP 'pe-test'; New-Item -ItemType Directory -Force $P | Out-Null
-          Copy-Item plugins\ad-styles\skills\product-explainer\templates\film.mjs, plugins\ad-styles\skills\product-explainer\templates\script.json $P
-          & $exe -NoProfile -ExecutionPolicy Bypass -File plugins\ad-styles\runtime\run.ps1 plugins\ad-styles\skills\product-explainer\scripts\render.mjs $P sheet --estimate | Out-Host
+          Copy-Item plugins\brand-reels\skills\product-explainer\templates\film.mjs, plugins\brand-reels\skills\product-explainer\templates\script.json $P
+          & $exe -NoProfile -ExecutionPolicy Bypass -File plugins\brand-reels\runtime\run.ps1 plugins\brand-reels\skills\product-explainer\scripts\render.mjs $P sheet --estimate | Out-Host
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $exe -NoProfile -ExecutionPolicy Bypass -File plugins\ad-styles\runtime\run.ps1 plugins\ad-styles\skills\product-explainer\scripts\render.mjs $P video --estimate --to 3 | Out-Host
+          & $exe -NoProfile -ExecutionPolicy Bypass -File plugins\brand-reels\runtime\run.ps1 plugins\brand-reels\skills\product-explainer\scripts\render.mjs $P video --estimate --to 3 | Out-Host
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           if (-not (Test-Path (Join-Path $P 'out\sheet.jpg'))) { exit 1 }
           if (-not (Get-ChildItem (Join-Path $P 'out') -Filter '*-0-3.mp4')) { exit 1 }

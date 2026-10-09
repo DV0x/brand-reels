@@ -1,6 +1,6 @@
-# Ad Styles for Claude
+# Brand Reels for Claude
 
-**Scroll-stopping video ads made entirely in code.** No image generation, no video generation, no stock footage. Each style is a Claude skill: describe your product and offer, and Claude writes the ad and renders a 9:16 video with sound.
+**Explainer reels for your brand, made entirely in code.** No image generation, no video generation, no stock footage. Give Claude your website: it researches the brand, writes a script you approve, and renders a 30-to-35-second 9:16 reel with voice, captions, music and sound, in your brand's own colours, fonts and logo.
 
 New styles are added to this plugin over time. **Install once, and every new style arrives in your Claude automatically.**
 
@@ -8,29 +8,29 @@ New styles are added to this plugin over time. **Install once, and every new sty
 
 ## Install in 1 minute (Claude desktop app, Cowork)
 
-1. Open the **Claude** desktop app and go to **Customize → Plugins**.
-2. Click **Add → Add marketplace** and paste:
+1. Open the **Claude** desktop app, open the **Cowork** tab, then **Customize → Plugins** in the sidebar.
+2. Click **Add marketplace** and paste:
 
    ```
-   DV0x/ad-styles
+   DV0x/brand-reels
    ```
 
-3. Find **Ad Styles** in the list and click **Add**.
+3. Find **Brand Reels** in the list and click **Install**.
 4. Turn on **Sync automatically**, so new styles show up on their own.
-5. Start a **Cowork** task and type:
+5. Start a **Cowork** task, connect a folder with the **+** button (Claude saves your reels there), and type:
 
-   > **check my ad-styles setup**
+   > **check my brand-reels setup**
 
    The first time, Claude runs a one-time setup (about a minute), then renders a 3-second test clip into your folder. When it says **PASS**, you're ready.
 
 ### Claude Code (terminal)
 
 ```bash
-claude plugin marketplace add DV0x/ad-styles
-claude plugin install ad-styles@dv0x
+claude plugin marketplace add DV0x/brand-reels
+claude plugin install brand-reels@dv0x
 ```
 
-Then ask Claude to "check my ad-styles setup".
+Then ask Claude to "check my brand-reels setup".
 
 ---
 

@@ -1,18 +1,18 @@
 If you are making a film for a user, go back to SKILL.md: nothing here applies.
 
-# Maintaining Ad Styles
+# Maintaining Brand Reels
 
 **For the repository owner only.** This file is outside the plugin folder, so an agent making a film never reads it.
 
 ## The layout
 | Part | Where | Who reads it |
 |---|---|---|
-| The plugin | `plugins/ad-styles/` (runtime, `check-setup`, `product-explainer`) | users install it; the agent reads it |
+| The plugin | `plugins/brand-reels/` (runtime, `check-setup`, `product-explainer`) | users install it; the agent reads it |
 | The user's work | `<brand>/<film>/` in the user's own folder | the agent writes it |
 | The owner side | this file, `style-template/`, `.github/`, the READMEs | the owner only |
 
 The repository root is a plugin marketplace (`.claude-plugin/marketplace.json`, name `dv0x`) with one plugin,
-`plugins/ad-styles`. Every style is a folder inside the `product-explainer` skill, so a new style reaches every user on
+`plugins/brand-reels`. Every style is a folder inside the `product-explainer` skill, so a new style reaches every user on
 their next update.
 
 ## Add a style
@@ -50,11 +50,11 @@ lemo's: a great example first, then the rules and the tools taken from it.
    - Turn each number that worked into a rule in the style file (in a marked note if lemo's text has a different one).
 4. **The menu,** by hand: move the style from the drafts line to the table in `SKILL.md` ("The styles"), and add it to
    the style table in `README.md`.
-5. **The notices:** add the style's fonts and any adapted text or code to `plugins/ad-styles/THIRD-PARTY-NOTICES.md`.
+5. **The notices:** add the style's fonts and any adapted text or code to `plugins/brand-reels/THIRD-PARTY-NOTICES.md`.
 6. **Size:** no videos or test films in the repository. A plugin is limited to 200 MB and 5,000 files.
 
 ## Add a benchmark entry
-`plugins/ad-styles/skills/product-explainer/references/benchmarks.md` is the bar for every film. An entry must be real
+`plugins/brand-reels/skills/product-explainer/references/benchmarks.md` is the bar for every film. An entry must be real
 and elite, with its numbers checked at the source:
 - **The bar:** 5M+ views; or 10 times the account's followers and 1M+ views; or a Cannes Lions Grand Prix or Gold; or a
   reported business result (sales, revenue, a product change).
@@ -68,7 +68,7 @@ and elite, with its numbers checked at the source:
 ## Test the skill with a new agent
 Do this after any change to the guides or the tools, before a release.
 1. In a new, empty folder, start a new Claude Code chat and install the plugin from this folder:
-   `/plugin marketplace add ~/projects/ad-styles`, then `/plugin install ad-styles@dv0x`.
+   `/plugin marketplace add <this repo's folder>`, then `/plugin install brand-reels@dv0x`.
 2. The owner asks for a reel for a brand the skill has not seen, as a real user would, answers the one round of
    questions and approves the script. The agent works to the end alone, with no help from another chat.
 3. **It passes when:**
@@ -81,10 +81,10 @@ Do this after any change to the guides or the tools, before a release.
 4. Then read its `REVIEW.md`, `DELIVERY.md` and brand folder, measure its tokens, fix the skill, and commit.
 
 ## Release
-1. **Version:** raise `version` in `plugins/ad-styles/.claude-plugin/plugin.json` on every release (patch for fixes,
-   minor for a new style or a new skill). Apps detect updates by version. Never change the plugin name (`ad-styles`)
+1. **Version:** raise `version` in `plugins/brand-reels/.claude-plugin/plugin.json` on every release (patch for fixes,
+   minor for a new style or a new skill). Apps detect updates by version. Never change the plugin name (`brand-reels`; renamed from `ad-styles` on 2026-10-09, before any public install)
    or the marketplace name (`dv0x`): users' installs are keyed on them.
-2. **Validate:** `claude plugin validate plugins/ad-styles` and `claude plugin validate .`
+2. **Validate:** `claude plugin validate plugins/brand-reels` and `claude plugin validate .`
 3. **Push** the branch, and wait for the `check-setup` workflow (`.github/workflows/check-setup.yml`) to pass on macOS,
    Windows and Linux. Then merge to `main`. Users with automatic sync get it by themselves.
 

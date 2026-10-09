@@ -1,15 +1,15 @@
-# Ad Styles
+# Brand Reels
 
-Make scroll-stopping video ads entirely in code, with no image or video generation. Each style is a skill. Describe your product and offer, and Claude writes the ad and renders a 9:16 video with sound on your own computer.
+Explainer reels for your brand, made entirely in code, with no image or video generation. Give Claude your website: it researches the brand, writes a script you approve, and renders a 9:16 reel with voice, captions, music and sound on your own computer.
 
 ## Install
 
-In Claude Code: `/plugin install ad-styles --marketplace DV0x/ad-styles`. In the Claude desktop app: **Customize →
-Plugins → Add → Add marketplace**, paste `DV0x/ad-styles`, then add **Ad Styles**.
+In Claude Code: `/plugin install brand-reels --marketplace DV0x/brand-reels`. In the Claude desktop app: **Customize →
+Plugins → Add → Add marketplace**, paste `DV0x/brand-reels`, then add **Brand Reels**.
 
 ## Use it
 
-- Ask Claude to **"check my ad-styles setup"** first. The `check-setup` skill runs a one-time setup and renders a 3-second test clip.
+- Ask Claude to **"check my brand-reels setup"** first. The `check-setup` skill runs a one-time setup and renders a 3-second test clip.
 - Then ask for a skill by what it does. `product-explainer`: "make an explainer reel for <brand website>". It makes a
   reel of 30 to 35 s in the brand's own colours, fonts and logo (share them if you have them), with the voice recorded
   in one take after you hear 2 or 3 voices. Its tested style is Halftone Dossier; 22 more styles are drafts you can ask

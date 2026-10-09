@@ -1,15 +1,15 @@
 {
   "name": "dv0x",
-  "description": "Ad styles for Claude by DV0x: ads made entirely in code.",
+  "description": "Brand Reels for Claude by DV0x: explainer reels for brands, made entirely in code.",
   "owner": {
     "name": "DV0x",
     "url": "https://github.com/DV0x"
   },
   "plugins": [
     {
-      "name": "ad-styles",
-      "source": "./plugins/ad-styles",
-      "description": "Ad styles for Claude: scroll-stopping videos made entirely in code, with no image or video generation. Starts with product-explainer: 30-to-35-second explainer reels for D2C products. New styles arrive with each update."
+      "name": "brand-reels",
+      "source": "./plugins/brand-reels",
+      "description": "Brand Reels: 30-to-35-second explainer reels for a brand's product, made entirely in code from the brand's website, in its own colours, fonts and logo, with voice, captions, music and sound. No image or video generation."
     }
   ]
 }
