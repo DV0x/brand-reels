@@ -6,9 +6,10 @@ description: Makes 30-to-35-second vertical explainer reels (Reels, TikTok, Shor
 # Product explainer
 
 One finished 1080 × 1920 reel of 30 to 35 seconds, with sound, made from a brand's website. Every frame is drawn in
-code on this computer: no image generation, no stock footage. The real product photo is cut out and placed inside the
-style; its label is never redrawn. **Needed:** the website; a Cartesia API key for the voice (without one the film is
-text-led) or the brand's recording; a product photo on a plain background (the site usually has one).
+code on this computer: no image generation, no stock footage. The real product photo is cut out (or framed as it is
+when a clean cut-out is not possible) and placed inside the style; its label is never redrawn. **Needed:** the
+website; a Cartesia API key for the voice (without one the film is text-led) or the brand's recording; a product photo
+on a plain background (the site usually has one).
 
 | The request | Go to |
 |---|---|
@@ -30,7 +31,8 @@ drawn. A film is judged on sound, rhythm, camera and directing, in that order.
 
 ## Where files go
 In the folder the user started from (ask once if they want another place):
-- `<brand>/`: `BRAND.md` and `LEARNINGS.md` (the brand's memory, from `templates/`), `research.md`, `site.json`.
+- `<brand>/`: `BRAND.md` and `LEARNINGS.md` (the brand's memory, from `templates/`), `research.md`, `site.json`,
+  `products/` (each likely product's photos, saved during the research).
 - `<brand>/<film>/`: one folder per film: `script.json`, `BRIEF.md`, `TREATMENT.md`, `film.mjs`, `REVIEW.md`,
   `CREDITS.md`, `DELIVERY.md`, `product/`, `vo/`, `out/` (film-api.md, section 1).
 
@@ -62,7 +64,8 @@ Explainer progress:
    - **Which topic:** 2 or 3, each a viewer's pain or habit, its hook and the hidden fact (copy.md; pick 1 or 2
      benchmark entries before you write hooks). Show only hooks that pass copy.md's tests.
    - **Which style:** recommend from the menu below, with one reason.
-   - **See the look first?** Three finished style frames before the film (recommend yes for a first film).
+   - **See the look first?** Three finished style frames before the film. Recommend yes for a new brand; in a test of
+     the skill, always yes.
    - **The product photo:** the site's (say its size), or a current one they send.
    - **The voice:** their Cartesia API key (or a `.env` path), so you can list voices and suggest one; or their own
      recording. **A post or an ad** (post by default). **Are they the brand?** If not, the film is a concept film.
@@ -70,13 +73,15 @@ Explainer progress:
 3. **The script, as text (APPROVAL).** Write it by copy.md: 30 to 35 s and about 70 words on the time map, the hook's four
    beats, the table `# | voice | on screen | beat note`, the facts list with sources, the shape (PAS by default). Run
    copy.md's self-check first. After the OK, save `BRIEF.md` from `templates/BRIEF.md`: from here you work alone.
-4. **Product and voice** (product.md, tools.md). Cut the photo out and look at the check image. Pick a voice, set
-   it in `script.json`, `RUN voice.mjs <film> --words`. No key: ask once; otherwise render with `--estimate`.
+4. **Product and voice** (product.md, tools.md). Cut the photo out and look at the check image. Start `script.json`
+   from `templates/script.json` (the approved lines), pick a voice, set it there, `RUN voice.mjs <film> --words`. No
+   key: ask once; otherwise render with `--estimate`.
 5. **Treatment, before any drawing.** Read directing.md and the style's `STYLE.md` in full. Write `TREATMENT.md`:
    benchmark, three structures and the pick, shots, beat sheet, cue map, sound table, captions, the product.
 6. **Style frames.** Copy `templates/film.mjs`, write the timeline, finish three scenes (the signature shot, the
-   product's shot, one more), review them in written rounds in `REVIEW.md` (directing.md, section 5). Show them only
-   if the user asked to see the look, and wait for the OK.
+   product's shot, one more), review them in written rounds in `REVIEW.md` (directing.md, section 5). Every shared
+   call is in film-api.md; the style's own tools are in its parts list (film-api.md, section 12, for the Dossier).
+   Show them only if the user asked to see the look, and wait for the OK.
 7. **The film.** Place the lines on the grid, re-run `voice.mjs`, write every scene of the treatment, the score and
    a sound per action (film-api.md for every call; directing.md sections 6 to 9 for why).
 8. **Review loop** (directing.md, section 11): `check` until PASS, contact sheets and strips in written rounds until a
