@@ -1,6 +1,6 @@
 {
   "name": "dv0x",
-  "description": "Brand Reels for Claude by DV0x: explainer reels for brands, made entirely in code.",
+  "description": "DV0x for Claude: Brand Reels (explainer reels for brands, made entirely in code) and Brand Ads (research-driven hooks for still-image Meta ads).",
   "owner": {
     "name": "DV0x",
     "url": "https://github.com/DV0x"
@@ -10,6 +10,11 @@
       "name": "brand-reels",
       "source": "./plugins/brand-reels",
       "description": "Brand Reels: 30-to-35-second explainer reels for a brand's product, made entirely in code from the brand's website, in its own colours, fonts and logo, with voice, captions, music and sound. No image or video generation."
+    },
+    {
+      "name": "brand-ads",
+      "source": "./plugins/brand-ads",
+      "description": "Brand Ads: research-driven hooks for still-image Meta ads for skincare and supplement products, from a product link, each with its evidence: the product's reviews, rivals' live ads and what buyers say. Pictures come in a later version."
     }
   ]
 }

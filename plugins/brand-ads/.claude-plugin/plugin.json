@@ -1,0 +1,11 @@
+{
+  "name": "brand-ads",
+  "displayName": "Brand Ads",
+  "version": "0.2.1",
+  "description": "Research-driven ads for D2C brands. Includes product-ads: hooks for still-image Meta ads for skincare and supplement products, from a product link, built on the product's reviews, rivals' live ads in Meta's Ad Library and what buyers say, each hook with its evidence. Pictures come in a later version.",
+  "author": {
+    "name": "DV0x",
+    "url": "https://github.com/DV0x"
+  },
+  "license": "MIT"
+}

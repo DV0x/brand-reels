@@ -1,0 +1,181 @@
+#!/usr/bin/env node
+// site.mjs: reads a brand's website so Claude can pick a product and hear the brand's voice.
+//   site.mjs <url> --out <dir>                       -> <dir>/site.json and a short summary: products, fonts, colours, logo, copy
+//   site.mjs <url> --product <handle|number|url> --out <dir>
+//                                                    -> that product's photos at full size, product.json, and any reviews on the page
+// Shopify stores are read from /products.json; HealthKart's own sites (as hkvitals.com) from the page's data; other sites
+// from the page's own product data (JSON-LD) and og:image.
+// Exit codes: 0 done, 1 failed (the message says how to fix it), 2 wrong call (usage).
+import fs from 'node:fs';
+import path from 'node:path';
+import { brightDataRequests, fetchShop, request } from './lib/common.mjs';
+
+const argv = process.argv.slice(2), opts = {}, pos = [];
+for (let i = 0; i < argv.length; i++) { if (argv[i].startsWith('--')) opts[argv[i].slice(2)] = argv[i + 1] && !argv[i + 1].startsWith('--') ? argv[++i] : true; else pos.push(argv[i]); }
+const USAGE = 'usage: site.mjs <url> --out <dir>   |   site.mjs <url> --product <handle|n|url> --out <dir>';
+if (opts.help) { console.log(USAGE); process.exit(0); }
+if (!pos[0]) { console.error('[product-ads] ERROR: no website given.\n' + USAGE); process.exit(2); }
+const start = new URL(/^https?:/.test(pos[0]) ? pos[0] : 'https://' + pos[0]), origin = start.origin, out = path.resolve(opts.out || '.');
+fs.mkdirSync(out, { recursive: true });
+
+const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36';
+// The shop's own pages (shop: true) go through fetchShop: asked directly, then through Bright Data when the shop turns
+// this computer away and a key is set. Photos and stylesheets are asked for directly. null when it could not be read.
+let turnedAwayStatus = null;
+async function get(url, as = 'text', { shop = false } = {}) {
+  try {
+    const accept = as === 'json' ? 'application/json' : '*/*';
+    const got = shop
+      ? await fetchShop(url, { keys: opts, accept, timeoutMs: 25000, maxBytes: 8e6 })
+      : await request(url, { service: 'the site', headers: { 'user-agent': UA, accept }, timeoutMs: 25000, maxBytes: as === 'buffer' ? 15e6 : 8e6 });
+    if (got.turnedAway) turnedAwayStatus = got.status;
+    if (!got.ok || got.cut) return null;
+    if (as === 'json') { try { return JSON.parse(got.body.toString('utf8')); } catch { return null; } }
+    if (as === 'buffer') return got.body;
+    return got.body.toString('utf8');
+  } catch { return null; }
+}
+const turnedAwayNote = () => turnedAwayStatus ? ` The shop turned this computer away (HTTP ${turnedAwayStatus}); from another computer it may open. With a Bright Data key and zone (BRIGHTDATA_API_KEY and BRIGHTDATA_ZONE), the scripts ask Bright Data for its pages instead.` : '';
+const viaLine = () => brightDataRequests() ? `the shop turned this computer away: read through Bright Data (${brightDataRequests()} requests)` : null;
+const strip = h => String(h || '').replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, ' ').replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]+>/g, ' ')
+  .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;|&rsquo;|&lsquo;/g, "'").replace(/&ldquo;|&rdquo;/g, '"').replace(/&mdash;/g, '—').replace(/&ndash;/g, '–').replace(/&#\d+;/g, ' ')
+  .replace(/[ \t]+/g, ' ').replace(/\s*\n\s*/g, '\n').trim();
+const meta = (html, key) => (html.match(new RegExp(`<meta[^>]+(?:property|name)=["']${key}["'][^>]*content=["']([^"']*)["']`, 'i')) || html.match(new RegExp(`<meta[^>]+content=["']([^"']*)["'][^>]*(?:property|name)=["']${key}["']`, 'i')) || [])[1] || null;
+const abs = u => { try { return new URL(u.replace(/^\/\//, 'https://'), origin).href; } catch { return null; } };
+function jsonld(html) {
+  const out = [];
+  for (const m of html.matchAll(/<script[^>]+application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi)) {
+    try { const j = JSON.parse(m[1].trim()); const walk = x => { if (Array.isArray(x)) x.forEach(walk); else if (x && typeof x === 'object') { out.push(x); if (x['@graph']) walk(x['@graph']); } }; walk(j); } catch { /* skip bad blocks */ }
+  }
+  return out;
+}
+const isType = (x, t) => [].concat(x['@type'] || []).some(v => String(v).toLowerCase() === t);
+
+// ---------------------------------------------------------------- one product: photos, details, reviews
+async function productMode() {
+  const sel = String(opts.product);
+  let prod = null, html = null, pageUrl = null;
+  const shop = await get(`${origin}/products.json?limit=250`, 'json', { shop: true });
+  if (/^https?:/.test(sel) || sel.includes('/')) pageUrl = abs(sel);
+  else if (shop?.products) {
+    const p = /^\d+$/.test(sel) ? shop.products[+sel - 1] : shop.products.find(x => x.handle === sel);
+    if (!p) { console.error(`[product-ads] ERROR: no product "${sel}". Use a handle or a number from the list that site.mjs <url> --out <dir> prints.`); process.exit(2); }
+    pageUrl = `${origin}/products/${p.handle}`;
+  } else pageUrl = abs(`/products/${sel}`);
+  // Shopify gives the original uploads with their sizes
+  const handle = (pageUrl.match(/\/products\/([^/?#]+)/) || [])[1];
+  const pj = handle ? await get(`${origin}/products/${handle}.json`, 'json', { shop: true }) : null;
+  html = await get(pageUrl, 'text', { shop: true });
+  const files = [];
+  if (pj?.product) {
+    const p = pj.product;
+    prod = { title: p.title, type: p.product_type, vendor: p.vendor, tags: String(p.tags || '').split(',').map(s => s.trim()).filter(Boolean), description: strip(p.body_html),
+      price: p.variants?.[0]?.price, variants: (p.variants || []).map(v => ({ title: v.title, price: v.price })).slice(0, 12), url: pageUrl };
+    for (const [i, im] of (p.images || []).entries()) {
+      const buf = await get(im.src, 'buffer'); if (!buf) continue;
+      const ext = (im.src.split('?')[0].match(/\.(jpe?g|png|webp|gif)$/i) || [, 'jpg'])[1].toLowerCase(), f = `img-${String(i + 1).padStart(2, '0')}.${ext}`;
+      fs.writeFileSync(path.join(out, f), buf); files.push({ file: f, w: im.width, h: im.height, alt: im.alt || null });
+    }
+  } else if (html) {
+    const ld = jsonld(html).find(x => isType(x, 'product')) || {};
+    const offer = [].concat(ld.offers || [])[0] || {};
+    prod = { title: ld.name || meta(html, 'og:title'), description: strip(ld.description || meta(html, 'og:description') || ''), price: offer.price || offer.lowPrice || null, currency: offer.priceCurrency || null,
+      rating: ld.aggregateRating ? { value: ld.aggregateRating.ratingValue, count: ld.aggregateRating.reviewCount || ld.aggregateRating.ratingCount } : null, url: pageUrl };
+    // HealthKart's sites list every photo of the product in the page's data, each at full size (o_link)
+    let hk = null; try { hk = JSON.parse((html.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/) || [])[1]).props.pageProps.reviewData; } catch { /* not HealthKart */ }
+    const hkImgs = (hk?.images || []).map(x => x.o_link || x.xxl_link || x.l_link).filter(Boolean);
+    const imgs = [...new Set((hkImgs.length ? hkImgs : [].concat(ld.image || []).map(x => (typeof x === 'string' ? x : x?.url)).concat(meta(html, 'og:image'))).filter(Boolean).map(abs))];
+    const { loadImage } = await import('./lib/canvas.mjs').catch(() => ({}));
+    for (const [i, u] of imgs.entries()) {
+      const buf = await get(u, 'buffer'); if (!buf) continue;
+      const ext = (u.split('?')[0].match(/\.(jpe?g|png|webp)$/i) || [, 'jpg'])[1].toLowerCase(), f = `img-${String(i + 1).padStart(2, '0')}.${ext}`;
+      fs.writeFileSync(path.join(out, f), buf);
+      let w = null, h = null; try { if (loadImage) { const im = await loadImage(buf); w = im.width; h = im.height; } } catch { /* size unknown */ }
+      files.push({ file: f, w, h });
+    }
+  }
+  if (!prod) { console.error(`[product-ads] ERROR: could not read that product page.${turnedAwayNote()} Open it with WebFetch and save the photos by hand, or ask the brand for a photo.`); process.exit(1); }
+  // reviews printed into the page by common review apps (many load later with JavaScript and won't show here)
+  const reviews = [];
+  if (html) {
+    for (const m of html.matchAll(/class=["'][^"']*(?:jdgm-rev__body|spr-review-content-body|review-content|stamped-review-content-body|loox-review-content)[^"']*["'][^>]*>([\s\S]*?)<\/(?:div|p|span)>/gi)) { const t = strip(m[1]); if (t.length > 12) reviews.push(t.slice(0, 400)); }
+    for (const x of jsonld(html)) for (const r of [].concat(x.review || [])) { const t = strip(r.reviewBody || r.description || ''); if (t.length > 12) reviews.push(t.slice(0, 400)); }
+    // review apps that keep every review as JSON inside the page (Judge.me: "title" then "body_html"), often more than
+    // the widget shows; the review's title goes before its text
+    const blob = html.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&'), un = x => { try { return JSON.parse(`"${x}"`); } catch { return x; } };
+    for (const m of blob.matchAll(/"title"\s*:\s*"((?:[^"\\]|\\.)*)"\s*,\s*"body(?:_html)?"\s*:\s*"((?:[^"\\]|\\.)*)"/g)) {
+      const title = strip(un(m[1])).replace(/\s+/g, ' '), body = strip(un(m[2])).replace(/\s+/g, ' ');
+      if (body.length > 12) reviews.push(((title ? title + ': ' : '') + body).slice(0, 400));
+    }
+  }
+  prod.images = files; prod.reviewsOnPage = [...new Set(reviews)].slice(0, 40); prod.via = brightDataRequests() ? 'bright data' : 'direct';
+  fs.writeFileSync(path.join(out, 'product.json'), JSON.stringify(prod, null, 2));
+  if (viaLine()) console.log(viaLine());
+  console.log(`${prod.title}\n${prod.url}\nprice ${prod.price ?? '?'}${prod.currency ? ' ' + prod.currency : ''}`);
+  console.log(`photos (${files.length}) in ${out}:`); for (const f of files) console.log(`  ${f.file}  ${f.w ?? '?'}x${f.h ?? '?'}${f.alt ? '  "' + f.alt + '"' : ''}`);
+  console.log(`reviews found on the page: ${prod.reviewsOnPage.length}${prod.reviewsOnPage.length ? ' (title: text)' : ' (many load later with JavaScript: search for reviews instead)'}`); prod.reviewsOnPage.slice(0, 12).forEach(r => console.log('  - ' + r.slice(0, 240)));
+  console.log(`description: ${prod.description.slice(0, 600)}`);
+}
+
+// ---------------------------------------------------------------- the whole site: products, voice, fonts, colours
+async function siteMode() {
+  const home = await get(origin, 'text', { shop: true }) || await get(start.href, 'text', { shop: true }) || '';
+  if (!home) { console.error(`[product-ads] ERROR: could not open ${origin}.${turnedAwayNote() || ' It did not answer, or answered with an error.'} Open it with WebFetch instead.`); process.exit(1); }
+  const page = start.pathname.length > 1 ? (await get(start.href, 'text', { shop: true })) || '' : '';
+  const html = home + page;
+  const site = { url: origin, name: meta(home, 'og:site_name') || strip((home.match(/<title[^>]*>([\s\S]*?)<\/title>/i) || [])[1] || '').split(/[|–—-]/)[0].trim(), title: strip((home.match(/<title[^>]*>([\s\S]*?)<\/title>/i) || [])[1] || ''),
+    description: meta(home, 'description') || meta(home, 'og:description'), ogImage: meta(home, 'og:image'), themeColor: meta(home, 'theme-color'), shopify: false };
+  // their own words: headings, short paragraphs, product descriptions
+  const copy = [], body = html.replace(/<(nav|header|footer)[\s\S]*?<\/\1>/gi, ' ');
+  // page junk left out: shop and account text, review-widget counts, carousel numbers, lines of code, menu labels
+  const JUNK = /cookie|©|copyright|subscribe|newsletter|log ?in|sign ?up|add to cart|checkout|privacy|terms|javascript|your cart|cart is empty|continue shopping|have an account|my account|order history|track (?:your )?order|wishlist|quantity\s*:|(?:in|de)crease quantity|shop by|view all|sold out|regular price|sale price|unit price|write a review|based on \d+ reviews|customer reviews/i;
+  const CODE = /`|\/\/\s|=>|[{}]|\b(?:const|let|var|function)\s|\b(?:document|window)\./;
+  for (const m of body.matchAll(/<(h1|h2|h3|p|blockquote)[^>]*>([\s\S]*?)<\/\1>/gi)) {
+    const t = strip(m[2]).replace(/[\u200b-\u200d\ufeff]/g, '').replace(/\s+/g, ' ').trim(), words = (t.match(/[A-Za-z]{2,}/g) || []).length;
+    if (t.length < 14 || t.length > 260 || (t.match(/[₹$€£]/g) || []).length >= 2 || /\[\[|\$\{|\{\{|\}\}/.test(t) || JUNK.test(t) || CODE.test(t)) continue;
+    if (/\b\d+\s*\/\s*(?:of\s*)?\d+\b/.test(t) || (words < 4 && !/[.!?]$/.test(t))) continue;   // "1 / of 3", a menu label
+    copy.push(t);
+  }
+  site.copy = [...new Set(copy)].slice(0, 40);
+  // fonts and colours from the page and its stylesheets
+  const css = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi)].map(m => m[1]);
+  const sheets = [...html.matchAll(/<link[^>]+rel=["']stylesheet["'][^>]*href=["']([^"']+)["']/gi), ...html.matchAll(/<link[^>]+href=["']([^"']+\.css[^"']*)["'][^>]*rel=["']stylesheet["']/gi)].map(m => abs(m[1])).filter(Boolean);
+  for (const u of [...new Set(sheets)].slice(0, 8)) { const t = await get(u); if (t) css.push(t.slice(0, 600000)); }
+  const allCss = css.join('\n');
+  const fam = {};
+  for (const m of allCss.matchAll(/font-family\s*:\s*([^;}{]+)/gi)) { const f = m[1].split(',')[0].replace(/["']/g, '').trim(); if (f && !/^(var|inherit|initial|sans-serif|serif|monospace|system-ui|-apple|BlinkMacSystemFont|Helvetica|Arial|icons?|swiper)/i.test(f)) fam[f] = (fam[f] || 0) + 1; }
+  for (const m of html.matchAll(/fonts\.googleapis\.com\/css2?\?([^"'>]+)/gi)) for (const f of decodeURIComponent(m[1]).matchAll(/family=([^:&;]+)/g)) { const n = f[1].replace(/\+/g, ' '); fam[n] = (fam[n] || 0) + 50; }
+  site.fonts = Object.entries(fam).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([f, n]) => ({ family: f, uses: n }));
+  const col = {};
+  const hex6 = h => { h = h.replace('#', '').toLowerCase(); return '#' + (h.length === 3 ? h.split('').map(c => c + c).join('') : h.slice(0, 6)); };
+  for (const m of allCss.matchAll(/#([0-9a-f]{6}|[0-9a-f]{3})\b/gi)) { const h = hex6(m[0]); col[h] = (col[h] || 0) + 1; }
+  for (const m of allCss.matchAll(/--[\w-]*colou?r[\w-]*\s*:\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})/gi)) { const h = '#' + [m[1], m[2], m[3]].map(v => (+v).toString(16).padStart(2, '0')).join(''); col[h] = (col[h] || 0) + 3; }
+  site.colors = Object.entries(col).sort((a, b) => b[1] - a[1]).slice(0, 14).map(([c, n]) => ({ color: c, uses: n }));
+  site.logo = [...new Set([...html.matchAll(/<img[^>]+>/gi)].map(m => m[0]).filter(t => /logo/i.test(t)).map(t => (t.match(/\ssrc=["']([^"']+)["']/i) || t.match(/srcset=["']([^"'\s]+)/i) || [])[1]).filter(Boolean).map(abs))].slice(0, 4);
+  // products
+  const shop = await get(`${origin}/products.json?limit=250`, 'json', { shop: true });
+  if (shop?.products?.length) {
+    site.shopify = true;
+    site.products = shop.products.map((p, i) => ({ n: i + 1, handle: p.handle, title: p.title, type: p.product_type || null, price: p.variants?.[0]?.price ?? null,
+      tags: String(p.tags || '').split(',').map(s => s.trim()).filter(Boolean).slice(0, 6), photos: p.images?.length || 0,
+      biggestPhoto: (p.images || []).reduce((m, im) => (im.width * im.height > (m?.w || 0) * (m?.h || 0) ? { w: im.width, h: im.height } : m), null), description: strip(p.body_html).slice(0, 280) }));
+  } else {
+    site.products = jsonld(html).filter(x => isType(x, 'product')).map((x, i) => ({ n: i + 1, title: x.name, url: x.url || x['@id'] || null, description: strip(x.description || '').slice(0, 280) }));
+    const links = [...new Set([...html.matchAll(/href=["']([^"']*\/(?:products?|shop|item|p)\/[^"'#?]+)["']/gi)].map(m => abs(m[1])).filter(Boolean))].slice(0, 40);
+    site.productLinks = links;
+  }
+  site.via = brightDataRequests() ? 'bright data' : 'direct';
+  fs.writeFileSync(path.join(out, 'site.json'), JSON.stringify(site, null, 2));
+  console.log(`${site.name || origin}  (${site.shopify ? 'Shopify' : 'not Shopify'})\n${site.description || ''}`);
+  if (viaLine()) console.log(viaLine());
+  console.log(`fonts: ${site.fonts.map(f => f.family).join(', ') || 'none found'}`);
+  console.log(`colours: ${site.colors.slice(0, 10).map(c => c.color).join(' ')}`);
+  console.log(`logo: ${site.logo.join('  ') || 'none found in the page (look at the header, or ask the brand)'}`);
+  console.log(`their words (${site.copy.length}):`); site.copy.slice(0, 14).forEach(c => console.log('  - ' + c.slice(0, 150)));
+  console.log(`products (${site.products.length}):`);
+  for (const p of site.products.slice(0, 40)) console.log(`  ${String(p.n).padStart(2)}. ${p.title}${p.type ? ' [' + p.type + ']' : ''}${p.price ? ' ' + p.price : ''}${p.photos != null ? ` · ${p.photos} photos${p.biggestPhoto ? ` up to ${p.biggestPhoto.w}x${p.biggestPhoto.h}` : ''}` : ''}${p.handle ? '  (' + p.handle + ')' : ''}`);
+  if (!site.shopify && site.productLinks?.length) { console.log('product links:'); site.productLinks.slice(0, 15).forEach(l => console.log('  ' + l)); }
+  console.log(`\nsaved ${path.join(out, 'site.json')}`);
+}
+
+await (opts.product ? productMode() : siteMode());
