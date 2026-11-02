@@ -77,7 +77,8 @@ function trim(data, words) {
   const off = a / SR;
   return { data: data.slice(a, b + 1), words: words.map(w => ({ w: w.w, start: Math.max(0, w.start - off), end: Math.max(0, w.end - off) })) };
 }
-const norm = x => String(x).toLowerCase().replace(/<[^>]*>/g, '').replace(/[^a-z0-9%₹]+/g, '');
+// Letters and digits of any script, so a take in any language matches the script's words (kit.mjs norm does the same).
+const norm = x => String(x).toLowerCase().replace(/<[^>]*>/g, '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^\p{L}\p{N}%₹]+/gu, '');
 const ms = s => `${Math.round(Math.min(10, Math.max(0, s)) * 1000)}ms`;
 const ratio = x => Math.min(1.5, Math.max(0.6, +x)).toFixed(2).replace(/0$/, '');
 

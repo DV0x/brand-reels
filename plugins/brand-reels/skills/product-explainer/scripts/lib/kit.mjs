@@ -133,7 +133,8 @@ const sampleSpline = (pts, per = 10) => {
 };
 
 // ---------------------------------------------------------------- words: *markup*, alignment to the voice
-export const norm = s => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9₹%]+/g, '');
+// Letters and digits of any script (Latin, Cyrillic, Greek, CJK...), so words in any language match the voice's words.
+export const norm = s => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^\p{L}\p{N}₹%]+/gu, '');
 // "*café coffee* tastes" -> [{w:'café', emph:true}, {w:'coffee', emph:true}, {w:'tastes', emph:false}]
 export function parseMarkup(text) {
   const out = []; let on = false;
@@ -396,7 +397,7 @@ export async function makeKit({ project, script, timing }) {
     g.moveTo(a[0] + Math.cos(ang + 2.55) * hs, a[1] + Math.sin(ang + 2.55) * hs); g.lineTo(a[0], a[1]); g.lineTo(a[0] + Math.cos(ang - 2.55) * hs, a[1] + Math.sin(ang - 2.55) * hs); g.stroke(); g.restore();
   };
   // a hand-drawn ring around something
-  const mark = (g, cx, cy, rx, ry, prog, { color = '#C8322B', width = 8, seed = 3, turns = 1.12, tilt = -0.08, alpha = 0.92 } = {}) => {
+  const mark = (g, cx, cy, rx, ry, prog, { color = '#C8322B', width = 8, seed = 3, turns = 1.12, tilt = -0.08, alpha = 0.92, blend = 'multiply' } = {}) => {
     if (prog <= 0) return;
     const r = rng(seed), ph = r.range(0, TAU), pts = [], n = 64;
     for (let i = 0; i <= n; i++) {
@@ -404,11 +405,11 @@ export async function makeKit({ project, script, timing }) {
       const x = Math.cos(a) * rx * k, y = Math.sin(a) * ry * k;
       pts.push([cx + x * Math.cos(tilt) - y * Math.sin(tilt), cy + x * Math.sin(tilt) + y * Math.cos(tilt)]);
     }
-    g.save(); g.globalCompositeOperation = 'multiply'; drawOn(g, pts, prog, { width, color, smooth: false, alpha }); g.restore();
+    g.save(); g.globalCompositeOperation = blend; drawOn(g, pts, prog, { width, color, smooth: false, alpha }); g.restore();
   };
-  const strike = (g, x0, y0, x1, y1, prog, { color = '#C8322B', width = 9, seed = 5 } = {}) => {
+  const strike = (g, x0, y0, x1, y1, prog, { color = '#C8322B', width = 9, seed = 5, blend = 'multiply' } = {}) => {
     const pts = []; for (let i = 0; i <= 12; i++) { const u = i / 12; pts.push([lerp(x0, x1, u), lerp(y0, y1, u) + Math.sin(u * 7 + seed) * 2.5]); }
-    g.save(); g.globalCompositeOperation = 'multiply'; drawOn(g, pts, prog, { width, color, smooth: false, alpha: 0.9 }); g.restore();
+    g.save(); g.globalCompositeOperation = blend; drawOn(g, pts, prog, { width, color, smooth: false, alpha: 0.9 }); g.restore();
   };
   const tick = (g, x, y, size, prog, { color = '#2F7D4F', width = 10 } = {}) => drawOn(g, [[x - size * 0.5, y], [x - size * 0.12, y + size * 0.38], [x + size * 0.55, y - size * 0.45]], prog, { width, color, smooth: false });
 

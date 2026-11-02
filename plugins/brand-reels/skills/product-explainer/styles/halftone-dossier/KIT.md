@@ -107,3 +107,10 @@ D.inks({ paper: '#…', ink: '#…', highlight: '#…', spot: '#…', tone: '#�
 D.fonts({ head: { family: '…', weight: 700 }, sans: { family: '…', weight: 600 } });   // in the film's fonts/ first
 D.captionBar({ fill: '#…', color: '#…', emph: '#…', shadow: null });                    // only if the film uses D.captions
 ```
+
+**A script other than Latin** (Cyrillic, Greek, CJK...): the bundled faces (Alfa Slab One, Bagel Fat One, Archivo
+Black) are Latin only, and Caveat and JetBrains Mono cover Cyrillic but not CJK. Put a face that has the script on
+every role the film draws text with, the caption bar included, e.g. for Russian: `fonts.mjs "Unbounded:700,900"
+"Inter:800" "JetBrains Mono:800"`, then `D.fonts({ head: { family: 'Unbounded', weight: 900 }, display: { family:
+'Unbounded', weight: 700 }, sans: { family: 'Inter', weight: 800 }, mono: { family: 'JetBrains Mono', weight: 800 },
+hand: { family: 'Inter', weight: 700 } })` and `D.captionBar({ font: 'Inter', weight: 800 })`.

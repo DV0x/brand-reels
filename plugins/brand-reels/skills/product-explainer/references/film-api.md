@@ -172,9 +172,9 @@ nothing before `at` and returns `null`: guard what uses it (`rect?.point(...)`).
 
 | Call | What it draws |
 |---|---|
-| `K.mark(g, cx, cy, rx, ry, prog, { color, width = 8, seed, turns = 1.12, tilt, alpha })` | a hand-drawn ring around something |
+| `K.mark(g, cx, cy, rx, ry, prog, { color, width = 8, seed, turns = 1.12, tilt, alpha, blend = 'multiply' })` | a hand-drawn ring around something. It multiplies like ink, so on a dark ground it vanishes: pass `blend: 'source-over'` there |
 | `K.arrow(g, from, to, prog, { bend = 0.18, width = 7, color, head = 26, t, bob = 5 })` | a curved arrow that draws on; `from`, `to` are `[x, y]` |
-| `K.strike(g, x0, y0, x1, y1, prog, { color, width = 9, seed })` | a strike-through |
+| `K.strike(g, x0, y0, x1, y1, prog, { color, width = 9, seed, blend = 'multiply' })` | a strike-through (`blend: 'source-over'` on a dark ground) |
 | `K.tick(g, x, y, size, prog, { color, width = 10 })` | a check mark about `size` wide, centred near `x, y` |
 | `K.drawOn(g, pts, prog, { width = 6, color, cap, smooth = true, alpha, dash })` | any line through points, drawing on |
 | `K.shape(g, pts, color, { t, boil, seed, smooth, stroke, width = 3 })` | a filled shape from points; returns its path |
